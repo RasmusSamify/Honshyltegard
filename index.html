@@ -510,7 +510,7 @@ const CONFIG = {
   // Valfritt: anpassa texterna
   title:      'Promenera med',
   titleItalic:'våra alpackor',
-  subtitle:   'Välj bland våra guidade promenader och upplev naturen i sällskap av våra vänliga alpackor.',
+  subtitle:   'Stanna upp. Andas. Låt alpackorna visa dig takten. Boka en guidad promenad och upplev slow living mitt i naturen.',
   eyebrow:    'Boka din upplevelse',
 };
 
@@ -837,19 +837,22 @@ async function handleCTA() {
   btn.textContent = 'Bokar…';
 
   try {
-    const result = await rpc('book', [{
-      event_id:    state.serviceId,
-      unit_id:     null, // auto-assign provider
-      start_date:  state.selectedDate,
-      start_time:  state.selectedTime,
-      client: {
-        name:  fname + ' ' + lname,
-        email: email,
-        phone: val('f-phone') || '',
+    // book(, , , , , , )
+    const result = await rpc('book', [
+      state.serviceId,
+      unitId,
+      state.selectedDate,
+      state.selectedTime,
+      {
+        name:       fname + ' ' + lname,
+        first_name: fname,
+        last_name:  lname,
+        email:      email,
+        phone:      val('f-phone') || '',
       },
-      count:       state.adults + state.children,
-      additional:  { comment: val('f-note') || '' },
-    }]);
+      { comment: val('f-note') || '' },
+      state.adults + state.children,
+    ]);
 
     showConfirmation(result);
   } catch(e) {
