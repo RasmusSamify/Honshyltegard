@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boka Alpackapromenad</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     KONFIGURATION – fyll i dessa värden
+     ============================================================ */
+  /* Se CONFIG-objektet i <script>-taggen längst ner */
+
+  :root {
+    --bg:        #F5F0E8;
+    --surface:   #FDFAF4;
+    --surface2:  #F0EAE0;
+    --green:     #3D5A3E;
+    --green-mid: #5A7D5B;
+    --green-lt:  #A8C5A0;
+    --green-xs:  #D8EBDA;
+    --brown:     #5C3D1E;
+    --accent:    #B8832A;
+    --text:      #221A0F;
+    --muted:     #7A6A55;
+    --border:    #D8CFBF;
+    --error:     #C0392B;
+    --radius:    14px;
+    --shadow:    0 4px 24px rgba(34,26,15,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Loading screen ─────────────────────────── */
+  #loading-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 20px;
+    z-index: 999;
+    transition: opacity 0.5s ease;
+  }
+  #loading-screen.hidden { opacity: 0; pointer-events: none; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  .loading-text { font-size: 13px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── Error banner ───────────────────────────── */
+  #error-banner {
+    display: none;
+    background: #FEF0EE;
+    border: 1px solid #F5C6C2;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 24px;
+    font-size: 13px;
+    color: var(--error);
+    line-height: 1.6;
+  }
+  #error-banner.show { display: block; }
+
+  /* ── Main layout ────────────────────────────── */
+  .widget-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .widget-wrap.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── Header ─────────────────────────────────── */
+  .widget-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 12px;
+  }
+  .widget-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(30px, 6vw, 46px);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--brown);
+    margin-bottom: 12px;
+  }
+  .widget-header h1 em { color: var(--green); font-style: italic; }
+  .widget-header p {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 420px;
+    margin: 0 auto;
+    font-weight: 300;
+  }
+
+  .deco-line {
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; margin: 28px 0 36px;
+  }
+  .deco-line hr { flex: 1; max-width: 80px; border: none; border-top: 1px solid var(--border); }
+  .deco-line span { font-size: 22px; }
+
+  /* ── Steps indicator ────────────────────────── */
+  .steps-bar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 32px;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 500;
+    color: var(--muted); letter-spacing: 0.03em;
+    transition: color 0.3s;
+  }
+  .step-item.active { color: var(--green); }
+  .step-item.done { color: var(--green-lt); }
+  .step-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    background: var(--border); color: var(--muted);
+    transition: all 0.3s;
+  }
+  .step-item.active .step-dot { background: var(--green); color: #fff; }
+  .step-item.done .step-dot { background: var(--green-lt); color: #fff; }
+  .step-sep { width: 28px; height: 1px; background: var(--border); margin: 0 2px; }
+
+  /* ── Panels ─────────────────────────────────── */
+  .panel {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 26px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+  }
+  .panel-title {
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-title span { font-size: 16px; }
+
+  /* ── Service cards ──────────────────────────── */
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .service-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--surface2);
+    position: relative;
+  }
+  .service-card:hover { border-color: var(--green-lt); background: var(--green-xs); }
+  .service-card.selected {
+    border-color: var(--green);
+    background: var(--green-xs);
+    box-shadow: 0 0 0 3px rgba(61,90,62,0.12);
+  }
+  .service-card .check {
+    position: absolute; top: 10px; right: 10px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--green); color: white;
+    font-size: 10px; font-weight: 700;
+    display: none; align-items: center; justify-content: center;
+  }
+  .service-card.selected .check { display: flex; }
+  .service-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 600; color: var(--brown);
+    margin-bottom: 6px; line-height: 1.3;
+  }
+  .service-meta { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .service-price { font-size: 16px; font-weight: 600; color: var(--green); margin-top: 8px; }
+
+  /* ── Calendar ───────────────────────────────── */
+  .cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .cal-month { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--brown); }
+  .cal-nav {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: none;
+    cursor: pointer; font-size: 15px; color: var(--muted);
+    transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+  }
+  .cal-nav:hover { background: var(--green); color: white; border-color: var(--green); }
+  .cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-label { text-align: center; font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 0; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; border-radius: 8px; cursor: default;
+    transition: all 0.18s; position: relative; color: var(--muted);
+  }
+  .cal-day.available { color: var(--text); font-weight: 500; cursor: pointer; }
+  .cal-day.available::after {
+    content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: var(--green-mid);
+  }
+  .cal-day.available:hover { background: var(--green-xs); }
+  .cal-day.selected { background: var(--green) !important; color: white !important; font-weight: 600; }
+  .cal-day.selected::after { background: rgba(255,255,255,0.6); }
+  .cal-day.past, .cal-day.empty { color: var(--border); }
+  .cal-day.loading { opacity: 0.4; }
+
+  .cal-loading {
+    text-align: center; padding: 24px; font-size: 13px;
+    color: var(--muted); letter-spacing: 0.04em;
+  }
+
+  /* ── Time slots ─────────────────────────────── */
+  .time-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .time-pill {
+    padding: 10px 16px; border: 1.5px solid var(--border);
+    border-radius: 100px; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; background: var(--surface2);
+    color: var(--text);
+  }
+  .time-pill:hover { border-color: var(--green-lt); background: var(--green-xs); }
+  .time-pill.selected { background: var(--green); color: white; border-color: var(--green); }
+  .time-pill.booked { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
+
+  /* ── Form ───────────────────────────────────── */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .form-group input, .form-group textarea {
+    padding: 12px 14px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-family: 'Jost', sans-serif; font-size: 14px;
+    background: var(--surface2); color: var(--text);
+    transition: border-color 0.2s; outline: none;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--green); background: var(--surface); }
+  .form-group input.error, .form-group textarea.error { border-color: var(--error); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  /* Guests */
+  .guest-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .guest-row:last-child { border-bottom: none; }
+  .guest-lbl h4 { font-size: 15px; font-weight: 500; }
+  .guest-lbl p { font-size: 12px; color: var(--muted); }
+  .guest-ctrl { display: flex; align-items: center; gap: 12px; }
+  .g-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: none;
+    font-size: 18px; cursor: pointer; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; line-height: 1;
+  }
+  .g-btn:hover { border-color: var(--green); color: var(--green); }
+  .g-count { font-size: 18px; font-weight: 600; min-width: 22px; text-align: center; }
+
+  /* ── Summary / CTA ──────────────────────────── */
+  .summary-panel {
+    background: var(--green);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 20px;
+    flex-wrap: wrap;
+    box-shadow: 0 8px 32px rgba(61,90,62,0.25);
+    margin-top: 20px;
+  }
+  .summary-left { color: white; }
+  .summary-tour { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .summary-meta { font-size: 13px; opacity: 0.75; line-height: 1.6; }
+  .summary-price { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; color: white; white-space: nowrap; }
+  .cta-btn {
+    background: white; color: var(--green);
+    border: none; border-radius: 10px;
+    padding: 13px 28px; font-family: 'Jost', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.22s; white-space: nowrap;
+  }
+  .cta-btn:hover { background: var(--surface2); transform: scale(1.03); }
+  .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ── Back btn ───────────────────────────────── */
+  .back-btn {
+    background: none; border: none; color: var(--muted);
+    font-family: 'Jost', sans-serif; font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    padding: 8px 0; margin-bottom: 20px; transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--text); }
+
+  /* ── Confirmation ───────────────────────────── */
+  #confirm-view { display: none; text-align: center; padding: 40px 20px; }
+  #confirm-view.show { display: block; }
+  .confirm-icon { font-size: 64px; margin-bottom: 20px; }
+  #confirm-view h2 { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--brown); margin-bottom: 10px; }
+  #confirm-view p { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 380px; margin: 0 auto 24px; }
+  .confirm-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    text-align: left; max-width: 380px; margin: 0 auto 24px;
+    font-size: 14px; line-height: 2.1;
+  }
+  .confirm-card strong { color: var(--brown); display: inline-block; width: 110px; }
+  .reset-btn {
+    background: var(--green); color: white; border: none;
+    border-radius: 10px; padding: 13px 28px;
+    font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .reset-btn:hover { background: var(--brown); }
+
+  /* ── Animations ─────────────────────────────── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  @media (max-width: 500px) {
+    .form-row { grid-template-columns: 1fr; }
+    .panel { padding: 20px 16px; }
+    .service-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text">Laddar bokningssystem…</div>
+</div>
+
+<!-- Error banner -->
+<div id="error-banner"></div>
+
+<!-- Main widget -->
+<div class="widget-wrap" id="widget-wrap">
+
+  <!-- Header -->
+  <div class="widget-header fade-up">
+    <div class="eyebrow" id="widget-eyebrow">Boka din upplevelse</div>
+    <h1 id="widget-title">Promenera med<br><em>våra alpackor</em></h1>
+    <p id="widget-subtitle">Välj bland våra guidade promenader och upplev naturen i sällskap av våra vänliga alpackor.</p>
+    <div class="deco-line"><hr><span>🦙</span><hr></div>
+  </div>
+
+  <!-- Main booking view -->
+  <div id="booking-view">
+
+    <!-- Steps -->
+    <div class="steps-bar" id="steps-bar">
+      <div class="step-item active" id="s1"><div class="step-dot">1</div><span>Välj tur</span></div>
+      <div class="step-sep"></div>
+      <div class="step-item" id="s2"><div class="step-dot">2</div><span>Datum</span></div>
+      <div class="step-sep"></div>
+      <div class="step-item" id="s3"><div class="step-dot">3</div><span>Tid</span></div>
+      <div class="step-sep"></div>
+      <div class="step-item" id="s4"><div class="step-dot">4</div><span>Uppgifter</span></div>
+    </div>
+
+    <!-- Step 1: Services -->
+    <div class="panel fade-up" id="panel-services">
+      <div class="panel-title"><span>🦙</span> Välj promenad</div>
+      <div class="service-grid" id="service-grid">
+        <div style="color:var(--muted);font-size:13px;padding:12px 0">Hämtar tjänster…</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Calendar -->
+    <div class="panel fade-up" id="panel-calendar" style="display:none">
+      <button class="back-btn" onclick="goBack('calendar')">← Tillbaka</button>
+      <div class="panel-title"><span>📅</span> Välj datum</div>
+      <div class="cal-header">
+        <button class="cal-nav" id="cal-prev" onclick="changeMonth(-1)">‹</button>
+        <div class="cal-month" id="cal-month-label">—</div>
+        <button class="cal-nav" id="cal-next" onclick="changeMonth(1)">›</button>
+      </div>
+      <div id="cal-content">
+        <div class="cal-loading">Hämtar tillgängliga datum…</div>
+      </div>
+    </div>
+
+    <!-- Step 3: Time slots -->
+    <div class="panel fade-up" id="panel-time" style="display:none">
+      <button class="back-btn" onclick="goBack('time')">← Tillbaka</button>
+      <div class="panel-title"><span>🕐</span> Välj tid — <span id="selected-date-label" style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--brown);text-transform:none;letter-spacing:0"></span></div>
+      <div class="time-grid" id="time-grid">
+        <div style="color:var(--muted);font-size:13px">Hämtar tider…</div>
+      </div>
+    </div>
+
+    <!-- Step 4: Guest + Info form -->
+    <div class="panel fade-up" id="panel-form" style="display:none">
+      <button class="back-btn" onclick="goBack('form')">← Tillbaka</button>
+      <div class="panel-title"><span>👤</span> Antal deltagare</div>
+
+      <div class="guest-row">
+        <div class="guest-lbl"><h4>Vuxna</h4><p>Ålder 13+</p></div>
+        <div class="guest-ctrl">
+          <button class="g-btn" onclick="changeGuests('adult',-1)">−</button>
+          <span class="g-count" id="cnt-adult">1</span>
+          <button class="g-btn" onclick="changeGuests('adult',1)">+</button>
+        </div>
+      </div>
+      <div class="guest-row">
+        <div class="guest-lbl"><h4>Barn</h4><p>Ålder 5–12</p></div>
+        <div class="guest-ctrl">
+          <button class="g-btn" onclick="changeGuests('child',-1)">−</button>
+          <span class="g-count" id="cnt-child">0</span>
+          <button class="g-btn" onclick="changeGuests('child',1)">+</button>
+        </div>
+      </div>
+
+      <div class="panel-title" style="margin-top:24px"><span>📝</span> Dina uppgifter</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Förnamn *</label>
+          <input type="text" id="f-name" placeholder="Anna">
+        </div>
+        <div class="form-group">
+          <label>Efternamn *</label>
+          <input type="text" id="f-lname" placeholder="Lindström">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>E-post *</label>
+          <input type="email" id="f-email" placeholder="anna@example.se">
+        </div>
+        <div class="form-group">
+          <label>Telefon</label>
+          <input type="tel" id="f-phone" placeholder="+46 70 123 45 67">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Övrigt (allergier, önskemål…)</label>
+          <textarea id="f-note" placeholder="Skriv gärna om ni har med barn under 5 år, hundar eller andra önskemål."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary + book -->
+    <div class="summary-panel" id="summary-panel" style="display:none">
+      <div class="summary-left">
+        <div class="summary-tour" id="sum-tour">—</div>
+        <div class="summary-meta" id="sum-meta">Välj datum och tid</div>
+      </div>
+      <div class="summary-price" id="sum-price"></div>
+      <button class="cta-btn" id="cta-btn" onclick="handleCTA()">Fortsätt →</button>
+    </div>
+
+  </div><!-- /booking-view -->
+
+  <!-- Confirmation view -->
+  <div id="confirm-view">
+    <div class="confirm-icon">🦙</div>
+    <h2>Bokning bekräftad!</h2>
+    <p>Vi ses snart på promenaden! En bokningsbekräftelse har skickats till din e-post.</p>
+    <div class="confirm-card" id="confirm-card"></div>
+    <button class="reset-btn" onclick="resetWidget()">Gör en ny bokning</button>
+  </div>
+
+</div><!-- /widget-wrap -->
+
+<script>
+/* =============================================================
+   KONFIGURATION — fyll i dina SimplyBook-uppgifter här
+   ============================================================= */
+const CONFIG = {
+  company:    'DIN_COMPANY_LOGIN',   // SimplyBook Company Login
+  apiKey:     'DIN_API_KEY',         // SimplyBook Public API Key
+  endpoint:   'https://user-api.simplybook.it/',
+  currency:   'SEK',
+  // Valfritt: anpassa texterna
+  title:      'Promenera med',
+  titleItalic:'våra alpackor',
+  subtitle:   'Välj bland våra guidade promenader och upplev naturen i sällskap av våra vänliga alpackor.',
+  eyebrow:    'Boka din upplevelse',
+};
+
+/* =============================================================
+   STATE
+   ============================================================= */
+let token = null;
+let services = [];
+let state = {
+  step: 1,
+  serviceId: null,
+  serviceName: '',
+  servicePrice: 0,
+  serviceDuration: 0,
+  year: new Date().getFullYear(),
+  month: new Date().getMonth() + 1,
+  availableDates: [],
+  selectedDate: null,
+  selectedDateLabel: '',
+  selectedTime: null,
+  adults: 1,
+  children: 0,
+};
+
+const monthNames = ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
+const dayShort   = ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
+
+/* =============================================================
+   SIMPLYBOOK JSON-RPC HELPER
+   ============================================================= */
+let rpcId = 1;
+
+async function rpc(method, params = [], useToken = true) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (useToken && token) {
+    headers['X-Company-Login'] = CONFIG.company;
+    headers['X-Token']         = token;
+  }
+  const body = JSON.stringify({ jsonrpc: '2.0', id: rpcId++, method, params });
+  const res  = await fetch(CONFIG.endpoint, { method: 'POST', headers, body });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'API-fel');
+  return data.result;
+}
+
+async function getToken() {
+  // Public token
+  return await rpc('getToken', [CONFIG.company, CONFIG.apiKey], false);
+}
+
+/* =============================================================
+   INIT
+   ============================================================= */
+async function init() {
+  applyConfig();
+  try {
+    token    = await getToken();
+    services = await rpc('getEventList');
+    renderServices();
+    hideLoading();
+  } catch (err) {
+    showError(`Kunde inte ansluta till bokningssystemet.<br><small>${err.message}</small><br><br>Kontrollera att API-nycklar och Company Login är ifyllda i CONFIG-objektet.`);
+    hideLoading();
+  }
+}
+
+function applyConfig() {
+  document.getElementById('widget-eyebrow').textContent   = CONFIG.eyebrow;
+  document.getElementById('widget-title').innerHTML       = `${CONFIG.title}<br><em>${CONFIG.titleItalic}</em>`;
+  document.getElementById('widget-subtitle').textContent  = CONFIG.subtitle;
+}
+
+function hideLoading() {
+  const ls = document.getElementById('loading-screen');
+  ls.classList.add('hidden');
+  setTimeout(() => ls.remove(), 600);
+  document.getElementById('widget-wrap').classList.add('visible');
+}
+
+function showError(msg) {
+  const b = document.getElementById('error-banner');
+  b.innerHTML = '⚠️ ' + msg;
+  b.classList.add('show');
+}
+
+/* =============================================================
+   STEP 1 – SERVICES
+   ============================================================= */
+function renderServices() {
+  const grid = document.getElementById('service-grid');
+  if (!services || Object.keys(services).length === 0) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:13px">Inga tjänster hittades i SimplyBook.</div>';
+    return;
+  }
+  const list = Object.values(services);
+  grid.innerHTML = list.map(s => `
+    <div class="service-card" onclick="selectService('${s.id}', '${escHtml(s.name)}', ${s.price || 0}, ${s.duration || 60})" id="svc-${s.id}">
+      <div class="check">✓</div>
+      <div class="service-name">${s.name}</div>
+      <div class="service-meta">
+        ${s.duration ? `⏱ ${s.duration} min` : ''}
+        ${s.position ? '' : ''}
+      </div>
+      ${s.price ? `<div class="service-price">${formatPrice(s.price)}</div>` : ''}
+    </div>
+  `).join('');
+
+  showSummary();
+}
+
+function selectService(id, name, price, duration) {
+  document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('svc-' + id);
+  if (card) card.classList.add('selected');
+  state.serviceId       = id;
+  state.serviceName     = name;
+  state.servicePrice    = parseFloat(price) || 0;
+  state.serviceDuration = duration;
+  // Move to step 2
+  setTimeout(() => showCalendar(), 250);
+}
+
+/* =============================================================
+   STEP 2 – CALENDAR
+   ============================================================= */
+async function showCalendar() {
+  setStep(2);
+  show('panel-calendar');
+  show('summary-panel');
+  updateSummary();
+  await loadCalendar();
+}
+
+async function loadCalendar() {
+  const label = document.getElementById('cal-month-label');
+  const content = document.getElementById('cal-content');
+  label.textContent = `${monthNames[state.month - 1]} ${state.year}`;
+  content.innerHTML = '<div class="cal-loading">Hämtar tillgängliga datum…</div>';
+
+  // Disable nav during load
+  document.getElementById('cal-prev').disabled = true;
+  document.getElementById('cal-next').disabled = true;
+
+  try {
+    // getWorkCalendar returns array of dates with available slots
+    const result = await rpc('getWorkCalendar', [state.serviceId, null, state.year, state.month, null]);
+    // result is an object: { "2025-03-15": 1, ... } (1 = available)
+    state.availableDates = Object.keys(result || {}).filter(d => result[d] > 0);
+    renderCalendar();
+  } catch(e) {
+    content.innerHTML = `<div class="cal-loading" style="color:var(--error)">Kunde inte hämta datum: ${e.message}</div>`;
+  }
+
+  const today = new Date();
+  document.getElementById('cal-prev').disabled = (state.year === today.getFullYear() && state.month <= today.getMonth() + 1);
+  document.getElementById('cal-next').disabled = false;
+}
+
+function renderCalendar() {
+  const y = state.year, m = state.month;
+  const firstDay   = new Date(y, m - 1, 1).getDay(); // 0=sun
+  const daysInMonth= new Date(y, m, 0).getDate();
+  const offset     = (firstDay + 6) % 7; // Mon-based
+
+  let html = dayShort.map(d => `<div class="cal-label">${d}</div>`).join('');
+  for (let i = 0; i < offset; i++) html += '<div class="cal-day empty"></div>';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayObj  = new Date(y, m - 1, d);
+    const isPast  = dayObj < today;
+    const isAvail = state.availableDates.includes(dateStr);
+    const isSel   = state.selectedDate === dateStr;
+
+    let cls = 'cal-day';
+    if (isPast)    cls += ' past';
+    else if (isSel)cls += ' selected available';
+    else if (isAvail) cls += ' available';
+
+    const click = isAvail && !isPast ? `onclick="selectDate('${dateStr}', ${d})"` : '';
+    html += `<div class="${cls}" ${click}>${d}</div>`;
+  }
+
+  document.getElementById('cal-content').innerHTML = `<div class="cal-grid">${html}</div>`;
+}
+
+async function changeMonth(dir) {
+  state.month += dir;
+  if (state.month > 12) { state.month = 1;  state.year++; }
+  if (state.month < 1)  { state.month = 12; state.year--; }
+  state.selectedDate = null;
+  hide('panel-time');
+  await loadCalendar();
+}
+
+async function selectDate(dateStr, day) {
+  state.selectedDate      = dateStr;
+  state.selectedDateLabel = `${day} ${monthNames[state.month - 1]} ${state.year}`;
+  renderCalendar(); // re-render to show selected
+  await showTimeSlots();
+}
+
+/* =============================================================
+   STEP 3 – TIME SLOTS
+   ============================================================= */
+async function showTimeSlots() {
+  setStep(3);
+  show('panel-time');
+  document.getElementById('selected-date-label').textContent = state.selectedDateLabel;
+  document.getElementById('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Hämtar tillgängliga tider…</div>';
+
+  try {
+    // getStartTimeMatrix returns available start times
+    const result = await rpc('getStartTimeMatrix', [
+      state.selectedDate,
+      state.selectedDate,
+      state.serviceId,
+      null,
+      null
+    ]);
+    // result: { "2025-03-15": { "10:00:00": 1, ... } }
+    const timesObj = result[state.selectedDate] || {};
+    const times    = Object.keys(timesObj);
+
+    if (times.length === 0) {
+      document.getElementById('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Inga lediga tider denna dag.</div>';
+      return;
+    }
+
+    document.getElementById('time-grid').innerHTML = times.map(t => {
+      const display = t.substring(0, 5); // "10:00"
+      const avail   = timesObj[t];
+      return `<div class="time-pill ${avail ? '' : 'booked'}" onclick="${avail ? `selectTime('${t}','${display}')` : ''}">${display}</div>`;
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('time-grid').innerHTML = `<div style="color:var(--error);font-size:13px">Fel: ${e.message}</div>`;
+  }
+}
+
+function selectTime(time, display) {
+  document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('selected'));
+  event.target.classList.add('selected');
+  state.selectedTime        = time;
+  state.selectedTimeDisplay = display;
+  updateSummary();
+  setTimeout(() => showForm(), 250);
+}
+
+/* =============================================================
+   STEP 4 – FORM
+   ============================================================= */
+function showForm() {
+  setStep(4);
+  show('panel-form');
+  updateSummary();
+  updateCTA('Slutför bokning');
+}
+
+function changeGuests(type, delta) {
+  if (type === 'adult') {
+    state.adults = Math.max(1, state.adults + delta);
+    document.getElementById('cnt-adult').textContent = state.adults;
+  } else {
+    state.children = Math.max(0, state.children + delta);
+    document.getElementById('cnt-child').textContent = state.children;
+  }
+  updateSummary();
+}
+
+/* =============================================================
+   SUMMARY
+   ============================================================= */
+function showSummary() {
+  show('summary-panel');
+  updateSummary();
+}
+
+function updateSummary() {
+  document.getElementById('sum-tour').textContent = state.serviceName || 'Välj en tur ovan';
+  const total = state.servicePrice * state.adults + state.servicePrice * 0.5 * state.children;
+  document.getElementById('sum-price').textContent = state.servicePrice ? formatPrice(total) : '';
+  if (state.selectedDate && state.selectedTimeDisplay) {
+    document.getElementById('sum-meta').textContent =
+      `${state.selectedDateLabel} · ${state.selectedTimeDisplay} · ${state.adults} vuxna${state.children ? ', ' + state.children + ' barn' : ''}`;
+  } else if (state.selectedDate) {
+    document.getElementById('sum-meta').textContent = state.selectedDateLabel + ' · Välj tid';
+  } else {
+    document.getElementById('sum-meta').textContent = 'Välj datum och tid';
+  }
+}
+
+function updateCTA(label) {
+  document.getElementById('cta-btn').textContent = label;
+}
+
+/* =============================================================
+   BOOKING SUBMIT
+   ============================================================= */
+async function handleCTA() {
+  if (state.step < 4) return;
+
+  // Validate
+  const fname = val('f-name'), lname = val('f-lname'), email = val('f-email');
+  let ok = true;
+  if (!fname)  { markError('f-name');  ok = false; }
+  if (!lname)  { markError('f-lname'); ok = false; }
+  if (!email || !email.includes('@')) { markError('f-email'); ok = false; }
+  if (!ok) return;
+
+  const btn = document.getElementById('cta-btn');
+  btn.disabled = true;
+  btn.textContent = 'Bokar…';
+
+  try {
+    const result = await rpc('book', [{
+      event_id:    state.serviceId,
+      unit_id:     null, // auto-assign provider
+      start_date:  state.selectedDate,
+      start_time:  state.selectedTime,
+      client: {
+        name:  fname + ' ' + lname,
+        email: email,
+        phone: val('f-phone') || '',
+      },
+      count:       state.adults + state.children,
+      additional:  { comment: val('f-note') || '' },
+    }]);
+
+    showConfirmation(result);
+  } catch(e) {
+    showError(`Bokningen misslyckades: ${e.message}`);
+    btn.disabled = false;
+    btn.textContent = 'Slutför bokning';
+  }
+}
+
+function showConfirmation(result) {
+  const total = state.servicePrice * state.adults + state.servicePrice * 0.5 * state.children;
+  document.getElementById('confirm-card').innerHTML = `
+    <strong>Tur:</strong> ${state.serviceName}<br>
+    <strong>Datum:</strong> ${state.selectedDateLabel}<br>
+    <strong>Tid:</strong> ${state.selectedTimeDisplay}<br>
+    <strong>Deltagare:</strong> ${state.adults} vuxna${state.children ? ', ' + state.children + ' barn' : ''}<br>
+    ${total ? `<strong>Totalt:</strong> ${formatPrice(total)}` : ''}
+    ${result && result.id ? `<br><strong>Boknings-ID:</strong> #${result.id}` : ''}
+  `;
+  hide('booking-view');
+  show('confirm-view', 'show');
+}
+
+function resetWidget() {
+  // Full reset
+  state = { step:1, serviceId:null, serviceName:'', servicePrice:0, serviceDuration:0,
+            year: new Date().getFullYear(), month: new Date().getMonth()+1,
+            availableDates:[], selectedDate:null, selectedDateLabel:'',
+            selectedTime:null, selectedTimeDisplay:'', adults:1, children:0 };
+  hide('confirm-view', 'show'); show('booking-view');
+  hide('panel-calendar'); hide('panel-time'); hide('panel-form');
+  document.getElementById('cnt-adult').textContent = 1;
+  document.getElementById('cnt-child').textContent = 0;
+  ['f-name','f-lname','f-email','f-phone','f-note'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('error-banner').classList.remove('show');
+  setStep(1);
+  updateSummary();
+  updateCTA('Fortsätt →');
+}
+
+/* =============================================================
+   NAVIGATION
+   ============================================================= */
+function goBack(from) {
+  if (from === 'calendar') {
+    hide('panel-calendar'); hide('panel-time'); hide('panel-time');
+    hide('summary-panel'); setStep(1);
+    state.selectedDate = null; state.selectedTime = null;
+  } else if (from === 'time') {
+    hide('panel-time'); hide('panel-form');
+    setStep(2); state.selectedTime = null;
+    updateCTA('Fortsätt →');
+  } else if (from === 'form') {
+    hide('panel-form'); setStep(3);
+    updateCTA('Fortsätt →');
+  }
+  updateSummary();
+}
+
+function setStep(n) {
+  state.step = n;
+  [1,2,3,4].forEach(i => {
+    const el = document.getElementById('s' + i);
+    el.classList.remove('active','done');
+    if (i < n)  el.classList.add('done');
+    if (i === n) el.classList.add('active');
+  });
+}
+
+/* =============================================================
+   UTILS
+   ============================================================= */
+function show(id, cls='') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (cls) el.classList.add(cls);
+  else el.style.display = '';
+}
+function hide(id, cls='') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (cls) el.classList.remove(cls);
+  else el.style.display = 'none';
+}
+function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+function markError(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('error'); el.addEventListener('input', () => el.classList.remove('error'), { once: true }); }
+}
+function formatPrice(p) {
+  return new Intl.NumberFormat('sv-SE', { style:'currency', currency: CONFIG.currency, maximumFractionDigits:0 }).format(p);
+}
+function escHtml(s) { return s.replace(/'/g,"&#39;").replace(/"/g,"&quot;"); }
+
+/* =============================================================
+   START
+   ============================================================= */
+init();
+</script>
+</body>
+</html>
