@@ -543,9 +543,9 @@ const dayShort   = ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
    ============================================================= */
 let rpcId = 1;
 
-async function rpc(method, params = [], useToken = true) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (useToken && token) {
+async function rpc(method, params = [], path = 'main') {
+  const headers = { 'Content-Type': 'application/json', 'X-Path': path };
+  if (path !== 'login' && token) {
     headers['X-Company-Login'] = CONFIG.company;
     headers['X-Token']         = token;
   }
@@ -557,8 +557,7 @@ async function rpc(method, params = [], useToken = true) {
 }
 
 async function getToken() {
-  // Public token
-  return await rpc('getToken', [CONFIG.company, CONFIG.apiKey], false);
+  return await rpc('getToken', [CONFIG.company, CONFIG.apiKey], 'login');
 }
 
 /* =============================================================
