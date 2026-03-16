@@ -2,12 +2,13 @@
 // Proxy som vidarebefordrar JSON-RPC-anrop till SimplyBook
 // och lägger till korrekt CORS-headers
 
-const SIMPLYBOOK_ENDPOINT = 'https://user-api.simplybook.it/';
+const SIMPLYBOOK_LOGIN   = 'https://user-api.simplybook.it/login/';
+const SIMPLYBOOK_MAIN    = 'https://user-api.simplybook.it/';
 
 exports.handler = async (event) => {
   const cors = {
     'Access-Control-Allow-Origin':  '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Company-Login, X-Token, X-Path',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
@@ -21,16 +22,19 @@ exports.handler = async (event) => {
   }
 
   try {
-    const body = event.body;
-
-    // Vidarebefordra headers från klienten (token etc)
+    const body     = event.body;
     const incoming = event.headers || {};
+
+    // Klient skickar X-Path: 'login' för getToken, annars används huvud-URL
+    const path     = (incoming['x-path'] || '').toLowerCase();
+    const endpoint = path === 'login' ? SIMPLYBOOK_LOGIN : SIMPLYBOOK_MAIN;
+
     const headers  = { 'Content-Type': 'application/json' };
     if (incoming['x-company-login']) headers['X-Company-Login'] = incoming['x-company-login'];
     if (incoming['x-token'])         headers['X-Token']         = incoming['x-token'];
 
-    const response = await fetch(SIMPLYBOOK_ENDPOINT, {
-      method:  'POST',
+    const response = await fetch(endpoint, {
+      method: 'POST',
       headers,
       body,
     });
