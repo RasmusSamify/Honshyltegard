@@ -342,6 +342,37 @@
   }
   .back-btn:hover { color: var(--text); }
 
+
+  /* Confirmation extras */
+  .confirm-extras {
+    max-width: 380px; margin: 0 auto 24px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .extra-card {
+    border-radius: 12px; padding: 16px 18px;
+    text-align: left;
+  }
+  .extra-card.green  { background: linear-gradient(135deg, #E8F4E8, #D4EBD4); border: 1px solid #A8C5A0; }
+  .extra-card.amber  { background: linear-gradient(135deg, #FEF3E2, #FDE8C0); border: 1px solid #E8C070; }
+  .extra-card.brown  { background: linear-gradient(135deg, #F5EDE0, #EDD8BC); border: 1px solid #C8A878; }
+  .extra-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px; font-weight: 600; color: var(--brown);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 7px;
+  }
+  .extra-card-badge {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    background: var(--accent); color: white;
+    padding: 2px 7px; border-radius: 100px;
+    letter-spacing: 0.05em; vertical-align: middle; margin-left: 4px;
+  }
+  .extra-card p { font-size: 13px; color: #5A4020; line-height: 1.6; }
+  .extra-card .hours {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    color: var(--green); background: rgba(61,90,62,0.1);
+    padding: 3px 9px; border-radius: 100px; margin-top: 8px;
+  }
+
   /* ── Confirmation ───────────────────────────── */
   #confirm-view { display: none; text-align: center; padding: 40px 20px; }
   #confirm-view.show { display: block; }
@@ -613,6 +644,23 @@
     <h2>Bokning bekräftad!</h2>
     <p>Vi ses snart på promenaden! En bokningsbekräftelse har skickats till din e-post.</p>
     <div class="confirm-card" id="confirm-card"></div>
+    <div class="confirm-extras" id="confirm-extras">
+      <div class="extra-card green">
+        <div class="extra-card-title">🛍 Gårdsbutiken</div>
+        <p>Passa på att besöka vår loppis &amp; secondhand med prylar och kläder, gå ett alpackaquiz, träffa och mata våra alpackor.</p>
+        <span class="hours">🕐 Öppet alla dagar i juli &amp; aug, kl. 10–17</span>
+      </div>
+      <div class="extra-card amber">
+        <div class="extra-card-title">☕ Sommarfika <span class="extra-card-badge">NYHET</span></div>
+        <p>Hembakat i varierat utbud, lokal läsk &amp; äppelmust. Välkommen att slå dig ner och njuta!</p>
+        <span class="hours">🕐 Varje dag i juli &amp; aug, kl. 10–16</span>
+      </div>
+      <div class="extra-card brown">
+        <div class="extra-card-title">🦙 Träffa &amp; mata en alpacka!</div>
+        <p>Kom nära våra alpackor, få information, mata, ta en selfie och titta på årets söta föl.</p>
+        <span class="hours">🕐 Varje dag i juli &amp; aug, kl. 10–12</span>
+      </div>
+    </div>
     <button class="reset-btn" onclick="resetWidget()">Gör en ny bokning</button>
   </div>
 
