@@ -736,8 +736,15 @@ async function showTimeSlots() {
       null
     ]);
     // result: { "2025-03-15": { "10:00:00": 1, ... } }
-    const timesObj = result[state.selectedDate] || {};
-    const times    = Object.keys(timesObj);
+    // Response can be object { "10:00:00": 1 } or array of time strings
+    const raw = result[state.selectedDate] || {};
+    let timesObj = {};
+    if (Array.isArray(raw)) {
+      raw.forEach(t => { timesObj[t] = 1; });
+    } else {
+      timesObj = raw;
+    }
+    const times = Object.keys(timesObj).filter(t => t.includes(':'));
 
     if (times.length === 0) {
       document.getElementById('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Inga lediga tider denna dag.</div>';
