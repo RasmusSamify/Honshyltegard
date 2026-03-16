@@ -2,8 +2,8 @@
 // Proxy som vidarebefordrar JSON-RPC-anrop till SimplyBook
 // och lägger till korrekt CORS-headers
 
-const SIMPLYBOOK_LOGIN   = 'https://user-api.simplybook.it/login/';
-const SIMPLYBOOK_MAIN    = 'https://user-api.simplybook.it/';
+const SIMPLYBOOK_LOGIN   = 'https://user-api.simplybook.me/login/';
+const SIMPLYBOOK_MAIN    = 'https://user-api.simplybook.me/';
 
 exports.handler = async (event) => {
   const cors = {
