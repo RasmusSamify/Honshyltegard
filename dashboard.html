@@ -3,1163 +3,663 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Boka Alpackapromenad</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Hönshyltegård – Bokningsöversikt</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ============================================================
-     KONFIGURATION – fyll i dessa värden
-     ============================================================ */
-  /* Se CONFIG-objektet i <script>-taggen längst ner */
-
   :root {
-    --bg:        #F5F0E8;
-    --surface:   #FDFAF4;
-    --surface2:  #F0EAE0;
-    --green:     #3D5A3E;
-    --green-mid: #5A7D5B;
-    --green-lt:  #A8C5A0;
-    --green-xs:  #D8EBDA;
-    --brown:     #5C3D1E;
-    --accent:    #B8832A;
-    --text:      #221A0F;
-    --muted:     #7A6A55;
-    --border:    #D8CFBF;
-    --error:     #C0392B;
-    --radius:    14px;
-    --shadow:    0 4px 24px rgba(34,26,15,0.08);
+    --bg:       #1A1612;
+    --surface:  #231E19;
+    --surface2: #2C2620;
+    --border:   #3A3228;
+    --green:    #7AB87A;
+    --green-dk: #4A7A4A;
+    --green-xs: rgba(122,184,122,0.1);
+    --amber:    #C8922A;
+    --amber-xs: rgba(200,146,42,0.12);
+    --red:      #C06060;
+    --red-xs:   rgba(192,96,96,0.12);
+    --text:     #EDE8E0;
+    --muted:    #7A7060;
+    --muted2:   #4A4438;
+    --radius:   12px;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'Jost', sans-serif;
-    background: var(--bg);
-    color: var(--text);
+  /* ── PIN screen ─────────────────────────── */
+  #pin-screen {
     min-height: 100vh;
-    padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
   }
-
-  /* ── Loading screen ─────────────────────────── */
-  #loading-screen {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 20px;
-    z-index: 999;
-    transition: opacity 0.5s ease;
-  }
-  #loading-screen.hidden { opacity: 0; pointer-events: none; }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--green);
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
-  }
-  .loading-text { font-size: 13px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-
-  /* ── Error banner ───────────────────────────── */
-  #error-banner {
-    display: none;
-    background: #FEF0EE;
-    border: 1px solid #F5C6C2;
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin: 24px;
-    font-size: 13px;
-    color: var(--error);
-    line-height: 1.6;
-  }
-  #error-banner.show { display: block; }
-
-  /* ── Main layout ────────────────────────────── */
-  .widget-wrap {
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 36px 20px 60px;
-    opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .widget-wrap.visible { opacity: 1; transform: translateY(0); }
-
-  /* ── Header ─────────────────────────────────── */
-  .widget-header {
+  .pin-box {
     text-align: center;
-    margin-bottom: 40px;
+    max-width: 360px; width: 100%;
   }
-  .eyebrow {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--green-mid);
-    margin-bottom: 12px;
-  }
-  .widget-header h1 {
+  .pin-icon { font-size: 48px; margin-bottom: 20px; }
+  .pin-box h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(30px, 6vw, 46px);
-    font-weight: 600;
-    line-height: 1.15;
-    color: var(--brown);
-    margin-bottom: 12px;
+    font-size: 32px; font-weight: 600;
+    color: var(--text); margin-bottom: 8px;
   }
-  .widget-header h1 em { color: var(--green); font-style: italic; }
-  .widget-header p {
-    font-size: 15px;
-    color: var(--muted);
-    line-height: 1.7;
-    max-width: 420px;
-    margin: 0 auto;
-    font-weight: 300;
-  }
+  .pin-box p { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
 
-  .deco-line {
+  .pin-dots {
+    display: flex; justify-content: center; gap: 14px;
+    margin-bottom: 28px;
+  }
+  .pin-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--border);
+    transition: all 0.2s;
+  }
+  .pin-dot.filled { background: var(--green); border-color: var(--green); }
+  .pin-dot.error  { background: var(--red);   border-color: var(--red); animation: shake 0.4s ease; }
+
+  .pin-pad {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; max-width: 280px; margin: 0 auto;
+  }
+  .pin-btn {
+    aspect-ratio: 1; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--text);
+    font-family: 'Jost', sans-serif; font-size: 20px; font-weight: 500;
+    cursor: pointer; transition: all 0.18s;
     display: flex; align-items: center; justify-content: center;
-    gap: 14px; margin: 28px 0 36px;
   }
-  .deco-line hr { flex: 1; max-width: 80px; border: none; border-top: 1px solid var(--border); }
-  .deco-line span { font-size: 22px; }
+  .pin-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-xs); }
+  .pin-btn:active { transform: scale(0.92); }
+  .pin-btn.del { font-size: 16px; color: var(--muted); }
+  .pin-btn.empty { pointer-events: none; border: none; background: none; }
 
+  .pin-error {
+    font-size: 13px; color: var(--red); margin-top: 16px;
+    min-height: 20px; transition: opacity 0.3s;
+  }
 
-  /* Rules banner top */
-  .rules-banner {
-    background: var(--green-xs);
-    border: 1.5px solid var(--green-lt);
-    border-radius: var(--radius);
-    padding: 16px 22px;
-    margin-bottom: 24px;
-    animation: fadeUp 0.5s 0.15s ease both;
-  }
-  .rules-banner-header {
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; user-select: none;
-  }
-  .rules-banner-title {
-    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--green);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .rules-banner-body { margin-top: 16px; }
+  /* ── Dashboard ──────────────────────────── */
+  #dashboard { display: none; }
 
-  /* ── Steps indicator ────────────────────────── */
-  .steps-bar {
-    display: flex; align-items: center; justify-content: center;
-    gap: 0; margin-bottom: 32px;
-  }
-  .step-item {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 12px; font-weight: 500;
-    color: var(--muted); letter-spacing: 0.03em;
-    transition: color 0.3s;
-  }
-  .step-item.active { color: var(--green); }
-  .step-item.done { color: var(--green-lt); }
-  .step-dot {
-    width: 24px; height: 24px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-    background: var(--border); color: var(--muted);
-    transition: all 0.3s;
-  }
-  .step-item.active .step-dot { background: var(--green); color: #fff; }
-  .step-item.done .step-dot { background: var(--green-lt); color: #fff; }
-  .step-sep { width: 28px; height: 1px; background: var(--border); margin: 0 2px; }
-
-  /* ── Panels ─────────────────────────────────── */
-  .panel {
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
     background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 26px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .panel-title {
-    font-size: 13px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 20px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .panel-title span { font-size: 16px; }
-
-  /* ── Service cards ──────────────────────────── */
-  .service-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 12px;
-  }
-  .service-card {
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 16px;
-    cursor: pointer;
-    transition: all 0.25s;
-    background: var(--surface2);
-    position: relative;
-  }
-  .service-card:hover { border-color: var(--green-lt); background: var(--green-xs); }
-  .service-card.selected {
-    border-color: var(--green);
-    background: var(--green-xs);
-    box-shadow: 0 0 0 3px rgba(61,90,62,0.12);
-  }
-  .service-card .check {
-    position: absolute; top: 10px; right: 10px;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--green); color: white;
-    font-size: 10px; font-weight: 700;
-    display: none; align-items: center; justify-content: center;
-  }
-  .service-card.selected .check { display: flex; }
-  .service-name {
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 17px; font-weight: 600; color: var(--brown);
-    margin-bottom: 6px; line-height: 1.3;
+    font-size: 22px; font-weight: 600; color: var(--text);
   }
-  .service-meta { font-size: 12px; color: var(--muted); line-height: 1.7; }
-  .service-price { font-size: 16px; font-weight: 600; color: var(--green); margin-top: 8px; }
+  .topbar-sub { font-size: 12px; color: var(--muted); }
+  .logout-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 14px;
+    font-family: 'Jost', sans-serif; font-size: 12px;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+  }
+  .logout-btn:hover { border-color: var(--muted); color: var(--text); }
 
-  /* ── Calendar ───────────────────────────────── */
-  .cal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .cal-month { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--brown); }
-  .cal-nav {
-    width: 32px; height: 32px; border-radius: 8px;
-    border: 1.5px solid var(--border); background: none;
-    cursor: pointer; font-size: 15px; color: var(--muted);
-    transition: all 0.2s; display: flex; align-items: center; justify-content: center;
-  }
-  .cal-nav:hover { background: var(--green); color: white; border-color: var(--green); }
-  .cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+  .main { max-width: 1000px; margin: 0 auto; padding: 28px 20px 60px; }
 
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-  .cal-label { text-align: center; font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 0; }
-  .cal-day {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 13px; border-radius: 8px; cursor: default;
-    transition: all 0.18s; position: relative; color: var(--muted);
+  /* ── Stats row ──────────────────────────── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 28px;
   }
-  .cal-day.available { color: var(--text); font-weight: 500; cursor: pointer; }
-  .cal-day.available::after {
-    content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
-    width: 4px; height: 4px; border-radius: 50%; background: var(--green-mid);
-  }
-  .cal-day.available:hover { background: var(--green-xs); }
-  .cal-day.selected { background: var(--green) !important; color: white !important; font-weight: 600; }
-  .cal-day.selected::after { background: rgba(255,255,255,0.6); }
-  .cal-day.past, .cal-day.empty { color: var(--border); }
-  .cal-day.loading { opacity: 0.4; }
+  @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
 
-  .cal-loading {
-    text-align: center; padding: 24px; font-size: 13px;
-    color: var(--muted); letter-spacing: 0.04em;
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 16px;
+    animation: fadeUp 0.4s ease both;
   }
+  .stat-card:nth-child(2) { animation-delay: 0.05s; }
+  .stat-card:nth-child(3) { animation-delay: 0.1s; }
+  .stat-card:nth-child(4) { animation-delay: 0.15s; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 600; color: var(--text); }
+  .stat-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-  /* ── Time slots ─────────────────────────────── */
-  .time-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-  .time-pill {
-    padding: 10px 16px; border: 1.5px solid var(--border);
-    border-radius: 100px; font-size: 14px; font-weight: 500;
-    cursor: pointer; transition: all 0.2s; background: var(--surface2);
-    color: var(--text);
+  /* ── Filter bar ─────────────────────────── */
+  .filter-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 20px; flex-wrap: wrap;
+    animation: fadeUp 0.4s 0.2s ease both;
   }
-  .time-pill:hover { border-color: var(--green-lt); background: var(--green-xs); }
-  .time-pill.selected { background: var(--green); color: white; border-color: var(--green); }
-  .time-pill.booked { opacity: 0.35; cursor: not-allowed; text-decoration: line-through; }
-
-  /* ── Form ───────────────────────────────────── */
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-  .form-row.full { grid-template-columns: 1fr; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-  .form-group input, .form-group textarea {
-    padding: 12px 14px; border: 1.5px solid var(--border);
-    border-radius: 10px; font-family: 'Jost', sans-serif; font-size: 14px;
-    background: var(--surface2); color: var(--text);
-    transition: border-color 0.2s; outline: none;
-  }
-  .form-group input:focus, .form-group textarea:focus { border-color: var(--green); background: var(--surface); }
-  .form-group input.error, .form-group textarea.error { border-color: var(--error); }
-  .form-group textarea { resize: vertical; min-height: 80px; }
-
-  /* Guests */
-  .guest-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 0; border-bottom: 1px solid var(--border);
-  }
-  .guest-row:last-child { border-bottom: none; }
-  .guest-lbl h4 { font-size: 15px; font-weight: 500; }
-  .guest-lbl p { font-size: 12px; color: var(--muted); }
-  .guest-ctrl { display: flex; align-items: center; gap: 12px; }
-  .g-btn {
-    width: 32px; height: 32px; border-radius: 50%;
-    border: 1.5px solid var(--border); background: none;
-    font-size: 18px; cursor: pointer; color: var(--text);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s; line-height: 1;
-  }
-  .g-btn:hover { border-color: var(--green); color: var(--green); }
-  .g-count { font-size: 18px; font-weight: 600; min-width: 22px; text-align: center; }
-
-  /* ── Summary / CTA ──────────────────────────── */
-  .summary-panel {
-    background: var(--green);
-    border-radius: var(--radius);
-    padding: 22px 26px;
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 20px;
-    flex-wrap: wrap;
-    box-shadow: 0 8px 32px rgba(61,90,62,0.25);
-    margin-top: 20px;
-  }
-  .summary-left { color: white; }
-  .summary-tour { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-  .summary-meta { font-size: 13px; opacity: 0.75; line-height: 1.6; }
-  .summary-price { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; color: white; white-space: nowrap; }
-  .cta-btn {
-    background: white; color: var(--green);
-    border: none; border-radius: 10px;
-    padding: 13px 28px; font-family: 'Jost', sans-serif;
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    transition: all 0.22s; white-space: nowrap;
-  }
-  .cta-btn:hover { background: var(--surface2); transform: scale(1.03); }
-  .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  /* ── Back btn ───────────────────────────────── */
-  .back-btn {
-    background: none; border: none; color: var(--muted);
+  .filter-btn {
+    padding: 8px 16px; border-radius: 100px;
+    border: 1px solid var(--border); background: none;
     font-family: 'Jost', sans-serif; font-size: 13px;
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
-    padding: 8px 0; margin-bottom: 20px; transition: color 0.2s;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
   }
-  .back-btn:hover { color: var(--text); }
+  .filter-btn.active { background: var(--green-xs); border-color: var(--green); color: var(--green); }
+  .filter-btn:hover:not(.active) { border-color: var(--muted2); color: var(--text); }
 
-  /* ── Confirmation ───────────────────────────── */
-  #confirm-view { display: none; text-align: center; padding: 40px 20px; }
-  #confirm-view.show { display: block; }
-  .confirm-icon { font-size: 64px; margin-bottom: 20px; }
-  #confirm-view h2 { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--brown); margin-bottom: 10px; }
-  #confirm-view p { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 380px; margin: 0 auto 24px; }
-  .confirm-card {
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px 24px;
-    text-align: left; max-width: 380px; margin: 0 auto 24px;
-    font-size: 14px; line-height: 2.1;
+  .search-wrap { margin-left: auto; position: relative; }
+  .search-input {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 100px; padding: 8px 16px 8px 36px;
+    font-family: 'Jost', sans-serif; font-size: 13px;
+    color: var(--text); outline: none; width: 200px;
+    transition: border-color 0.2s;
   }
-  .confirm-card strong { color: var(--brown); display: inline-block; width: 110px; }
-  .reset-btn {
-    background: var(--green); color: white; border: none;
-    border-radius: 10px; padding: 13px 28px;
-    font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: background 0.2s;
-  }
-  .reset-btn:hover { background: var(--brown); }
+  .search-input:focus { border-color: var(--green); }
+  .search-input::placeholder { color: var(--muted); }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); pointer-events: none; }
 
-  /* ── Animations ─────────────────────────────── */
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* ── Booking list ───────────────────────── */
+  .bookings-wrap { animation: fadeUp 0.4s 0.25s ease both; }
+
+  .booking-table {
+    width: 100%; border-collapse: collapse;
+  }
+  .booking-table th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+  }
+  .booking-row {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s; cursor: default;
+  }
+  .booking-row:hover { background: var(--surface2); }
+  .booking-row td { padding: 14px; font-size: 14px; vertical-align: middle; }
+
+  .client-name { font-weight: 500; color: var(--text); }
+  .client-contact { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .date-cell { white-space: nowrap; }
+  .date-main { font-weight: 500; }
+  .date-time  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .service-tag {
+    display: inline-block; padding: 4px 10px; border-radius: 100px;
+    background: var(--green-xs); color: var(--green);
+    font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 12px; font-weight: 500;
+  }
+  .status-badge.confirmed { background: var(--green-xs); color: var(--green); }
+  .status-badge.pending   { background: var(--amber-xs); color: var(--amber); }
+  .status-badge.cancelled { background: var(--red-xs);   color: var(--red);   }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .guests-cell { font-size: 13px; color: var(--muted); white-space: nowrap; }
+
+  /* Loading / empty ───────────────────────── */
+  .loading-row td, .empty-row td {
+    text-align: center; padding: 48px; color: var(--muted); font-size: 14px;
+  }
+  .spinner-sm {
+    display: inline-block; width: 20px; height: 20px;
+    border: 2px solid var(--border); border-top-color: var(--green);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    margin-bottom: 10px;
+  }
+
+  /* Refresh btn ──────────────────────────── */
+  .refresh-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-family: 'Jost', sans-serif; font-size: 12px;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .refresh-btn:hover { border-color: var(--green); color: var(--green); }
+  .refresh-btn.spinning span { animation: spin 0.8s linear infinite; display: inline-block; }
+
+  /* Section header ───────────────────────── */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600; color: var(--text);
+  }
+  .booking-count { font-size: 13px; color: var(--muted); }
+
+
+  /* Weather */
+  .weather-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px;
+    margin-bottom: 24px; animation: fadeUp 0.4s 0.18s ease both;
+  }
+  .weather-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 600; color: var(--text);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .weather-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .w-card {
+    flex: 1; min-width: 70px; max-width: 100px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 8px; text-align: center;
+  }
+  .w-card.today { border-color: var(--green); background: var(--green-xs); }
+  .w-date  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .w-icon  { font-size: 22px; margin-bottom: 6px; }
+  .w-temp  { font-size: 13px; font-weight: 600; color: var(--text); }
+  .w-rain  { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .w-warn  { margin-top: 12px; padding: 10px 14px; background: rgba(200,146,42,0.12); border-radius: 8px; font-size: 12px; color: var(--amber); display: none; }
+  .w-warn.show { display: block; }
+
+  /* Animations ───────────────────────────── */
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
+    from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .fade-up { animation: fadeUp 0.4s ease both; }
-
-  @media (max-width: 500px) {
-    .form-row { grid-template-columns: 1fr; }
-    .panel { padding: 20px 16px; }
-    .service-grid { grid-template-columns: 1fr 1fr; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
   }
 
-  /* ── Weather strip ──────────────────────────── */
-  .weather-strip {
-    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px;
-  }
-  .weather-day {
-    flex: 1; min-width: 52px;
-    background: var(--surface2); border: 1.5px solid var(--border);
-    border-radius: 10px; padding: 10px 8px; text-align: center;
-    transition: all 0.2s; cursor: default;
-  }
-  .weather-day.selected-day { border-color: var(--green); background: var(--green-xs); }
-  .weather-day .wd-date { font-size: 10px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .weather-day .wd-icon { font-size: 20px; margin-bottom: 4px; }
-  .weather-day .wd-temp { font-size: 12px; font-weight: 600; color: var(--text); }
-  .weather-day .wd-rain { font-size: 10px; color: var(--muted); margin-top: 2px; }
-  .weather-warning {
-    background: #FEF3E2; border: 1px solid #F5D08A;
-    border-radius: 10px; padding: 10px 14px;
-    font-size: 12px; color: #7A5010; margin-top: 12px;
-    display: none; line-height: 1.5;
-  }
-  .weather-warning.show { display: block; }
-
-  /* ── Rules panel ────────────────────────────── */
-  .rules-panel {
-    background: var(--surface2); border: 1.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px 22px;
-    margin-bottom: 16px;
-  }
-  .rules-toggle {
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; user-select: none;
-  }
-  .rules-toggle-title {
-    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .rules-chevron { font-size: 12px; color: var(--muted); transition: transform 0.25s; }
-  .rules-chevron.open { transform: rotate(180deg); }
-  .rules-body { display: none; margin-top: 16px; }
-  .rules-body.open { display: block; }
-  .rules-list { list-style: none; padding: 0; }
-  .rules-list li {
-    font-size: 13px; color: var(--text); line-height: 1.7;
-    padding: 6px 0; border-bottom: 1px solid var(--border);
-    display: flex; gap: 10px; align-items: flex-start;
-  }
-  .rules-list li:last-child { border-bottom: none; }
-  .rules-list li::before { content: attr(data-icon); font-size: 14px; flex-shrink: 0; margin-top: 2px; }
-  .rules-note {
-    margin-top: 14px; padding: 12px 14px;
-    background: var(--green-xs); border-radius: 8px;
-    font-size: 13px; color: var(--green); line-height: 1.6;
+  @media (max-width: 700px) {
+    .booking-table th:nth-child(4),
+    .booking-table td:nth-child(4),
+    .booking-table th:nth-child(5),
+    .booking-table td:nth-child(5) { display: none; }
+    .search-wrap { margin-left: 0; width: 100%; }
+    .search-input { width: 100%; }
   }
 </style>
 </head>
 <body>
 
-<!-- Loading -->
-<div id="loading-screen">
-  <div class="spinner"></div>
-  <div class="loading-text">Laddar bokningssystem…</div>
+<!-- ── PIN screen ──────────────────────────────── -->
+<div id="pin-screen">
+  <div class="pin-box">
+    <div class="pin-icon">🦙</div>
+    <h1>Hönshyltegård</h1>
+    <p>Ange PIN-koden för att se bokningar</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn empty"></button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+  </div>
 </div>
 
-<!-- Error banner -->
-<div id="error-banner"></div>
+<!-- ── Dashboard ───────────────────────────────── -->
+<div id="dashboard">
 
-<!-- Main widget -->
-<div class="widget-wrap" id="widget-wrap">
-
-  <!-- Header -->
-  <div class="widget-header fade-up">
-    <div class="eyebrow" id="widget-eyebrow">Boka din upplevelse</div>
-    <h1 id="widget-title">Promenera med<br><em>våra alpackor</em></h1>
-    <p id="widget-subtitle">Välj bland våra guidade promenader och upplev naturen i sällskap av våra vänliga alpackor.</p>
-    <div class="deco-line"><hr><span>🦙</span><hr></div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <span style="font-size:22px">🦙</span>
+      <div>
+        <div class="topbar h1" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600">Hönshyltegård</div>
+        <div class="topbar-sub">Bokningsöversikt</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logga ut</button>
   </div>
 
-  <!-- Main booking view -->
-  <div id="booking-view">
+  <div class="main">
 
-    <!-- Rules banner -->
-    <div class="rules-banner">
-      <div class="rules-banner-header" onclick="toggleRulesBanner()">
-        <div class="rules-banner-title"><span>📋</span> Läs reglerna innan du bokar</div>
-        <span class="rules-chevron" id="banner-chevron">▼</span>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Idag</div>
+        <div class="stat-value" id="stat-today">—</div>
+        <div class="stat-sub">bokningar</div>
       </div>
-      <div class="rules-banner-body" id="banner-body" style="display:none">
-        <ul class="rules-list">
-          <li data-icon="🐾">Det är inte tillåtet att ta med andra djur under promenaden.</li>
-          <li data-icon="📵">Mobiltelefoner ska vara på ljudlöst.</li>
-          <li data-icon="🚭">Rökning är förbjuden.</li>
-          <li data-icon="🚫">Barnvagn, rullstol och rullator är inte möjligt att ta med på rundan.</li>
-          <li data-icon="🦙">Vi har rätt att avvisa personer som stör eller stressar djuren.</li>
-          <li data-icon="🧘">Kom ihåg att vara lugn, denna stund ska vara harmonisk för både människor och djur.</li>
-        </ul>
-        <div class="rules-note">👕 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
+      <div class="stat-card">
+        <div class="stat-label">Denna vecka</div>
+        <div class="stat-value" id="stat-week">—</div>
+        <div class="stat-sub">bokningar</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Kommande</div>
+        <div class="stat-value" id="stat-upcoming">—</div>
+        <div class="stat-sub">totalt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Totalt</div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-sub">alla bokningar</div>
       </div>
     </div>
 
-    <!-- Steps -->
-    <div class="steps-bar" id="steps-bar">
-      <div class="step-item active" id="s1"><div class="step-dot">1</div><span>Välj tur</span></div>
-      <div class="step-sep"></div>
-      <div class="step-item" id="s2"><div class="step-dot">2</div><span>Datum</span></div>
-      <div class="step-sep"></div>
-      <div class="step-item" id="s3"><div class="step-dot">3</div><span>Tid</span></div>
-      <div class="step-sep"></div>
-      <div class="step-item" id="s4"><div class="step-dot">4</div><span>Uppgifter</span></div>
+    <!-- Weather -->
+    <div class="weather-section">
+      <div class="weather-section-title">🌤 Väderprognos 10 dagar – Hönshylte Gård</div>
+      <div class="weather-row" id="weather-row"><span style="color:var(--muted);font-size:13px">Laddar väder…</span></div>
+      <div class="w-warn" id="w-warn">⚡ Extremt väder i prognosen – kontrollera om promenader behöver ställas in.</div>
     </div>
 
-    <!-- Step 1: Services -->
-    <div class="panel fade-up" id="panel-services">
-      <div class="panel-title"><span>🦙</span> Välj promenad</div>
-      <div class="service-grid" id="service-grid">
-        <div style="color:var(--muted);font-size:13px;padding:12px 0">Hämtar tjänster…</div>
-      </div>
-    </div>
-
-    <!-- Step 2: Calendar -->
-    <div class="panel fade-up" id="panel-calendar" style="display:none">
-      <button class="back-btn" onclick="goBack('calendar')">← Tillbaka</button>
-      <div class="panel-title"><span>📅</span> Välj datum</div>
-      <div class="cal-header">
-        <button class="cal-nav" id="cal-prev" onclick="changeMonth(-1)">‹</button>
-        <div class="cal-month" id="cal-month-label">—</div>
-        <button class="cal-nav" id="cal-next" onclick="changeMonth(1)">›</button>
-      </div>
-      <div id="cal-content">
-        <div class="cal-loading">Hämtar tillgängliga datum…</div>
-      </div>
-      <div id="weather-wrap" style="margin-top:20px;display:none">
-        <div class="panel-title" style="margin-bottom:10px"><span>🌤</span> Väderprognos 10 dagar – Hönshylte Gård</div>
-        <div class="weather-strip" id="weather-strip"></div>
-        <div class="weather-warning" id="weather-warning">⚡ Observera: Prognosen visar extremt väder. Promenaden kan komma att ställas in – vi kontaktar dig vid behov.</div>
+    <!-- Filter -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all', this)">Alla</button>
+      <button class="filter-btn" onclick="setFilter('today', this)">Idag</button>
+      <button class="filter-btn" onclick="setFilter('upcoming', this)">Kommande</button>
+      <button class="filter-btn" onclick="setFilter('past', this)">Historik</button>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="Sök kund, tjänst…" oninput="searchBookings(this.value)">
       </div>
     </div>
 
-    <!-- Step 3: Time slots -->
-    <div class="panel fade-up" id="panel-time" style="display:none">
-      <button class="back-btn" onclick="goBack('time')">← Tillbaka</button>
-      <div class="panel-title"><span>🕐</span> Välj tid — <span id="selected-date-label" style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--brown);text-transform:none;letter-spacing:0"></span></div>
-      <div class="time-grid" id="time-grid">
-        <div style="color:var(--muted);font-size:13px">Hämtar tider…</div>
-      </div>
-    </div>
-
-    <!-- Step 4: Guest + Info form -->
-    <div class="panel fade-up" id="panel-form" style="display:none">
-      <button class="back-btn" onclick="goBack('form')">← Tillbaka</button>
-      <div class="panel-title"><span>👤</span> Antal deltagare</div>
-
-      <div class="guest-row">
-        <div class="guest-lbl"><h4>Vuxna</h4><p>Ålder 13+</p></div>
-        <div class="guest-ctrl">
-          <button class="g-btn" onclick="changeGuests('adult',-1)">−</button>
-          <span class="g-count" id="cnt-adult">1</span>
-          <button class="g-btn" onclick="changeGuests('adult',1)">+</button>
-        </div>
-      </div>
-      <div class="guest-row">
-        <div class="guest-lbl"><h4>Barn</h4><p>Ålder 5–12</p></div>
-        <div class="guest-ctrl">
-          <button class="g-btn" onclick="changeGuests('child',-1)">−</button>
-          <span class="g-count" id="cnt-child">0</span>
-          <button class="g-btn" onclick="changeGuests('child',1)">+</button>
+    <!-- Bookings -->
+    <div class="bookings-wrap">
+      <div class="section-header">
+        <div class="section-title">Bokningar</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="booking-count" id="booking-count"></span>
+          <button class="refresh-btn" id="refresh-btn" onclick="loadBookings()">
+            <span>↻</span> Uppdatera
+          </button>
         </div>
       </div>
 
-      <div class="panel-title" style="margin-top:24px"><span>📝</span> Dina uppgifter</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Förnamn *</label>
-          <input type="text" id="f-name" placeholder="Anna">
-        </div>
-        <div class="form-group">
-          <label>Efternamn *</label>
-          <input type="text" id="f-lname" placeholder="Lindström">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>E-post *</label>
-          <input type="email" id="f-email" placeholder="anna@example.se">
-        </div>
-        <div class="form-group">
-          <label>Telefon</label>
-          <input type="tel" id="f-phone" placeholder="+46 70 123 45 67">
-        </div>
-      </div>
-      <div class="form-row full">
-        <div class="form-group">
-          <label>Övrigt (allergier, önskemål…)</label>
-          <textarea id="f-note" placeholder="Skriv gärna om ni har med barn under 5 år, hundar eller andra önskemål."></textarea>
-        </div>
-      </div>
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Kund</th>
+            <th>Datum & Tid</th>
+            <th>Tjänst</th>
+            <th>Deltagare</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="booking-tbody">
+          <tr class="loading-row">
+            <td colspan="5">
+              <div class="spinner-sm"></div><br>Laddar bokningar…
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- Rules -->
-    <div class="rules-panel" id="rules-panel" style="display:none">
-      <div class="rules-toggle" onclick="toggleRules()">
-        <div class="rules-toggle-title"><span>📋</span> Regler under promenaden</div>
-        <span class="rules-chevron" id="rules-chevron">▼</span>
-      </div>
-      <div class="rules-body" id="rules-body">
-        <ul class="rules-list">
-          <li data-icon="🐾">Det är inte tillåtet att ta med andra djur under promenaden.</li>
-          <li data-icon="📵">Mobiltelefoner ska vara på ljudlöst.</li>
-          <li data-icon="🚭">Rökning är förbjuden.</li>
-          <li data-icon="🚫">Barnvagn, rullstol och rullator är inte möjligt att ta med på rundan.</li>
-          <li data-icon="🦙">Vi har rätt att avvisa personer som stör eller stressar djuren.</li>
-          <li data-icon="🧘">Kom ihåg att vara lugn, denna stund ska vara harmonisk för både människor och djur.</li>
-        </ul>
-        <div class="rules-note">👕 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
-      </div>
-    </div>
-
-    <!-- Summary + book -->
-    <div class="summary-panel" id="summary-panel" style="display:none">
-      <div class="summary-left">
-        <div class="summary-tour" id="sum-tour">—</div>
-        <div class="summary-meta" id="sum-meta">Välj datum och tid</div>
-      </div>
-      <div class="summary-price" id="sum-price"></div>
-      <button class="cta-btn" id="cta-btn" onclick="handleCTA()">Fortsätt →</button>
-    </div>
-
-  </div><!-- /booking-view -->
-
-  <!-- Confirmation view -->
-  <div id="confirm-view">
-    <div class="confirm-icon">🦙</div>
-    <h2>Bokning bekräftad!</h2>
-    <p>Vi ses snart på promenaden! En bokningsbekräftelse har skickats till din e-post.</p>
-    <div class="confirm-card" id="confirm-card"></div>
-    <button class="reset-btn" onclick="resetWidget()">Gör en ny bokning</button>
   </div>
-
-</div><!-- /widget-wrap -->
+</div>
 
 <script>
-/* =============================================================
-   KONFIGURATION — fyll i dina SimplyBook-uppgifter här
-   ============================================================= */
-const CONFIG = {
-  company:    'samify',
-  apiKey:     'd29c2ad05d93316723b70febc1666c64dc574c96766916f433201d401ce97940',
-  endpoint:   '/.netlify/functions/simplybook',
-  currency:   'SEK',
-  // Valfritt: anpassa texterna
-  title:      'Promenera med',
-  titleItalic:'våra alpackor',
-  subtitle:   'Stanna upp. Andas. Låt alpackorna visa dig takten. Boka en guidad promenad och upplev slow living mitt i naturen.',
-  eyebrow:    'Boka din upplevelse',
-  // Koordinater för Hönshyltegård (uppdatera vid behov)
-  lat:        56.47739536235032,
-  lng:        14.690764677283862,
-};
+// ── PIN logic ──────────────────────────────────
+let pinBuffer = '';
+let savedPin  = sessionStorage.getItem('sb_pin') || '';
 
+if (savedPin) unlockDashboard(savedPin);
 
-/* =============================================================
-   WEATHER
-   ============================================================= */
-let weatherData = null;
-const WMO_ICONS = {
-  0:'☀️',1:'🌤',2:'⛅',3:'☁️',
-  45:'🌫',48:'🌫',
-  51:'🌦',53:'🌦',55:'🌧',
-  61:'🌧',63:'🌧',65:'🌧',
-  71:'❄️',73:'❄️',75:'❄️',
-  80:'🌦',81:'🌧',82:'🌧',
-  95:'⛈',96:'⛈',99:'⛈',
-};
-const WMO_WARN = [65,75,82,95,96,99]; // extreme codes
+function pinPress(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updateDots();
+  if (pinBuffer.length === 4) setTimeout(() => submitPin(), 150);
+}
 
-async function loadWeather() {
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updateDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('d' + i);
+    d.classList.toggle('filled', i < pinBuffer.length);
+    d.classList.remove('error');
+  }
+}
+
+async function submitPin() {
+  unlockDashboard(pinBuffer);
+}
+
+async function unlockDashboard(pin) {
+  // Test PIN against server
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.lat}&longitude=${CONFIG.lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm`;
-    const res  = await fetch(url);
-    const data = await res.json();
-    weatherData = data.daily;
-    renderWeather();
-  } catch(e) {
-    console.warn('Väder kunde inte hämtas:', e.message);
-  }
-}
-
-function renderWeather(highlightDate) {
-  if (!weatherData) return;
-  const wrap  = document.getElementById('weather-wrap');
-  const strip = document.getElementById('weather-strip');
-  const warn  = document.getElementById('weather-warning');
-  wrap.style.display = 'block';
-
-  const days   = weatherData.time || [];
-  const maxT   = weatherData.temperature_2m_max || [];
-  const minT   = weatherData.temperature_2m_min || [];
-  const rain   = weatherData.precipitation_sum  || [];
-  const codes  = weatherData.weathercode        || [];
-
-  const dayNames = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
-  let hasWarning = false;
-
-  strip.innerHTML = days.map((date, i) => {
-    const d    = new Date(date);
-    const name = dayNames[d.getDay()];
-    const day  = d.getDate();
-    const mon  = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'][d.getMonth()];
-    const icon = WMO_ICONS[codes[i]] || '🌡';
-    const isSel = date === highlightDate;
-    if (WMO_WARN.includes(codes[i])) hasWarning = true;
-    const rainStr = rain[i] > 0 ? `${Math.round(rain[i])}mm` : '';
-    return `<div class="weather-day ${isSel ? 'selected-day' : ''}">
-      <div class="wd-date">${name} ${day} ${mon}</div>
-      <div class="wd-icon">${icon}</div>
-      <div class="wd-temp">${Math.round(maxT[i])}° / ${Math.round(minT[i])}°</div>
-      ${rainStr ? `<div class="wd-rain">${rainStr}</div>` : ''}
-    </div>`;
-  }).join('');
-
-  warn.classList.toggle('show', hasWarning);
-}
-
-/* =============================================================
-   RULES TOGGLE
-   ============================================================= */
-function toggleRulesBanner() {
-  const body    = document.getElementById('banner-body');
-  const chevron = document.getElementById('banner-chevron');
-  body.style.display = body.style.display === 'none' ? 'block' : 'none';
-  chevron.classList.toggle('open');
-}
-
-function toggleRules() {
-  const body    = document.getElementById('rules-body');
-  const chevron = document.getElementById('rules-chevron');
-  body.classList.toggle('open');
-  chevron.classList.toggle('open');
-}
-
-/* =============================================================
-   STATE
-   ============================================================= */
-let token = null;
-let services = [];
-let unitId = null;
-let state = {
-  step: 1,
-  serviceId: null,
-  serviceName: '',
-  servicePrice: 0,
-  serviceDuration: 0,
-  year: new Date().getFullYear(),
-  month: new Date().getMonth() + 1,
-  availableDates: [],
-  selectedDate: null,
-  selectedDateLabel: '',
-  selectedTime: null,
-  adults: 1,
-  children: 0,
-};
-
-const monthNames = ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
-const dayShort   = ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
-
-/* =============================================================
-   SIMPLYBOOK JSON-RPC HELPER
-   ============================================================= */
-let rpcId = 1;
-
-async function rpc(method, params = [], path = 'main') {
-  const headers = { 'Content-Type': 'application/json', 'X-Path': path };
-  if (path !== 'login' && token) {
-    headers['X-Company-Login'] = CONFIG.company;
-    headers['X-Token']         = token;
-  }
-  const body = JSON.stringify({ jsonrpc: '2.0', id: rpcId++, method, params });
-  const res  = await fetch(CONFIG.endpoint, { method: 'POST', headers, body });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message || 'API-fel');
-  return data.result;
-}
-
-async function getToken() {
-  return await rpc('getToken', [CONFIG.company, CONFIG.apiKey], 'login');
-}
-
-/* =============================================================
-   INIT
-   ============================================================= */
-async function init() {
-  applyConfig();
-  try {
-    token    = await getToken();
-    loadWeather();
-    const units = await rpc('getUnitList');
-    const unitList = Object.values(units || {});
-    unitId = unitList.length > 0 ? unitList[0].id : null;
-    services = await rpc('getEventList');
-    renderServices();
-    hideLoading();
-  } catch (err) {
-    showError(`Kunde inte ansluta till bokningssystemet.<br><small>${err.message}</small><br><br>Kontrollera att API-nycklar och Company Login är ifyllda i CONFIG-objektet.`);
-    hideLoading();
-  }
-}
-
-function applyConfig() {
-  document.getElementById('widget-eyebrow').textContent   = CONFIG.eyebrow;
-  document.getElementById('widget-title').innerHTML       = `${CONFIG.title}<br><em>${CONFIG.titleItalic}</em>`;
-  document.getElementById('widget-subtitle').textContent  = CONFIG.subtitle;
-}
-
-function hideLoading() {
-  const ls = document.getElementById('loading-screen');
-  ls.classList.add('hidden');
-  setTimeout(() => ls.remove(), 600);
-  document.getElementById('widget-wrap').classList.add('visible');
-}
-
-function showError(msg) {
-  const b = document.getElementById('error-banner');
-  b.innerHTML = '⚠️ ' + msg;
-  b.classList.add('show');
-}
-
-/* =============================================================
-   STEP 1 – SERVICES
-   ============================================================= */
-function renderServices() {
-  const grid = document.getElementById('service-grid');
-  if (!services || Object.keys(services).length === 0) {
-    grid.innerHTML = '<div style="color:var(--muted);font-size:13px">Inga tjänster hittades i SimplyBook.</div>';
-    return;
-  }
-  const list = Object.values(services);
-  grid.innerHTML = list.map(s => `
-    <div class="service-card" onclick="selectService('${s.id}', '${escHtml(s.name)}', ${s.price || 0}, ${s.duration || 60})" id="svc-${s.id}">
-      <div class="check">✓</div>
-      <div class="service-name">${s.name}</div>
-      <div class="service-meta">
-        ${s.duration ? `⏱ ${s.duration} min` : ''}
-        ${s.position ? '' : ''}
-      </div>
-      ${s.price ? `<div class="service-price">${formatPrice(s.price)}</div>` : ''}
-    </div>
-  `).join('');
-
-  showSummary();
-}
-
-function selectService(id, name, price, duration) {
-  document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-  const card = document.getElementById('svc-' + id);
-  if (card) card.classList.add('selected');
-  state.serviceId       = id;
-  state.serviceName     = name;
-  state.servicePrice    = parseFloat(price) || 0;
-  state.serviceDuration = duration;
-  // Move to step 2
-  setTimeout(() => showCalendar(), 250);
-}
-
-/* =============================================================
-   STEP 2 – CALENDAR
-   ============================================================= */
-async function showCalendar() {
-  setStep(2);
-  show('panel-calendar');
-  show('summary-panel');
-  updateSummary();
-  await loadCalendar();
-}
-
-async function loadCalendar() {
-  const label = document.getElementById('cal-month-label');
-  const content = document.getElementById('cal-content');
-  label.textContent = `${monthNames[state.month - 1]} ${state.year}`;
-  content.innerHTML = '<div class="cal-loading">Hämtar tillgängliga datum…</div>';
-
-  // Disable nav during load
-  document.getElementById('cal-prev').disabled = true;
-  document.getElementById('cal-next').disabled = true;
-
-  try {
-    // getWorkCalendar returns array of dates with available slots
-    const result = await rpc('getWorkCalendar', [state.year, state.month, unitId]);
-    // result is an object: { "2025-03-15": 1, ... } (1 = available)
-    state.availableDates = Object.keys(result || {}).filter(d => result[d] && parseInt(result[d].is_day_off) === 0);
-    renderCalendar();
-  } catch(e) {
-    content.innerHTML = `<div class="cal-loading" style="color:var(--error)">Kunde inte hämta datum: ${e.message}</div>`;
-  }
-
-  const today = new Date();
-  document.getElementById('cal-prev').disabled = (state.year === today.getFullYear() && state.month <= today.getMonth() + 1);
-  document.getElementById('cal-next').disabled = false;
-}
-
-function renderCalendar() {
-  const y = state.year, m = state.month;
-  const firstDay   = new Date(y, m - 1, 1).getDay(); // 0=sun
-  const daysInMonth= new Date(y, m, 0).getDate();
-  const offset     = (firstDay + 6) % 7; // Mon-based
-
-  let html = dayShort.map(d => `<div class="cal-label">${d}</div>`).join('');
-  for (let i = 0; i < offset; i++) html += '<div class="cal-day empty"></div>';
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dayObj  = new Date(y, m - 1, d);
-    const isPast  = dayObj < today;
-    const isAvail = state.availableDates.includes(dateStr);
-    const isSel   = state.selectedDate === dateStr;
-
-    let cls = 'cal-day';
-    if (isPast)    cls += ' past';
-    else if (isSel)cls += ' selected available';
-    else if (isAvail) cls += ' available';
-
-    const click = isAvail && !isPast ? `onclick="selectDate('${dateStr}', ${d})"` : '';
-    html += `<div class="${cls}" ${click}>${d}</div>`;
-  }
-
-  document.getElementById('cal-content').innerHTML = `<div class="cal-grid">${html}</div>`;
-}
-
-async function changeMonth(dir) {
-  state.month += dir;
-  if (state.month > 12) { state.month = 1;  state.year++; }
-  if (state.month < 1)  { state.month = 12; state.year--; }
-  state.selectedDate = null;
-  hide('panel-time');
-  await loadCalendar();
-}
-
-async function selectDate(dateStr, day) {
-  state.selectedDate      = dateStr;
-  state.selectedDateLabel = `${day} ${monthNames[state.month - 1]} ${state.year}`;
-  renderCalendar();
-  renderWeather(dateStr);
-  await showTimeSlots();
-}
-
-/* =============================================================
-   STEP 3 – TIME SLOTS
-   ============================================================= */
-async function showTimeSlots() {
-  setStep(3);
-  show('panel-time');
-  document.getElementById('selected-date-label').textContent = state.selectedDateLabel;
-  document.getElementById('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Hämtar tillgängliga tider…</div>';
-
-  try {
-    // getStartTimeMatrix returns available start times
-    const result = await rpc('getStartTimeMatrix', [
-      state.selectedDate,
-      state.selectedDate,
-      state.serviceId,
-      unitId,
-      null
-    ]);
-    // result: { "2025-03-15": { "10:00:00": 1, ... } }
-    // Response can be object { "10:00:00": 1 } or array of time strings
-    const raw = result[state.selectedDate] || {};
-    let timesObj = {};
-    if (Array.isArray(raw)) {
-      raw.forEach(t => { timesObj[t] = 1; });
-    } else {
-      timesObj = raw;
-    }
-    const times = Object.keys(timesObj).filter(t => t.includes(':'));
-
-    if (times.length === 0) {
-      document.getElementById('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Inga lediga tider denna dag.</div>';
+    const res = await fetch('/.netlify/functions/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Pin': pin },
+      body: JSON.stringify({ filter: { on_page: 1, page: 1 } }),
+    });
+    if (res.status === 401) {
+      pinError();
       return;
     }
+    // PIN OK
+    sessionStorage.setItem('sb_pin', pin);
+    currentPin = pin;
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display  = 'block';
+    loadBookings();
+    loadDashWeather();
+  } catch(e) {
+    pinError();
+  }
+}
 
-    document.getElementById('time-grid').innerHTML = times.map(t => {
-      const display = t.substring(0, 5); // "10:00"
-      const avail   = timesObj[t];
-      return `<div class="time-pill ${avail ? '' : 'booked'}" onclick="${avail ? `selectTime('${t}','${display}')` : ''}">${display}</div>`;
+function pinError() {
+  pinBuffer = '';
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('d' + i);
+    d.classList.remove('filled');
+    d.classList.add('error');
+  }
+  document.getElementById('pin-error').textContent = 'Fel PIN-kod, försök igen';
+  setTimeout(() => {
+    for (let i = 0; i < 4; i++) document.getElementById('d' + i).classList.remove('error');
+    document.getElementById('pin-error').textContent = '';
+  }, 1200);
+}
+
+function logout() {
+  sessionStorage.removeItem('sb_pin');
+  currentPin = '';
+  document.getElementById('pin-screen').style.display = 'flex';
+  document.getElementById('dashboard').style.display  = 'none';
+  pinBuffer = '';
+  updateDots();
+}
+
+
+// Weather
+const LAT = 56.47739536235032, LNG = 14.690764677283862;
+const WMO_ICONS = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
+const WMO_WARN_CODES = [65,75,82,95,96,99];
+const MON_SV = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+const DAY_SV = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+
+async function loadDashWeather() {
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm';
+    const res  = await fetch(url);
+    const data = await res.json();
+    const d    = data.daily;
+    const todayStr = new Date().toISOString().split('T')[0];
+    let hasWarn = false;
+
+    document.getElementById('weather-row').innerHTML = (d.time || []).map(function(date, i) {
+      const dt     = new Date(date);
+      const isToday = date === todayStr;
+      const icon   = WMO_ICONS[d.weathercode[i]] || '🌡';
+      if (WMO_WARN_CODES.includes(d.weathercode[i])) hasWarn = true;
+      const rain   = d.precipitation_sum[i] > 0 ? Math.round(d.precipitation_sum[i]) + 'mm' : '';
+      return '<div class="w-card ' + (isToday ? 'today' : '') + '">'
+        + '<div class="w-date">' + (isToday ? 'Idag' : DAY_SV[dt.getDay()] + ' ' + dt.getDate() + ' ' + MON_SV[dt.getMonth()]) + '</div>'
+        + '<div class="w-icon">' + icon + '</div>'
+        + '<div class="w-temp">' + Math.round(d.temperature_2m_max[i]) + '° / ' + Math.round(d.temperature_2m_min[i]) + '°</div>'
+        + (rain ? '<div class="w-rain">' + rain + '</div>' : '')
+        + '</div>';
     }).join('');
 
+    if (hasWarn) document.getElementById('w-warn').classList.add('show');
   } catch(e) {
-    document.getElementById('time-grid').innerHTML = `<div style="color:var(--error);font-size:13px">Fel: ${e.message}</div>`;
+    document.getElementById('weather-row').innerHTML = '<span style="color:var(--muted);font-size:13px">Väder ej tillgängligt</span>';
   }
 }
 
-function selectTime(time, display) {
-  document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('selected'));
-  event.target.classList.add('selected');
-  state.selectedTime        = time;
-  state.selectedTimeDisplay = display;
-  updateSummary();
-  setTimeout(() => showForm(), 250);
-}
+// ── Data ───────────────────────────────────────
+let currentPin    = savedPin;
+let allBookings   = [];
+let activeFilter  = 'all';
+let searchQuery   = '';
 
-/* =============================================================
-   STEP 4 – FORM
-   ============================================================= */
-function showForm() {
-  setStep(4);
-  show('panel-form');
-  show('rules-panel');
-  updateSummary();
-  updateCTA('Slutför bokning');
-}
+const monthSv = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
 
-function changeGuests(type, delta) {
-  if (type === 'adult') {
-    state.adults = Math.max(1, state.adults + delta);
-    document.getElementById('cnt-adult').textContent = state.adults;
-  } else {
-    state.children = Math.max(0, state.children + delta);
-    document.getElementById('cnt-child').textContent = state.children;
-  }
-  updateSummary();
-}
-
-/* =============================================================
-   SUMMARY
-   ============================================================= */
-function showSummary() {
-  show('summary-panel');
-  updateSummary();
-}
-
-function updateSummary() {
-  document.getElementById('sum-tour').textContent = state.serviceName || 'Välj en tur ovan';
-  const total = state.servicePrice * state.adults + state.servicePrice * 0.5 * state.children;
-  document.getElementById('sum-price').textContent = state.servicePrice ? formatPrice(total) : '';
-  if (state.selectedDate && state.selectedTimeDisplay) {
-    document.getElementById('sum-meta').textContent =
-      `${state.selectedDateLabel} · ${state.selectedTimeDisplay} · ${state.adults} vuxna${state.children ? ', ' + state.children + ' barn' : ''}`;
-  } else if (state.selectedDate) {
-    document.getElementById('sum-meta').textContent = state.selectedDateLabel + ' · Välj tid';
-  } else {
-    document.getElementById('sum-meta').textContent = 'Välj datum och tid';
-  }
-}
-
-function updateCTA(label) {
-  document.getElementById('cta-btn').textContent = label;
-}
-
-/* =============================================================
-   BOOKING SUBMIT
-   ============================================================= */
-async function handleCTA() {
-  if (state.step < 4) return;
-
-  // Validate
-  const fname = val('f-name'), lname = val('f-lname'), email = val('f-email');
-  let ok = true;
-  if (!fname)  { markError('f-name');  ok = false; }
-  if (!lname)  { markError('f-lname'); ok = false; }
-  if (!email || !email.includes('@')) { markError('f-email'); ok = false; }
-  if (!ok) return;
-
-  const btn = document.getElementById('cta-btn');
-  btn.disabled = true;
-  btn.textContent = 'Bokar…';
+async function loadBookings() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  setTableLoading();
 
   try {
-    // book(, , , , , , )
-    const result = await rpc('book', [
-      state.serviceId,
-      unitId,
-      state.selectedDate,
-      state.selectedTime,
-      {
-        name:       fname + ' ' + lname,
-        first_name: fname,
-        last_name:  lname,
-        email:      email,
-        phone:      val('f-phone') || '',
-      },
-      { comment: val('f-note') || '' },
-      state.adults + state.children,
-    ]);
+    const res  = await fetch('/.netlify/functions/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Pin': currentPin },
+      body: JSON.stringify({ filter: {} }),
+    });
+    const data = await res.json();
 
-    showConfirmation(result);
+    if (data.error) throw new Error(data.error);
+
+    // data.bookings can be array or object with 'data' key
+    allBookings = Array.isArray(data.bookings)
+      ? data.bookings
+      : (data.bookings?.data || []);
+
+    updateStats();
+    renderBookings();
   } catch(e) {
-    showError(`Bokningen misslyckades: ${e.message}`);
-    btn.disabled = false;
-    btn.textContent = 'Slutför bokning';
+    document.getElementById('booking-tbody').innerHTML =
+      `<tr class="empty-row"><td colspan="5">Kunde inte hämta bokningar: ${e.message}</td></tr>`;
   }
+
+  btn.classList.remove('spinning');
 }
 
-function showConfirmation(result) {
-  const total = state.servicePrice * state.adults + state.servicePrice * 0.5 * state.children;
-  document.getElementById('confirm-card').innerHTML = `
-    <strong>Tur:</strong> ${state.serviceName}<br>
-    <strong>Datum:</strong> ${state.selectedDateLabel}<br>
-    <strong>Tid:</strong> ${state.selectedTimeDisplay}<br>
-    <strong>Deltagare:</strong> ${state.adults} vuxna${state.children ? ', ' + state.children + ' barn' : ''}<br>
-    ${total ? `<strong>Totalt:</strong> ${formatPrice(total)}` : ''}
-    ${result && result.id ? `<br><strong>Boknings-ID:</strong> #${result.id}` : ''}
-  `;
-  hide('booking-view');
-  show('confirm-view', 'show');
+function updateStats() {
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
+
+  const todayList    = allBookings.filter(b => isSameDay(parseDate(b.start_date_time), today));
+  const weekList     = allBookings.filter(b => { const d = parseDate(b.start_date_time); return d >= today && d <= weekEnd; });
+  const upcomingList = allBookings.filter(b => parseDate(b.start_date_time) >= today);
+
+  document.getElementById('stat-today').textContent    = todayList.length;
+  document.getElementById('stat-week').textContent     = weekList.length;
+  document.getElementById('stat-upcoming').textContent = upcomingList.length;
+  document.getElementById('stat-total').textContent    = allBookings.length;
 }
 
-function resetWidget() {
-  // Full reset
-  state = { step:1, serviceId:null, serviceName:'', servicePrice:0, serviceDuration:0,
-            year: new Date().getFullYear(), month: new Date().getMonth()+1,
-            availableDates:[], selectedDate:null, selectedDateLabel:'',
-            selectedTime:null, selectedTimeDisplay:'', adults:1, children:0 };
-  hide('confirm-view', 'show'); show('booking-view');
-  hide('panel-calendar'); hide('panel-time'); hide('panel-form');
-  document.getElementById('cnt-adult').textContent = 1;
-  document.getElementById('cnt-child').textContent = 0;
-  ['f-name','f-lname','f-email','f-phone','f-note'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBookings();
+}
+
+function searchBookings(q) {
+  searchQuery = q.toLowerCase();
+  renderBookings();
+}
+
+function renderBookings() {
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  let list = allBookings.filter(b => {
+    const d = parseDate(b.start_date_time);
+    if (activeFilter === 'today')    return isSameDay(d, today);
+    if (activeFilter === 'upcoming') return d >= today;
+    if (activeFilter === 'past')     return d < today;
+    return true;
   });
-  document.getElementById('error-banner').classList.remove('show');
-  setStep(1);
-  updateSummary();
-  updateCTA('Fortsätt →');
-}
 
-/* =============================================================
-   NAVIGATION
-   ============================================================= */
-function goBack(from) {
-  if (from === 'calendar') {
-    hide('panel-calendar'); hide('panel-time'); hide('panel-time');
-    hide('summary-panel'); setStep(1);
-    state.selectedDate = null; state.selectedTime = null;
-  } else if (from === 'time') {
-    hide('panel-time'); hide('panel-form');
-    setStep(2); state.selectedTime = null;
-    updateCTA('Fortsätt →');
-  } else if (from === 'form') {
-    hide('panel-form'); setStep(3);
-    updateCTA('Fortsätt →');
+  if (searchQuery) {
+    list = list.filter(b =>
+      (b.client_name  || '').toLowerCase().includes(searchQuery) ||
+      (b.event_name   || '').toLowerCase().includes(searchQuery) ||
+      (b.client_email || '').toLowerCase().includes(searchQuery) ||
+      (b.client_phone || '').toLowerCase().includes(searchQuery)
+    );
   }
-  updateSummary();
+
+  // Sort by date desc
+  list.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time));
+
+  document.getElementById('booking-count').textContent = `${list.length} bokningar`;
+
+  if (list.length === 0) {
+    document.getElementById('booking-tbody').innerHTML =
+      '<tr class="empty-row"><td colspan="5">Inga bokningar hittades</td></tr>';
+    return;
+  }
+
+  document.getElementById('booking-tbody').innerHTML = list.map(b => {
+    const d       = parseDate(b.start_date_time);
+    const dateStr = `${d.getDate()} ${monthSv[d.getMonth()]} ${d.getFullYear()}`;
+    const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const status  = getStatus(b);
+    const guests  = b.count ? `👥 ${b.count}` : '—';
+
+    return `
+      <tr class="booking-row">
+        <td>
+          <div class="client-name">${esc(b.client_name || '—')}</div>
+          <div class="client-contact">
+            ${b.client_email ? `✉ ${esc(b.client_email)}` : ''}
+            ${b.client_phone ? ` · 📞 ${esc(b.client_phone)}` : ''}
+          </div>
+        </td>
+        <td class="date-cell">
+          <div class="date-main">${dateStr}</div>
+          <div class="date-time">🕐 ${timeStr}</div>
+        </td>
+        <td><span class="service-tag">${esc(b.event_name || '—')}</span></td>
+        <td class="guests-cell">${guests}</td>
+        <td>${statusBadge(status)}</td>
+      </tr>`;
+  }).join('');
 }
 
-function setStep(n) {
-  state.step = n;
-  [1,2,3,4].forEach(i => {
-    const el = document.getElementById('s' + i);
-    el.classList.remove('active','done');
-    if (i < n)  el.classList.add('done');
-    if (i === n) el.classList.add('active');
-  });
+function setTableLoading() {
+  document.getElementById('booking-tbody').innerHTML =
+    '<tr class="loading-row"><td colspan="5"><div class="spinner-sm"></div><br>Hämtar bokningar…</td></tr>';
 }
 
-/* =============================================================
-   UTILS
-   ============================================================= */
-function show(id, cls='') {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (cls) el.classList.add(cls);
-  else el.style.display = '';
-}
-function hide(id, cls='') {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (cls) el.classList.remove(cls);
-  else el.style.display = 'none';
-}
-function val(id) { return (document.getElementById(id)?.value || '').trim(); }
-function markError(id) {
-  const el = document.getElementById(id);
-  if (el) { el.classList.add('error'); el.addEventListener('input', () => el.classList.remove('error'), { once: true }); }
-}
-function formatPrice(p) {
-  return new Intl.NumberFormat('sv-SE', { style:'currency', currency: CONFIG.currency, maximumFractionDigits:0 }).format(p);
-}
-function escHtml(s) { return s.replace(/'/g,"&#39;").replace(/"/g,"&quot;"); }
+// ── Helpers ────────────────────────────────────
+function parseDate(str) { return new Date(str); }
+function isSameDay(a, b) { return a.toDateString() === b.toDateString(); }
+function esc(s) { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-/* =============================================================
-   START
-   ============================================================= */
-init();
+function getStatus(b) {
+  if (b.status === 'canceled' || b.canceled) return 'cancelled';
+  if (b.approved == 0) return 'pending';
+  return 'confirmed';
+}
+
+function statusBadge(s) {
+  const labels = { confirmed: 'Bekräftad', pending: 'Väntar', cancelled: 'Avbokad' };
+  return `<span class="status-badge ${s}"><span class="status-dot"></span>${labels[s]}</span>`;
+}
 </script>
 </body>
 </html>
