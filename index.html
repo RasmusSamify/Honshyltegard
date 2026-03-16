@@ -504,7 +504,7 @@
    ============================================================= */
 const CONFIG = {
   company:    'samify',
-  apiKey:     'd29c2ad05d93316723b70febc1666c64dc574c96766916f433201d401ce97940',
+  apiKey:     'd575a27bbbfb71ad1231b98ea34b9ea7323c4d715f1700e6892019875aac3880',
   endpoint:   '/.netlify/functions/simplybook',
   currency:   'SEK',
   // Valfritt: anpassa texterna
@@ -659,9 +659,9 @@ async function loadCalendar() {
 
   try {
     // getWorkCalendar returns array of dates with available slots
-    const result = await rpc('getWorkCalendar', [state.serviceId, unitId, state.year, state.month, null]);
+    const result = await rpc('getWorkCalendar', [state.year, state.month, unitId]);
     // result is an object: { "2025-03-15": 1, ... } (1 = available)
-    state.availableDates = Object.keys(result || {}).filter(d => result[d] > 0);
+    state.availableDates = Object.keys(result || {}).filter(d => result[d] && parseInt(result[d].is_day_off) === 0);
     renderCalendar();
   } catch(e) {
     content.innerHTML = `<div class="cal-loading" style="color:var(--error)">Kunde inte hämta datum: ${e.message}</div>`;
