@@ -504,7 +504,7 @@
    ============================================================= */
 const CONFIG = {
   company:    'samify',
-  apiKey:     'd29c2ad05d93316723b70febc1666c64dc574c96766916f433201d401ce97940',
+  apiKey:     'd575a27bbbfb71ad1231b98ea34b9ea7323c4d715f1700e6892019875aac3880',
   endpoint:   '/.netlify/functions/simplybook',
   currency:   'SEK',
   // Valfritt: anpassa texterna
@@ -519,6 +519,7 @@ const CONFIG = {
    ============================================================= */
 let token = null;
 let services = [];
+let unitId = null;
 let state = {
   step: 1,
   serviceId: null,
@@ -567,6 +568,9 @@ async function init() {
   applyConfig();
   try {
     token    = await getToken();
+    const units = await rpc('getUnitList');
+    const unitList = Object.values(units || {});
+    unitId = unitList.length > 0 ? unitList[0].id : null;
     services = await rpc('getEventList');
     renderServices();
     hideLoading();
@@ -655,7 +659,7 @@ async function loadCalendar() {
 
   try {
     // getWorkCalendar returns array of dates with available slots
-    const result = await rpc('getWorkCalendar', [state.serviceId, null, state.year, state.month, null]);
+    const result = await rpc('getWorkCalendar', [state.serviceId, unitId, state.year, state.month, null]);
     // result is an object: { "2025-03-15": 1, ... } (1 = available)
     state.availableDates = Object.keys(result || {}).filter(d => result[d] > 0);
     renderCalendar();
@@ -728,7 +732,7 @@ async function showTimeSlots() {
       state.selectedDate,
       state.selectedDate,
       state.serviceId,
-      null,
+      unitId,
       null
     ]);
     // result: { "2025-03-15": { "10:00:00": 1, ... } }
