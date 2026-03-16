@@ -228,6 +228,32 @@
   }
   .booking-count { font-size: 13px; color: var(--muted); }
 
+
+  /* Weather */
+  .weather-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px;
+    margin-bottom: 24px; animation: fadeUp 0.4s 0.18s ease both;
+  }
+  .weather-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 600; color: var(--text);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .weather-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .w-card {
+    flex: 1; min-width: 70px; max-width: 100px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 8px; text-align: center;
+  }
+  .w-card.today { border-color: var(--green); background: var(--green-xs); }
+  .w-date  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .w-icon  { font-size: 22px; margin-bottom: 6px; }
+  .w-temp  { font-size: 13px; font-weight: 600; color: var(--text); }
+  .w-rain  { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .w-warn  { margin-top: 12px; padding: 10px 14px; background: rgba(200,146,42,0.12); border-radius: 8px; font-size: 12px; color: var(--amber); display: none; }
+  .w-warn.show { display: block; }
+
   /* Animations ───────────────────────────── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
@@ -320,6 +346,13 @@
         <div class="stat-value" id="stat-total">—</div>
         <div class="stat-sub">alla bokningar</div>
       </div>
+    </div>
+
+    <!-- Weather -->
+    <div class="weather-section">
+      <div class="weather-section-title">🌤 Väderprognos – 10 dagar</div>
+      <div class="weather-row" id="weather-row"><span style="color:var(--muted);font-size:13px">Laddar väder…</span></div>
+      <div class="w-warn" id="w-warn">⚡ Extremt väder i prognosen – kontrollera om promenader behöver ställas in.</div>
     </div>
 
     <!-- Filter -->
@@ -419,6 +452,7 @@ async function unlockDashboard(pin) {
     document.getElementById('pin-screen').style.display = 'none';
     document.getElementById('dashboard').style.display  = 'block';
     loadBookings();
+    loadDashWeather();
   } catch(e) {
     pinError();
   }
@@ -445,6 +479,43 @@ function logout() {
   document.getElementById('dashboard').style.display  = 'none';
   pinBuffer = '';
   updateDots();
+}
+
+
+// Weather
+const LAT = 56.8, LNG = 14.8;
+const WMO_ICONS = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
+const WMO_WARN_CODES = [65,75,82,95,96,99];
+const MON_SV = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+const DAY_SV = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+
+async function loadDashWeather() {
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm';
+    const res  = await fetch(url);
+    const data = await res.json();
+    const d    = data.daily;
+    const todayStr = new Date().toISOString().split('T')[0];
+    let hasWarn = false;
+
+    document.getElementById('weather-row').innerHTML = (d.time || []).map(function(date, i) {
+      const dt     = new Date(date);
+      const isToday = date === todayStr;
+      const icon   = WMO_ICONS[d.weathercode[i]] || '🌡';
+      if (WMO_WARN_CODES.includes(d.weathercode[i])) hasWarn = true;
+      const rain   = d.precipitation_sum[i] > 0 ? Math.round(d.precipitation_sum[i]) + 'mm' : '';
+      return '<div class="w-card ' + (isToday ? 'today' : '') + '">'
+        + '<div class="w-date">' + (isToday ? 'Idag' : DAY_SV[dt.getDay()] + ' ' + dt.getDate() + ' ' + MON_SV[dt.getMonth()]) + '</div>'
+        + '<div class="w-icon">' + icon + '</div>'
+        + '<div class="w-temp">' + Math.round(d.temperature_2m_max[i]) + '° / ' + Math.round(d.temperature_2m_min[i]) + '°</div>'
+        + (rain ? '<div class="w-rain">' + rain + '</div>' : '')
+        + '</div>';
+    }).join('');
+
+    if (hasWarn) document.getElementById('w-warn').classList.add('show');
+  } catch(e) {
+    document.getElementById('weather-row').innerHTML = '<span style="color:var(--muted);font-size:13px">Väder ej tillgängligt</span>';
+  }
 }
 
 // ── Data ───────────────────────────────────────
