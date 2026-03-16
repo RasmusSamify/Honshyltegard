@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Boka Alpackapromenad</title> 
+<title>Boka Alpackapromenad</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
@@ -123,6 +123,27 @@
   }
   .deco-line hr { flex: 1; max-width: 80px; border: none; border-top: 1px solid var(--border); }
   .deco-line span { font-size: 22px; }
+
+
+  /* Rules banner top */
+  .rules-banner {
+    background: var(--green-xs);
+    border: 1.5px solid var(--green-lt);
+    border-radius: var(--radius);
+    padding: 16px 22px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+  .rules-banner-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .rules-banner-title {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--green);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .rules-banner-body { margin-top: 16px; }
 
   /* ── Steps indicator ────────────────────────── */
   .steps-bar {
@@ -438,6 +459,25 @@
   <!-- Main booking view -->
   <div id="booking-view">
 
+    <!-- Rules banner -->
+    <div class="rules-banner">
+      <div class="rules-banner-header" onclick="toggleRulesBanner()">
+        <div class="rules-banner-title"><span>📋</span> Läs reglerna innan du bokar</div>
+        <span class="rules-chevron" id="banner-chevron">▼</span>
+      </div>
+      <div class="rules-banner-body" id="banner-body" style="display:none">
+        <ul class="rules-list">
+          <li data-icon="🐾">Det är inte tillåtet att ta med andra djur under promenaden.</li>
+          <li data-icon="📵">Mobiltelefoner ska vara på ljudlöst.</li>
+          <li data-icon="🚭">Rökning är förbjuden.</li>
+          <li data-icon="🚫">Barnvagn, rullstol och rullator är inte möjligt att ta med på rundan.</li>
+          <li data-icon="🦙">Vi har rätt att avvisa personer som stör eller stressar djuren.</li>
+          <li data-icon="🧘">Kom ihåg att vara lugn, denna stund ska vara harmonisk för både människor och djur.</li>
+        </ul>
+        <div class="rules-note">👕 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
+      </div>
+    </div>
+
     <!-- Steps -->
     <div class="steps-bar" id="steps-bar">
       <div class="step-item active" id="s1"><div class="step-dot">1</div><span>Välj tur</span></div>
@@ -470,7 +510,7 @@
         <div class="cal-loading">Hämtar tillgängliga datum…</div>
       </div>
       <div id="weather-wrap" style="margin-top:20px;display:none">
-        <div class="panel-title" style="margin-bottom:10px"><span>🌤</span> Väderprognos 10 dagar</div>
+        <div class="panel-title" style="margin-bottom:10px"><span>🌤</span> Väderprognos 10 dagar – Hönshylte Gård</div>
         <div class="weather-strip" id="weather-strip"></div>
         <div class="weather-warning" id="weather-warning">⚡ Observera: Prognosen visar extremt väder. Promenaden kan komma att ställas in – vi kontaktar dig vid behov.</div>
       </div>
@@ -664,6 +704,13 @@ function renderWeather(highlightDate) {
 /* =============================================================
    RULES TOGGLE
    ============================================================= */
+function toggleRulesBanner() {
+  const body    = document.getElementById('banner-body');
+  const chevron = document.getElementById('banner-chevron');
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+  chevron.classList.toggle('open');
+}
+
 function toggleRules() {
   const body    = document.getElementById('rules-body');
   const chevron = document.getElementById('rules-chevron');
