@@ -517,6 +517,15 @@ function pinError() {
   document.getElementById('pin-error').textContent = 'Fel PIN-kod';
   setTimeout(() => { for(let i=0;i<4;i++) document.getElementById('d'+i).classList.remove('error'); document.getElementById('pin-error').textContent=''; }, 1400);
 }
+
+// Keyboard support
+document.addEventListener('keydown', function(e) {
+  if (document.getElementById('pin-screen').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+  if (e.key === 'Backspace') pinDel();
+  if (e.key === 'Enter' && pinBuf.length === 4) tryUnlock(pinBuf);
+});
+
 function logout() { sessionStorage.removeItem('sb_pin'); location.reload(); }
 
 // ── API ──────────────────────────────────
@@ -669,6 +678,7 @@ function initSlotForm() {
   ).join('');
 
   // Time chips
+  selectedTimes = []; skipDays = [];
   document.getElementById('time-chips').innerHTML = TIMES.map(t =>
     '<div class="chip" data-time="' + t + '" onclick="toggleChip(this,\'time\')">' + t + '</div>'
   ).join('');
@@ -686,14 +696,10 @@ function toggleChip(el, group) {
   el.classList.toggle('on');
   if (group === 'time') {
     const t = el.dataset.time;
-    selectedTimes = el.classList.contains('on')
-      ? [...selectedTimes, t]
-      : selectedTimes.filter(x => x !== t);
+    selectedTimes = el.classList.contains('on') ? [...selectedTimes, t] : selectedTimes.filter(x => x !== t);
   } else {
-    const d = parseInt(el.dataset.day);
-    skipDays = el.classList.contains('on')
-      ? [...skipDays, d]
-      : skipDays.filter(x => x !== d);
+    const day = parseInt(el.dataset.day);
+    skipDays = el.classList.contains('on') ? [...skipDays, day] : skipDays.filter(x => x !== day);
   }
 }
 
