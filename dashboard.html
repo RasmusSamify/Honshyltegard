@@ -3,288 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hönshyltegård – Bokningsöversikt</title>
+<title>Hönshyltegård – Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:       #1A1612;
-    --surface:  #231E19;
-    --surface2: #2C2620;
-    --border:   #3A3228;
-    --green:    #7AB87A;
-    --green-dk: #4A7A4A;
-    --green-xs: rgba(122,184,122,0.1);
-    --amber:    #C8922A;
-    --amber-xs: rgba(200,146,42,0.12);
-    --red:      #C06060;
-    --red-xs:   rgba(192,96,96,0.12);
-    --text:     #EDE8E0;
-    --muted:    #7A7060;
-    --muted2:   #4A4438;
-    --radius:   12px;
-  }
+:root{--bg:#1A1612;--surface:#231E19;--surface2:#2C2620;--border:#3A3228;--green:#7AB87A;--green-dk:#4A7A4A;--green-xs:rgba(122,184,122,0.1);--amber:#C8922A;--amber-xs:rgba(200,146,42,0.12);--red:#C06060;--red-xs:rgba(192,96,96,0.12);--text:#EDE8E0;--muted:#7A7060;--muted2:#4A4438;--radius:12px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+/* PIN */
+#pin-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.pin-box{text-align:center;max-width:340px;width:100%}
+.pin-icon{font-size:48px;margin-bottom:20px}
+.pin-box h1{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--text);margin-bottom:8px}
+.pin-box p{font-size:14px;color:var(--muted);margin-bottom:28px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:28px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:all 0.2s}
+.pin-dot.filled{background:var(--green);border-color:var(--green)}
+.pin-dot.error{background:var(--red);border-color:var(--red);animation:shake 0.4s ease}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:0 auto}
+.pin-btn{aspect-ratio:1;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:'Jost',sans-serif;font-size:20px;font-weight:500;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center}
+.pin-btn:hover{border-color:var(--green);color:var(--green);background:var(--green-xs)}
+.pin-btn:active{transform:scale(0.92)}
+.pin-btn.del{font-size:16px;color:var(--muted)}
+.pin-btn.empty{pointer-events:none;border:none;background:none}
+.pin-error{font-size:13px;color:var(--red);margin-top:16px;min-height:20px}
 
-  /* ── PIN screen ─────────────────────────── */
-  #pin-screen {
-    min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px;
-  }
-  .pin-box {
-    text-align: center;
-    max-width: 360px; width: 100%;
-  }
-  .pin-icon { font-size: 48px; margin-bottom: 20px; }
-  .pin-box h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 32px; font-weight: 600;
-    color: var(--text); margin-bottom: 8px;
-  }
-  .pin-box p { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+/* Layout */
+#dashboard{display:none}
+.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:12px;color:var(--muted)}
+.logout-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s}
+.logout-btn:hover{border-color:var(--muted);color:var(--text)}
 
-  .pin-dots {
-    display: flex; justify-content: center; gap: 14px;
-    margin-bottom: 28px;
-  }
-  .pin-dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 2px solid var(--border);
-    transition: all 0.2s;
-  }
-  .pin-dot.filled { background: var(--green); border-color: var(--green); }
-  .pin-dot.error  { background: var(--red);   border-color: var(--red); animation: shake 0.4s ease; }
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 24px;background:var(--surface)}
+.tab-btn{font-family:'Jost',sans-serif;font-size:13px;font-weight:500;padding:14px 20px;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s;position:relative;bottom:-1px}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+.tab-btn:hover:not(.active){color:var(--text)}
 
-  .pin-pad {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 10px; max-width: 280px; margin: 0 auto;
-  }
-  .pin-btn {
-    aspect-ratio: 1; border-radius: 50%;
-    border: 1.5px solid var(--border);
-    background: var(--surface); color: var(--text);
-    font-family: 'Jost', sans-serif; font-size: 20px; font-weight: 500;
-    cursor: pointer; transition: all 0.18s;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .pin-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-xs); }
-  .pin-btn:active { transform: scale(0.92); }
-  .pin-btn.del { font-size: 16px; color: var(--muted); }
-  .pin-btn.empty { pointer-events: none; border: none; background: none; }
+.main{max-width:1000px;margin:0 auto;padding:28px 20px 60px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 
-  .pin-error {
-    font-size: 13px; color: var(--red); margin-top: 16px;
-    min-height: 20px; transition: opacity 0.3s;
-  }
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--text)}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:2px}
 
-  /* ── Dashboard ──────────────────────────── */
-  #dashboard { display: none; }
+/* Weather */
+.weather-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:24px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.section-title span{font-size:14px}
+.weather-row{display:flex;gap:8px;flex-wrap:wrap}
+.w-card{flex:1;min-width:70px;max-width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 7px;text-align:center}
+.w-card.today{border-color:var(--green);background:var(--green-xs)}
+.w-date{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px}
+.w-icon{font-size:20px;margin-bottom:5px}
+.w-temp{font-size:12px;font-weight:600;color:var(--text)}
+.w-rain{font-size:10px;color:var(--muted);margin-top:2px}
 
-  .topbar {
-    position: sticky; top: 0; z-index: 100;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .topbar-left { display: flex; align-items: center; gap: 12px; }
-  .topbar h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px; font-weight: 600; color: var(--text);
-  }
-  .topbar-sub { font-size: 12px; color: #9A9080; }
-  .topbar-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; color: var(--text); }
-  .logout-btn {
-    background: none; border: 1px solid var(--border);
-    border-radius: 8px; padding: 7px 14px;
-    font-family: 'Jost', sans-serif; font-size: 12px;
-    color: var(--muted); cursor: pointer; transition: all 0.2s;
-  }
-  .logout-btn:hover { border-color: var(--muted); color: var(--text); }
+/* Bookings table */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:7px 14px;border-radius:100px;border:1px solid var(--border);background:none;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s}
+.filter-btn.active{background:var(--green-xs);border-color:var(--green);color:var(--green)}
+.search-wrap{margin-left:auto;position:relative}
+.search-input{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:7px 14px 7px 34px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text);outline:none;width:200px;transition:border-color 0.2s}
+.search-input:focus{border-color:var(--green)}
+.search-input::placeholder{color:var(--muted)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+.booking-table{width:100%;border-collapse:collapse}
+.booking-table th{text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:10px 12px;border-bottom:1px solid var(--border)}
+.booking-row{border-bottom:1px solid var(--border);transition:background 0.15s}
+.booking-row:hover{background:var(--surface2)}
+.booking-row td{padding:12px;font-size:13px;vertical-align:middle}
+.client-name{font-weight:500;color:var(--text)}
+.client-contact{font-size:11px;color:var(--muted);margin-top:2px}
+.service-tag{display:inline-block;padding:3px 9px;border-radius:100px;background:var(--green-xs);color:var(--green);font-size:11px;font-weight:500}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500}
+.status-badge.confirmed{background:var(--green-xs);color:var(--green)}
+.status-badge.cancelled{background:var(--red-xs);color:var(--red)}
+.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.empty-row td,.loading-row td{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.spinner-sm{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:8px}
+.refresh-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px}
+.refresh-btn:hover{border-color:var(--green);color:var(--green)}
+.booking-count{font-size:12px;color:var(--muted)}
 
-  .main { max-width: 1000px; margin: 0 auto; padding: 28px 20px 60px; }
+/* Slot management */
+.slot-manager{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.slot-manager{grid-template-columns:1fr}}
+.slot-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.slot-panel h3{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-group label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
+.form-group input,.form-group select{padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:var(--surface2);color:var(--text);outline:none;transition:border-color 0.2s;width:100%}
+.form-group input:focus,.form-group select:focus{border-color:var(--green)}
+.form-group select option{background:var(--surface2)}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.times-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.time-toggle{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;background:var(--surface2);color:var(--muted)}
+.time-toggle.selected{background:var(--green-xs);border-color:var(--green);color:var(--green)}
+.add-btn{width:100%;padding:11px;background:var(--green-dk);border:none;border-radius:8px;color:white;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s}
+.add-btn:hover{background:var(--green)}
+.add-btn:disabled{opacity:0.5;cursor:not-allowed}
+.slot-success{font-size:12px;color:var(--green);margin-top:8px;min-height:18px;text-align:center}
+.slot-error{font-size:12px;color:var(--red);margin-top:8px;min-height:18px;text-align:center}
 
-  /* ── Stats row ──────────────────────────── */
-  .stats-row {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 12px; margin-bottom: 28px;
-  }
-  @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+/* Slot list */
+.slot-list{max-height:420px;overflow-y:auto}
+.slot-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
+.slot-item:last-child{border-bottom:none}
+.slot-item:hover{background:var(--surface2)}
+.slot-date{font-weight:500;color:var(--text);min-width:90px}
+.slot-time{color:var(--muted)}
+.slot-svc{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--green-xs);color:var(--green)}
+.slot-spots{font-size:11px;color:var(--muted)}
+.slot-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:6px;transition:all 0.18s;line-height:1}
+.slot-delete:hover{color:var(--red);background:var(--red-xs)}
+.slot-filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.slot-filter-btn{padding:5px 12px;border-radius:100px;border:1px solid var(--border);background:none;font-family:'Jost',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all 0.18s}
+.slot-filter-btn.active{background:var(--green-xs);border-color:var(--green);color:var(--green)}
 
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 16px;
-    animation: fadeUp 0.4s ease both;
-  }
-  .stat-card:nth-child(2) { animation-delay: 0.05s; }
-  .stat-card:nth-child(3) { animation-delay: 0.1s; }
-  .stat-card:nth-child(4) { animation-delay: 0.15s; }
-  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-  .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 600; color: var(--text); }
-  .stat-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
-  /* ── Filter bar ─────────────────────────── */
-  .filter-bar {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 20px; flex-wrap: wrap;
-    animation: fadeUp 0.4s 0.2s ease both;
-  }
-  .filter-btn {
-    padding: 8px 16px; border-radius: 100px;
-    border: 1px solid var(--border); background: none;
-    font-family: 'Jost', sans-serif; font-size: 13px;
-    color: var(--muted); cursor: pointer; transition: all 0.2s;
-  }
-  .filter-btn.active { background: var(--green-xs); border-color: var(--green); color: var(--green); }
-  .filter-btn:hover:not(.active) { border-color: var(--muted2); color: var(--text); }
-
-  .search-wrap { margin-left: auto; position: relative; }
-  .search-input {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 100px; padding: 8px 16px 8px 36px;
-    font-family: 'Jost', sans-serif; font-size: 13px;
-    color: var(--text); outline: none; width: 200px;
-    transition: border-color 0.2s;
-  }
-  .search-input:focus { border-color: var(--green); }
-  .search-input::placeholder { color: var(--muted); }
-  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--muted); pointer-events: none; }
-
-  /* ── Booking list ───────────────────────── */
-  .bookings-wrap { animation: fadeUp 0.4s 0.25s ease both; }
-
-  .booking-table {
-    width: 100%; border-collapse: collapse;
-  }
-  .booking-table th {
-    text-align: left; font-size: 11px; font-weight: 600;
-    color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
-    padding: 10px 14px; border-bottom: 1px solid var(--border);
-  }
-  .booking-row {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s; cursor: default;
-  }
-  .booking-row:hover { background: var(--surface2); }
-  .booking-row td { padding: 14px; font-size: 14px; vertical-align: middle; }
-
-  .client-name { font-weight: 500; color: var(--text); }
-  .client-contact { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-  .date-cell { white-space: nowrap; }
-  .date-main { font-weight: 500; }
-  .date-time  { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-  .service-tag {
-    display: inline-block; padding: 4px 10px; border-radius: 100px;
-    background: var(--green-xs); color: var(--green);
-    font-size: 12px; font-weight: 500; white-space: nowrap;
-  }
-
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 10px; border-radius: 100px;
-    font-size: 12px; font-weight: 500;
-  }
-  .status-badge.confirmed { background: var(--green-xs); color: var(--green); }
-  .status-badge.pending   { background: var(--amber-xs); color: var(--amber); }
-  .status-badge.cancelled { background: var(--red-xs);   color: var(--red);   }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-  .guests-cell { font-size: 13px; color: var(--muted); white-space: nowrap; }
-
-  /* Loading / empty ───────────────────────── */
-  .loading-row td, .empty-row td {
-    text-align: center; padding: 48px; color: var(--muted); font-size: 14px;
-  }
-  .spinner-sm {
-    display: inline-block; width: 20px; height: 20px;
-    border: 2px solid var(--border); border-top-color: var(--green);
-    border-radius: 50%; animation: spin 0.8s linear infinite;
-    margin-bottom: 10px;
-  }
-
-  /* Refresh btn ──────────────────────────── */
-  .refresh-btn {
-    background: none; border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 14px;
-    font-family: 'Jost', sans-serif; font-size: 12px;
-    color: var(--muted); cursor: pointer; transition: all 0.2s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .refresh-btn:hover { border-color: var(--green); color: var(--green); }
-  .refresh-btn.spinning span { animation: spin 0.8s linear infinite; display: inline-block; }
-
-  /* Section header ───────────────────────── */
-  .section-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 20px; font-weight: 600; color: var(--text);
-  }
-  .booking-count { font-size: 13px; color: var(--muted); }
-
-
-  /* Weather */
-  .weather-section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px 22px;
-    margin-bottom: 24px; animation: fadeUp 0.4s 0.18s ease both;
-  }
-  .weather-section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px; font-weight: 600; color: var(--text);
-    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-  }
-  .weather-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .w-card {
-    flex: 1; min-width: 70px; max-width: 100px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 8px; text-align: center;
-  }
-  .w-card.today { border-color: var(--green); background: var(--green-xs); }
-  .w-date  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-  .w-icon  { font-size: 22px; margin-bottom: 6px; }
-  .w-temp  { font-size: 13px; font-weight: 600; color: var(--text); }
-  .w-rain  { font-size: 11px; color: var(--muted); margin-top: 3px; }
-  .w-warn  { margin-top: 12px; padding: 10px 14px; background: rgba(200,146,42,0.12); border-radius: 8px; font-size: 12px; color: var(--amber); display: none; }
-  .w-warn.show { display: block; }
-
-  /* Animations ───────────────────────────── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
-  }
-
-  @media (max-width: 700px) {
-    .booking-table th:nth-child(4),
-    .booking-table td:nth-child(4),
-    .booking-table th:nth-child(5),
-    .booking-table td:nth-child(5) { display: none; }
-    .search-wrap { margin-left: 0; width: 100%; }
-    .search-input { width: 100%; }
-  }
+@media(max-width:700px){.booking-table th:nth-child(4),.booking-table td:nth-child(4),.booking-table th:nth-child(5),.booking-table td:nth-child(5){display:none}.search-wrap{margin-left:0;width:100%}.search-input{width:100%}}
 </style>
 </head>
 <body>
 
-<!-- ── PIN screen ──────────────────────────────── -->
+<!-- PIN -->
 <div id="pin-screen">
   <div class="pin-box">
     <div class="pin-icon">🦙</div>
     <h1>Hönshyltegård</h1>
-    <p>Ange PIN-koden för att se bokningar</p>
+    <p>Ange PIN för att logga in</p>
     <div class="pin-dots">
       <div class="pin-dot" id="d0"></div>
       <div class="pin-dot" id="d1"></div>
@@ -309,267 +169,246 @@
   </div>
 </div>
 
-<!-- ── Dashboard ───────────────────────────────── -->
+<!-- Dashboard -->
 <div id="dashboard">
-
   <div class="topbar">
     <div class="topbar-left">
       <span style="font-size:22px">🦙</span>
       <div>
         <div class="topbar-title">Hönshyltegård</div>
-        <div class="topbar-sub">Bokningsöversikt</div>
+        <div class="topbar-sub">Admin</div>
       </div>
     </div>
     <button class="logout-btn" onclick="logout()">Logga ut</button>
   </div>
 
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('overview', this)">📊 Översikt</button>
+    <button class="tab-btn" onclick="showTab('bookings', this)">📅 Bokningar</button>
+    <button class="tab-btn" onclick="showTab('slots', this)">🕐 Tider</button>
+  </div>
+
   <div class="main">
 
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Idag</div>
-        <div class="stat-value" id="stat-today">—</div>
-        <div class="stat-sub">bokningar</div>
+    <!-- OVERVIEW TAB -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Idag</div><div class="stat-value" id="stat-today">—</div><div class="stat-sub">bokningar</div></div>
+        <div class="stat-card"><div class="stat-label">Denna vecka</div><div class="stat-value" id="stat-week">—</div><div class="stat-sub">bokningar</div></div>
+        <div class="stat-card"><div class="stat-label">Kommande</div><div class="stat-value" id="stat-upcoming">—</div><div class="stat-sub">totalt</div></div>
+        <div class="stat-card"><div class="stat-label">Totalt</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">bokningar</div></div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Denna vecka</div>
-        <div class="stat-value" id="stat-week">—</div>
-        <div class="stat-sub">bokningar</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Kommande</div>
-        <div class="stat-value" id="stat-upcoming">—</div>
-        <div class="stat-sub">totalt</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Totalt</div>
-        <div class="stat-value" id="stat-total">—</div>
-        <div class="stat-sub">alla bokningar</div>
+      <div class="weather-section">
+        <div class="section-title">🌤 Väderprognos 10 dagar – Hönshylte Gård</div>
+        <div class="weather-row" id="weather-row"><span style="color:var(--muted);font-size:13px">Laddar väder…</span></div>
+        <div id="w-warn" style="margin-top:10px;padding:10px;background:rgba(200,146,42,0.12);border-radius:8px;font-size:12px;color:var(--amber);display:none">⚡ Extremt väder i prognosen – kontrollera om promenader behöver ställas in.</div>
       </div>
     </div>
 
-    <!-- Weather -->
-    <div class="weather-section">
-      <div class="weather-section-title">🌤 Väderprognos 10 dagar – Hönshylte Gård</div>
-      <div class="weather-row" id="weather-row"><span style="color:var(--muted);font-size:13px">Laddar väder…</span></div>
-      <div class="w-warn" id="w-warn">⚡ Extremt väder i prognosen – kontrollera om promenader behöver ställas in.</div>
-    </div>
-
-    <!-- Filter -->
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="setFilter('all', this)">Alla</button>
-      <button class="filter-btn" onclick="setFilter('today', this)">Idag</button>
-      <button class="filter-btn" onclick="setFilter('upcoming', this)">Kommande</button>
-      <button class="filter-btn" onclick="setFilter('past', this)">Historik</button>
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input class="search-input" type="text" placeholder="Sök kund, tjänst…" oninput="searchBookings(this.value)">
-      </div>
-    </div>
-
-    <!-- Bookings -->
-    <div class="bookings-wrap">
-      <div class="section-header">
-        <div class="section-title">Bokningar</div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <span class="booking-count" id="booking-count"></span>
-          <button class="refresh-btn" id="refresh-btn" onclick="loadBookings()">
-            <span>↻</span> Uppdatera
-          </button>
+    <!-- BOOKINGS TAB -->
+    <div class="tab-panel" id="tab-bookings">
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all',this)">Alla</button>
+        <button class="filter-btn" onclick="setFilter('today',this)">Idag</button>
+        <button class="filter-btn" onclick="setFilter('upcoming',this)">Kommande</button>
+        <button class="filter-btn" onclick="setFilter('past',this)">Historik</button>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" type="text" placeholder="Sök kund, tjänst…" oninput="searchBookings(this.value)">
         </div>
       </div>
-
+      <div class="section-header">
+        <div class="section-title" style="font-size:18px;margin-bottom:0">Bokningar</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="booking-count" id="booking-count"></span>
+          <button class="refresh-btn" onclick="loadBookings()"><span>↻</span> Uppdatera</button>
+        </div>
+      </div>
       <table class="booking-table">
-        <thead>
-          <tr>
-            <th>Kund</th>
-            <th>Datum & Tid</th>
-            <th>Tjänst</th>
-            <th>Deltagare</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Kund</th><th>Datum & Tid</th><th>Tjänst</th><th>Pers.</th><th>Status</th>
+        </tr></thead>
         <tbody id="booking-tbody">
-          <tr class="loading-row">
-            <td colspan="5">
-              <div class="spinner-sm"></div><br>Laddar bokningar…
-            </td>
-          </tr>
+          <tr class="loading-row"><td colspan="5"><div class="spinner-sm"></div><br>Laddar…</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- SLOTS TAB -->
+    <div class="tab-panel" id="tab-slots">
+      <div class="slot-manager">
+
+        <!-- Add slots -->
+        <div class="slot-panel">
+          <h3>➕ Lägg till tider</h3>
+
+          <div class="form-group">
+            <label>Tjänst</label>
+            <select id="slot-service">
+              <option value="">Laddar…</option>
+            </select>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Från datum</label>
+              <input type="date" id="slot-date-from">
+            </div>
+            <div class="form-group">
+              <label>Till datum</label>
+              <input type="date" id="slot-date-to">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Välj tider (klicka för att markera)</label>
+            <div class="times-grid" id="times-grid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Max platser per tid</label>
+            <input type="number" id="slot-max" value="8" min="1" max="50">
+          </div>
+
+          <div class="form-group" style="margin-bottom:8px">
+            <label>Hoppa över veckodagar (valfritt)</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="skip-days">
+              <button class="time-toggle" data-day="0" onclick="toggleSkipDay(this)">Sön</button>
+              <button class="time-toggle" data-day="1" onclick="toggleSkipDay(this)">Mån</button>
+              <button class="time-toggle" data-day="2" onclick="toggleSkipDay(this)">Tis</button>
+              <button class="time-toggle" data-day="3" onclick="toggleSkipDay(this)">Ons</button>
+              <button class="time-toggle" data-day="4" onclick="toggleSkipDay(this)">Tor</button>
+              <button class="time-toggle" data-day="5" onclick="toggleSkipDay(this)">Fre</button>
+              <button class="time-toggle" data-day="6" onclick="toggleSkipDay(this)">Lör</button>
+            </div>
+          </div>
+
+          <button class="add-btn" id="add-slots-btn" onclick="addSlots()">Lägg till tider</button>
+          <div class="slot-success" id="slot-success"></div>
+          <div class="slot-error" id="slot-error"></div>
+        </div>
+
+        <!-- Slot list -->
+        <div class="slot-panel">
+          <h3>📋 Befintliga tider</h3>
+          <div class="slot-filter-row">
+            <button class="slot-filter-btn active" onclick="setSlotFilter('upcoming',this)">Kommande</button>
+            <button class="slot-filter-btn" onclick="setSlotFilter('all',this)">Alla</button>
+          </div>
+          <div class="slot-list" id="slot-list">
+            <div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Laddar tider…</div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
   </div>
 </div>
 
 <script>
-// ── PIN logic ──────────────────────────────────
+let currentPin = sessionStorage.getItem('sb_pin') || '';
+let allBookings = [], allSlots = [], services = [];
+let activeFilter = 'all', searchQuery = '', slotFilter = 'upcoming';
+
+const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+const DAYS_SV = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+const LAT = 56.47739536235032, LNG = 14.690764677283862;
+
+// Time options
+const TIME_OPTIONS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+let selectedTimes = [];
+let skipDays = [];
+
+// ── PIN ────────────────────────────────────
 let pinBuffer = '';
-let savedPin  = sessionStorage.getItem('sb_pin') || '';
+if (currentPin) tryUnlock(currentPin);
 
-if (savedPin) unlockDashboard(savedPin);
-
-function pinPress(digit) {
+function pinPress(d) {
   if (pinBuffer.length >= 4) return;
-  pinBuffer += digit;
+  pinBuffer += d;
   updateDots();
-  if (pinBuffer.length === 4) setTimeout(() => submitPin(), 150);
+  if (pinBuffer.length === 4) setTimeout(() => tryUnlock(pinBuffer), 150);
 }
+function pinDel() { pinBuffer = pinBuffer.slice(0,-1); updateDots(); document.getElementById('pin-error').textContent = ''; }
+function updateDots() { for(let i=0;i<4;i++){const d=document.getElementById('d'+i);d.classList.toggle('filled',i<pinBuffer.length);d.classList.remove('error');} }
 
-function pinDel() {
-  pinBuffer = pinBuffer.slice(0, -1);
-  updateDots();
-  document.getElementById('pin-error').textContent = '';
-}
-
-function updateDots() {
-  for (let i = 0; i < 4; i++) {
-    const d = document.getElementById('d' + i);
-    d.classList.toggle('filled', i < pinBuffer.length);
-    d.classList.remove('error');
-  }
-}
-
-async function submitPin() {
-  unlockDashboard(pinBuffer);
-}
-
-async function unlockDashboard(pin) {
-  // Test PIN against server
+async function tryUnlock(pin) {
   try {
-    const res = await fetch('/.netlify/functions/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Pin': pin },
-      body: JSON.stringify({ filter: { on_page: 1, page: 1 } }),
-    });
-    if (res.status === 401) {
-      pinError();
-      return;
-    }
-    // PIN OK
+    const r = await adminCall({ action: 'getServices' }, pin);
+    if (r.status === 401) { pinError(); return; }
     sessionStorage.setItem('sb_pin', pin);
     currentPin = pin;
     document.getElementById('pin-screen').style.display = 'none';
-    document.getElementById('dashboard').style.display  = 'block';
-    loadBookings();
-    loadDashWeather();
-  } catch(e) {
-    pinError();
-  }
+    document.getElementById('dashboard').style.display = 'block';
+    const data = await r.json();
+    services = data;
+    initDashboard();
+  } catch(e) { pinError(); }
 }
 
 function pinError() {
   pinBuffer = '';
-  for (let i = 0; i < 4; i++) {
-    const d = document.getElementById('d' + i);
-    d.classList.remove('filled');
-    d.classList.add('error');
-  }
-  document.getElementById('pin-error').textContent = 'Fel PIN-kod, försök igen';
-  setTimeout(() => {
-    for (let i = 0; i < 4; i++) document.getElementById('d' + i).classList.remove('error');
-    document.getElementById('pin-error').textContent = '';
-  }, 1200);
+  for(let i=0;i<4;i++){const d=document.getElementById('d'+i);d.classList.remove('filled');d.classList.add('error');}
+  document.getElementById('pin-error').textContent = 'Fel PIN-kod';
+  setTimeout(() => { for(let i=0;i<4;i++) document.getElementById('d'+i).classList.remove('error'); document.getElementById('pin-error').textContent = ''; }, 1200);
 }
 
-function logout() {
-  sessionStorage.removeItem('sb_pin');
-  currentPin = '';
-  document.getElementById('pin-screen').style.display = 'flex';
-  document.getElementById('dashboard').style.display  = 'none';
-  pinBuffer = '';
-  updateDots();
+function logout() { sessionStorage.removeItem('sb_pin'); currentPin = ''; location.reload(); }
+
+// ── Admin API call ─────────────────────────
+async function adminCall(body, pin) {
+  return fetch('/.netlify/functions/admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Pin': pin || currentPin },
+    body: JSON.stringify(body)
+  });
 }
 
-
-// Weather
-const LAT = 56.47739536235032, LNG = 14.690764677283862;
-const WMO_ICONS = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
-const WMO_WARN_CODES = [65,75,82,95,96,99];
-const MON_SV = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-const DAY_SV = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
-
-async function loadDashWeather() {
-  try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm';
-    const res  = await fetch(url);
-    const data = await res.json();
-    const d    = data.daily;
-    const todayStr = new Date().toISOString().split('T')[0];
-    let hasWarn = false;
-
-    document.getElementById('weather-row').innerHTML = (d.time || []).map(function(date, i) {
-      const dt     = new Date(date);
-      const isToday = date === todayStr;
-      const icon   = WMO_ICONS[d.weathercode[i]] || '🌡';
-      if (WMO_WARN_CODES.includes(d.weathercode[i])) hasWarn = true;
-      const rain   = d.precipitation_sum[i] > 0 ? Math.round(d.precipitation_sum[i]) + 'mm' : '';
-      return '<div class="w-card ' + (isToday ? 'today' : '') + '">'
-        + '<div class="w-date">' + (isToday ? 'Idag' : DAY_SV[dt.getDay()] + ' ' + dt.getDate() + ' ' + MON_SV[dt.getMonth()]) + '</div>'
-        + '<div class="w-icon">' + icon + '</div>'
-        + '<div class="w-temp">' + Math.round(d.temperature_2m_max[i]) + '° / ' + Math.round(d.temperature_2m_min[i]) + '°</div>'
-        + (rain ? '<div class="w-rain">' + rain + '</div>' : '')
-        + '</div>';
-    }).join('');
-
-    if (hasWarn) document.getElementById('w-warn').classList.add('show');
-  } catch(e) {
-    document.getElementById('weather-row').innerHTML = '<span style="color:var(--muted);font-size:13px">Väder ej tillgängligt</span>';
-  }
+// ── Init ───────────────────────────────────
+async function initDashboard() {
+  renderServiceSelect();
+  renderTimeToggles();
+  setDefaultDates();
+  loadBookings();
+  loadWeather();
+  loadSlots();
 }
 
-// ── Data ───────────────────────────────────────
-let currentPin    = savedPin;
-let allBookings   = [];
-let activeFilter  = 'all';
-let searchQuery   = '';
+// ── Tabs ───────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
 
-const monthSv = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-
+// ── Bookings ───────────────────────────────
 async function loadBookings() {
-  const btn = document.getElementById('refresh-btn');
-  btn.classList.add('spinning');
   setTableLoading();
-
   try {
-    const res  = await fetch('/.netlify/functions/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Pin': currentPin },
-      body: JSON.stringify({ filter: {} }),
-    });
-    const data = await res.json();
-
-    if (data.error) throw new Error(data.error);
-
-    // data.bookings can be array or object with 'data' key
-    allBookings = Array.isArray(data.bookings)
-      ? data.bookings
-      : (data.bookings?.data || []);
-
+    const r = await adminCall({ action: 'getBookings' });
+    allBookings = await r.json();
+    if (!Array.isArray(allBookings)) allBookings = [];
     updateStats();
     renderBookings();
   } catch(e) {
-    document.getElementById('booking-tbody').innerHTML =
-      `<tr class="empty-row"><td colspan="5">Kunde inte hämta bokningar: ${e.message}</td></tr>`;
+    document.getElementById('booking-tbody').innerHTML = '<tr class="empty-row"><td colspan="5">Fel: ' + e.message + '</td></tr>';
   }
-
-  btn.classList.remove('spinning');
 }
 
 function updateStats() {
-  const today   = new Date(); today.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
   const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
-
-  const todayList    = allBookings.filter(b => isSameDay(parseDate(b.start_date_time), today));
-  const weekList     = allBookings.filter(b => { const d = parseDate(b.start_date_time); return d >= today && d <= weekEnd; });
-  const upcomingList = allBookings.filter(b => parseDate(b.start_date_time) >= today);
-
-  document.getElementById('stat-today').textContent    = todayList.length;
-  document.getElementById('stat-week').textContent     = weekList.length;
-  document.getElementById('stat-upcoming').textContent = upcomingList.length;
+  document.getElementById('stat-today').textContent    = allBookings.filter(b => isSameDay(new Date(b.created_at), today)).length;
+  document.getElementById('stat-week').textContent     = allBookings.filter(b => { const d=new Date(b.created_at); return d>=today&&d<=weekEnd; }).length;
+  document.getElementById('stat-upcoming').textContent = allBookings.filter(b => b.status === 'confirmed').length;
   document.getElementById('stat-total').textContent    = allBookings.length;
 }
+
+function isSameDay(a,b) { return a.toDateString() === b.toDateString(); }
 
 function setFilter(f, btn) {
   activeFilter = f;
@@ -578,89 +417,215 @@ function setFilter(f, btn) {
   renderBookings();
 }
 
-function searchBookings(q) {
-  searchQuery = q.toLowerCase();
-  renderBookings();
-}
+function searchBookings(q) { searchQuery = q.toLowerCase(); renderBookings(); }
 
 function renderBookings() {
-  const today = new Date(); today.setHours(0,0,0,0);
-
   let list = allBookings.filter(b => {
-    const d = parseDate(b.start_date_time);
-    if (activeFilter === 'today')    return isSameDay(d, today);
-    if (activeFilter === 'upcoming') return d >= today;
-    if (activeFilter === 'past')     return d < today;
+    if (activeFilter === 'today')    return isSameDay(new Date(b.created_at), new Date());
+    if (activeFilter === 'upcoming') return b.status === 'confirmed';
+    if (activeFilter === 'past')     return b.status === 'cancelled';
     return true;
   });
-
   if (searchQuery) {
     list = list.filter(b =>
-      (b.client_name  || '').toLowerCase().includes(searchQuery) ||
-      (b.event_name   || '').toLowerCase().includes(searchQuery) ||
-      (b.client_email || '').toLowerCase().includes(searchQuery) ||
-      (b.client_phone || '').toLowerCase().includes(searchQuery)
+      (b.first_name + ' ' + b.last_name).toLowerCase().includes(searchQuery) ||
+      (b.email || '').toLowerCase().includes(searchQuery) ||
+      ((b.services && b.services.name) || '').toLowerCase().includes(searchQuery)
     );
   }
-
-  // Sort by date desc
-  list.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time));
-
-  document.getElementById('booking-count').textContent = `${list.length} bokningar`;
-
-  if (list.length === 0) {
-    document.getElementById('booking-tbody').innerHTML =
-      '<tr class="empty-row"><td colspan="5">Inga bokningar hittades</td></tr>';
-    return;
-  }
-
+  document.getElementById('booking-count').textContent = list.length + ' bokningar';
+  if (!list.length) { document.getElementById('booking-tbody').innerHTML = '<tr class="empty-row"><td colspan="5">Inga bokningar hittades</td></tr>'; return; }
   document.getElementById('booking-tbody').innerHTML = list.map(b => {
-    const d       = parseDate(b.start_date_time);
-    const dateStr = `${d.getDate()} ${monthSv[d.getMonth()]} ${d.getFullYear()}`;
-    const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    const status  = getStatus(b);
-    const guests  = b.count ? `👥 ${b.count}` : '—';
-
-    return `
-      <tr class="booking-row">
-        <td>
-          <div class="client-name">${esc(b.client_name || '—')}</div>
-          <div class="client-contact">
-            ${b.client_email ? `✉ ${esc(b.client_email)}` : ''}
-            ${b.client_phone ? ` · 📞 ${esc(b.client_phone)}` : ''}
-          </div>
-        </td>
-        <td class="date-cell">
-          <div class="date-main">${dateStr}</div>
-          <div class="date-time">🕐 ${timeStr}</div>
-        </td>
-        <td><span class="service-tag">${esc(b.event_name || '—')}</span></td>
-        <td class="guests-cell">${guests}</td>
-        <td>${statusBadge(status)}</td>
-      </tr>`;
+    const d = new Date(b.created_at);
+    const dateStr = d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    const svcName = (b.services && b.services.name) || '—';
+    const guests = (b.adults || 0) + (b.children || 0);
+    const status = b.status === 'cancelled' ? 'cancelled' : 'confirmed';
+    return '<tr class="booking-row">'
+      + '<td><div class="client-name">' + esc(b.first_name + ' ' + b.last_name) + '</div>'
+      + '<div class="client-contact">' + (b.email ? '✉ ' + esc(b.email) : '') + (b.phone ? ' · 📞 ' + esc(b.phone) : '') + '</div></td>'
+      + '<td><div>' + dateStr + '</div></td>'
+      + '<td><span class="service-tag">' + esc(svcName) + '</span></td>'
+      + '<td style="color:var(--muted);font-size:12px">👥 ' + guests + '</td>'
+      + '<td><span class="status-badge ' + status + '"><span class="status-dot"></span>' + (status === 'confirmed' ? 'Bekräftad' : 'Avbokad') + '</span></td>'
+      + '</tr>';
   }).join('');
 }
 
-function setTableLoading() {
-  document.getElementById('booking-tbody').innerHTML =
-    '<tr class="loading-row"><td colspan="5"><div class="spinner-sm"></div><br>Hämtar bokningar…</td></tr>';
+function setTableLoading() { document.getElementById('booking-tbody').innerHTML = '<tr class="loading-row"><td colspan="5"><div class="spinner-sm"></div><br>Hämtar bokningar…</td></tr>'; }
+
+// ── SLOT MANAGEMENT ─────────────────────────
+function renderServiceSelect() {
+  const sel = document.getElementById('slot-service');
+  sel.innerHTML = services.map(s => '<option value="' + s.id + '">' + s.name + '</option>').join('');
 }
 
-// ── Helpers ────────────────────────────────────
-function parseDate(str) { return new Date(str); }
-function isSameDay(a, b) { return a.toDateString() === b.toDateString(); }
+function renderTimeToggles() {
+  document.getElementById('times-grid').innerHTML = TIME_OPTIONS.map(t =>
+    '<button class="time-toggle" data-time="' + t + '" onclick="toggleTime(this)">' + t + '</button>'
+  ).join('');
+}
+
+function setDefaultDates() {
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  document.getElementById('slot-date-from').value = todayStr;
+  const nextMonth = new Date(today);
+  nextMonth.setMonth(today.getMonth() + 1);
+  document.getElementById('slot-date-to').value = nextMonth.toISOString().split('T')[0];
+}
+
+function toggleTime(btn) {
+  const t = btn.dataset.time;
+  btn.classList.toggle('selected');
+  if (btn.classList.contains('selected')) {
+    if (!selectedTimes.includes(t)) selectedTimes.push(t);
+  } else {
+    selectedTimes = selectedTimes.filter(x => x !== t);
+  }
+}
+
+function toggleSkipDay(btn) {
+  const day = parseInt(btn.dataset.day);
+  btn.classList.toggle('selected');
+  if (btn.classList.contains('selected')) {
+    if (!skipDays.includes(day)) skipDays.push(day);
+  } else {
+    skipDays = skipDays.filter(d => d !== day);
+  }
+}
+
+async function addSlots() {
+  const serviceId = document.getElementById('slot-service').value;
+  const from      = document.getElementById('slot-date-from').value;
+  const to        = document.getElementById('slot-date-to').value;
+  const maxSpots  = parseInt(document.getElementById('slot-max').value) || 8;
+  const successEl = document.getElementById('slot-success');
+  const errorEl   = document.getElementById('slot-error');
+  successEl.textContent = '';
+  errorEl.textContent = '';
+
+  if (!serviceId) { errorEl.textContent = 'Välj en tjänst.'; return; }
+  if (!from || !to) { errorEl.textContent = 'Välj datum.'; return; }
+  if (!selectedTimes.length) { errorEl.textContent = 'Välj minst en tid.'; return; }
+
+  // Generate dates
+  const dates = [];
+  let cur = new Date(from);
+  const end = new Date(to);
+  while (cur <= end) {
+    if (!skipDays.includes(cur.getDay())) {
+      dates.push(cur.toISOString().split('T')[0]);
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  if (!dates.length) { errorEl.textContent = 'Inga datum matchade – justera filter.'; return; }
+
+  const btn = document.getElementById('add-slots-btn');
+  btn.disabled = true; btn.textContent = 'Lägger till…';
+
+  try {
+    const r = await adminCall({ action: 'createBulkSlots', service_id: parseInt(serviceId), dates, times: selectedTimes.map(t => t + ':00'), max_spots: maxSpots });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Fel');
+    successEl.textContent = '✓ ' + data.created + ' tider skapade!';
+    loadSlots();
+  } catch(e) {
+    errorEl.textContent = 'Fel: ' + e.message;
+  }
+
+  btn.disabled = false; btn.textContent = 'Lägg till tider';
+}
+
+async function loadSlots() {
+  const today = new Date();
+  const from = slotFilter === 'upcoming' ? today.toISOString().split('T')[0] : '2020-01-01';
+  const to = new Date(today); to.setMonth(today.getMonth() + 6);
+  const toStr = to.toISOString().split('T')[0];
+
+  try {
+    const r = await adminCall({ action: 'getSlots', from, to: toStr });
+    allSlots = await r.json();
+    if (!Array.isArray(allSlots)) allSlots = [];
+    renderSlotList();
+  } catch(e) {
+    document.getElementById('slot-list').innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px;text-align:center">Fel: ' + e.message + '</div>';
+  }
+}
+
+function setSlotFilter(f, btn) {
+  slotFilter = f;
+  document.querySelectorAll('.slot-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadSlots();
+}
+
+function renderSlotList() {
+  const list = document.getElementById('slot-list');
+  if (!allSlots.length) { list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px;text-align:center">Inga tider hittades.</div>'; return; }
+
+  // Group by date
+  const grouped = {};
+  allSlots.forEach(s => {
+    if (!grouped[s.slot_date]) grouped[s.slot_date] = [];
+    grouped[s.slot_date].push(s);
+  });
+
+  const svcMap = {};
+  services.forEach(s => { svcMap[s.id] = s.name; });
+
+  list.innerHTML = Object.keys(grouped).sort().map(date => {
+    const d = new Date(date);
+    const label = DAYS_SV[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+    const rows = grouped[date].map(s => {
+      const left = s.max_spots - s.booked_spots;
+      const svcName = svcMap[s.service_id] || '—';
+      return '<div class="slot-item">'
+        + '<span class="slot-date">' + s.slot_time.substring(0,5) + '</span>'
+        + '<span class="slot-svc">' + esc(svcName) + '</span>'
+        + '<span class="slot-spots">' + left + '/' + s.max_spots + ' kvar</span>'
+        + '<button class="slot-delete" onclick="deleteSlot(' + s.id + ')" title="Ta bort">×</button>'
+        + '</div>';
+    }).join('');
+    return '<div style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border)">' + label + '</div>' + rows;
+  }).join('');
+}
+
+async function deleteSlot(id) {
+  if (!confirm('Ta bort denna tid?')) return;
+  try {
+    await adminCall({ action: 'deleteSlot', id });
+    loadSlots();
+  } catch(e) { alert('Fel: ' + e.message); }
+}
+
+// ── Weather ────────────────────────────────
+const WMO = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
+const WMO_WARN = [65,75,82,95,96,99];
+
+async function loadWeather() {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm');
+    const d = (await r.json()).daily;
+    const todayStr = new Date().toISOString().split('T')[0];
+    let hasWarn = false;
+    document.getElementById('weather-row').innerHTML = (d.time || []).map(function(date, i) {
+      const dt = new Date(date);
+      if (WMO_WARN.includes(d.weathercode[i])) hasWarn = true;
+      const rain = d.precipitation_sum[i] > 0 ? Math.round(d.precipitation_sum[i]) + 'mm' : '';
+      return '<div class="w-card ' + (date === todayStr ? 'today' : '') + '">'
+        + '<div class="w-date">' + (date === todayStr ? 'Idag' : DAYS_SV[dt.getDay()] + ' ' + dt.getDate() + ' ' + MONTHS[dt.getMonth()]) + '</div>'
+        + '<div class="w-icon">' + (WMO[d.weathercode[i]] || '🌡') + '</div>'
+        + '<div class="w-temp">' + Math.round(d.temperature_2m_max[i]) + '°/' + Math.round(d.temperature_2m_min[i]) + '°</div>'
+        + (rain ? '<div class="w-rain">' + rain + '</div>' : '')
+        + '</div>';
+    }).join('');
+    if (hasWarn) document.getElementById('w-warn').style.display = 'block';
+  } catch(e) { document.getElementById('weather-row').innerHTML = '<span style="color:var(--muted);font-size:13px">Väder ej tillgängligt</span>'; }
+}
+
 function esc(s) { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function getStatus(b) {
-  if (b.status === 'canceled' || b.canceled) return 'cancelled';
-  if (b.approved == 0) return 'pending';
-  return 'confirmed';
-}
-
-function statusBadge(s) {
-  const labels = { confirmed: 'Bekräftad', pending: 'Väntar', cancelled: 'Avbokad' };
-  return `<span class="status-badge ${s}"><span class="status-dot"></span>${labels[s]}</span>`;
-}
 </script>
 </body>
 </html>
