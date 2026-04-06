@@ -482,7 +482,7 @@ const WMO_WARN = [65,75,82,95,96,99];
 let currentPin = sessionStorage.getItem('sb_pin') || '';
 let allBookings = [], allSlots = [], services = [];
 let activeFilter = 'all', searchQ = '', slotView = 'upcoming';
-let selectedIds = [];
+let selectedIds = [], selectedTimes = [], skipDays = [];
 let pinBuf = '';
 
 if (currentPin) tryUnlock(currentPin);
@@ -660,7 +660,7 @@ function renderBookings() {
 }
 
 // ── SLOTS ─────────────────────────────────
-let selectedTimes = [], skipDays = [], selectedIds = [];
+let selectedTimes = [], skipDays = [];
 
 function initSlotForm() {
   // Service select
