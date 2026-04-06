@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alpackapromenad – Hönshyltegård</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:    #F7F2E8;
+  --warm:     #FDFAF3;
+  --green:    #3A5A3C;
+  --green-lt: #6A9B6C;
+  --green-xs: #D4E8D5;
+  --brown:    #5A3A1A;
+  --muted:    #7A6A50;
+  --border:   #DDD4C0;
+  --text:     #221808;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+}
+
+/* ── HERO ─────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 60px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Organic background texture */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(106,155,108,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 70%, rgba(90,58,26,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 10%, rgba(212,232,213,0.4) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Floating decorative circles */
+.hero-deco {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.06;
+  pointer-events: none;
+}
+.hero-deco-1 { width: 600px; height: 600px; background: var(--green); top: -200px; right: -200px; }
+.hero-deco-2 { width: 400px; height: 400px; background: var(--brown); bottom: -150px; left: -150px; }
+
+.hero-content { position: relative; z-index: 1; max-width: 720px; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--green-lt);
+  margin-bottom: 24px;
+  animation: fadeUp 0.8s ease both;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; width: 30px; height: 1px; background: var(--green-lt);
+}
+
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(42px, 8vw, 78px);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--brown);
+  margin-bottom: 8px;
+  animation: fadeUp 0.8s 0.1s ease both;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--green);
+  font-weight: 300;
+}
+
+.hero-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 3vw, 24px);
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 32px;
+  font-weight: 300;
+  line-height: 1.5;
+  animation: fadeUp 0.8s 0.15s ease both;
+}
+
+.hero-desc {
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.85;
+  max-width: 580px;
+  margin: 0 auto 48px;
+  font-weight: 300;
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+
+.cta-group {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  animation: fadeUp 0.8s 0.3s ease both;
+}
+
+.cta-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--green);
+  color: white;
+  padding: 18px 44px;
+  border-radius: 100px;
+  font-family: 'Jost', sans-serif;
+  font-size: 15px; font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(58,90,60,0.25);
+}
+.cta-primary:hover {
+  background: var(--brown);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(58,90,60,0.3);
+}
+.cta-primary .arrow {
+  transition: transform 0.3s;
+}
+.cta-primary:hover .arrow { transform: translateY(4px); }
+
+.cta-note {
+  font-size: 13px; color: var(--muted);
+}
+
+/* Scroll indicator */
+.scroll-hint {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
+  animation: fadeUp 1s 0.6s ease both;
+  opacity: 0.6;
+}
+.scroll-line { width: 1px; height: 40px; background: var(--border); animation: scrollPulse 2s infinite; }
+
+/* ── CONTENT SECTION ──────────────────── */
+.content-section {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.section-divider {
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px; margin-bottom: 64px;
+}
+.section-divider hr { flex: 1; max-width: 120px; border: none; border-top: 1px solid var(--border); }
+.section-divider span { font-size: 28px; }
+
+/* Feature cards */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 72px;
+}
+@media(max-width:680px) { .features { grid-template-columns: 1fr; } }
+
+.feature-card {
+  background: var(--warm);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(58,90,60,0.1); }
+.feature-card .f-icon { font-size: 36px; margin-bottom: 14px; }
+.feature-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 600; color: var(--brown);
+  margin-bottom: 8px;
+}
+.feature-card p { font-size: 14px; color: var(--muted); line-height: 1.7; font-weight: 300; }
+
+/* Story block */
+.story-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+  margin-bottom: 72px;
+}
+@media(max-width:680px) { .story-block { grid-template-columns: 1fr; gap: 32px; } }
+
+.story-text h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 400; color: var(--brown);
+  line-height: 1.2; margin-bottom: 20px;
+}
+.story-text h2 em { font-style: italic; color: var(--green); }
+.story-text p {
+  font-size: 15px; color: var(--muted);
+  line-height: 1.85; font-weight: 300;
+  margin-bottom: 16px;
+}
+.story-text p:last-child { margin-bottom: 0; }
+
+.story-aside {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.aside-card {
+  background: var(--green-xs);
+  border: 1px solid rgba(58,90,60,0.2);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.aside-card .ac-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.aside-card .ac-text { font-size: 13px; color: var(--text); line-height: 1.65; font-weight: 400; }
+.aside-card .ac-text strong { color: var(--green); font-weight: 600; display: block; margin-bottom: 2px; }
+
+/* Rules */
+.rules-section {
+  background: var(--warm);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 36px 40px;
+  margin-bottom: 72px;
+}
+@media(max-width:680px) { .rules-section { padding: 24px 20px; } }
+
+.rules-section h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px; font-weight: 600; color: var(--brown);
+  margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+}
+.rules-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 20px;
+}
+@media(max-width:680px) { .rules-grid { grid-template-columns: 1fr; } }
+
+.rule-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13px; color: var(--muted); line-height: 1.6; font-weight: 400;
+}
+.rule-item .r-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+.rules-note {
+  background: rgba(58,90,60,0.07);
+  border-radius: 10px; padding: 14px 18px;
+  font-size: 13px; color: var(--green); line-height: 1.6;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+
+/* ── BOOKING SECTION ──────────────────── */
+#booking {
+  background: linear-gradient(180deg, var(--cream) 0%, #EDE6D6 100%);
+  border-top: 1px solid var(--border);
+  padding: 0 0 80px;
+}
+
+.booking-header {
+  text-align: center;
+  padding: 64px 24px 48px;
+}
+.booking-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 400; color: var(--brown);
+  margin-bottom: 12px;
+}
+.booking-header h2 em { font-style: italic; color: var(--green); }
+.booking-header p {
+  font-size: 15px; color: var(--muted); font-weight: 300;
+  max-width: 440px; margin: 0 auto; line-height: 1.7;
+}
+
+.booking-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.booking-iframe-container {
+  background: var(--warm);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(34,24,8,0.1);
+}
+
+.booking-iframe-container iframe {
+  width: 100%;
+  min-height: 900px;
+  border: none;
+  display: block;
+}
+
+/* ── FOOTER ───────────────────────────── */
+.page-footer {
+  text-align: center;
+  padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--muted); font-weight: 300;
+  line-height: 1.8;
+}
+.page-footer a { color: var(--green); text-decoration: none; }
+.page-footer a:hover { text-decoration: underline; }
+
+/* ── ANIMATIONS ───────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(1); }
+  50%       { opacity: 1;   transform: scaleY(1.2); }
+}
+
+/* Scroll-triggered reveal */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ─────────────────────────────── -->
+<section class="hero">
+  <div class="hero-deco hero-deco-1"></div>
+  <div class="hero-deco hero-deco-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Hönshyltegård · Ryd · Småland</div>
+
+    <h1>Alpacka<br><em>promenad</em></h1>
+
+    <p class="hero-sub">
+      Lär känna alpackorna och upplev naturens lugn
+    </p>
+
+    <p class="hero-desc">
+      Släpp vardagsstressen och upplev en fridfull och lantlig miljö tillsammans med våra alpackor.
+      Du får chansen att komma nära och känna deras mjuka och varma ull –
+      och det finns såklart tillfälle att ta bilder tillsammans med alpackorna.
+    </p>
+
+    <div class="cta-group">
+      <a href="#booking" class="cta-primary">
+        Boka din promenad
+        <span class="arrow">↓</span>
+      </a>
+      <span class="cta-note">Välj datum, tid och antal — direkt online</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Läs mer</span>
+  </div>
+</section>
+
+<!-- ── CONTENT ───────────────────────────── -->
+<section class="content-section">
+
+  <div class="section-divider reveal">
+    <hr><span>🦙</span><hr>
+  </div>
+
+  <!-- Features -->
+  <div class="features">
+    <div class="feature-card reveal">
+      <div class="f-icon">🌿</div>
+      <h3>Fridfull natur</h3>
+      <p>Promenera i den småländska naturen i alpackornas stillsamma tempo.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="f-icon">🦙</div>
+      <h3>Nära alpackorna</h3>
+      <p>Känn deras mjuka ull och lär dig intressant fakta om alpackor.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-2">
+      <div class="f-icon">🍀</div>
+      <h3>Hela familjen</h3>
+      <p>Ca 1 timme – besök stona och årets söta föl efteråt i hagen.</p>
+    </div>
+  </div>
+
+  <!-- Story -->
+  <div class="story-block">
+    <div class="story-text reveal">
+      <h2>En stund av<br><em>äkta slow living</em></h2>
+      <p>
+        Alpackor är sociala och nyfikna men med hög integritet. När man promenerar med alpackor
+        är det i deras stillsamma tempo – ett naturligt sätt att varva ner.
+      </p>
+      <p>
+        Vi börjar med att presentera de alpackor som kommer vara med på promenaden och ger er
+        lite information och intressant fakta. Sedan går vi en tur i den småländska naturen.
+        Efteråt besöker vi hagen där stona och årets söta föl går.
+      </p>
+      <p>
+        I gårdsbutiken finns ull och garn från våra alpackor och andra fina alpackaprodukter.
+      </p>
+    </div>
+
+    <div class="story-aside reveal reveal-delay-1">
+      <div class="aside-card">
+        <span class="ac-icon">⏱</span>
+        <div class="ac-text">
+          <strong>Ca 1 timme</strong>
+          Hela besöket inklusive presentation, promenad och besök hos fölen.
+        </div>
+      </div>
+      <div class="aside-card">
+        <span class="ac-icon">👥</span>
+        <div class="ac-text">
+          <strong>Minst 2 personer</strong>
+          Vuxen/Ungdom 12+: 295 kr · Barn 5–12 år: 195 kr
+        </div>
+      </div>
+      <div class="aside-card">
+        <span class="ac-icon">🛍</span>
+        <div class="ac-text">
+          <strong>Gårdsbutiken</strong>
+          Öppet alla dagar i juli &amp; aug kl. 10–17. Loppis, alpackaprodukter och alpackaquiz.
+        </div>
+      </div>
+      <div class="aside-card">
+        <span class="ac-icon">☕</span>
+        <div class="ac-text">
+          <strong>Sommarfika – NYHET!</strong>
+          Varje dag i juli &amp; aug kl. 10–16. Hembakat, lokal läsk &amp; äppelmust.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="rules-section reveal">
+    <h3>📋 Regler under promenaden</h3>
+    <div class="rules-grid">
+      <div class="rule-item"><span class="r-icon">🐾</span><span>Inte tillåtet att ta med andra djur under promenaden.</span></div>
+      <div class="rule-item"><span class="r-icon">📵</span><span>Mobiltelefoner ska vara på ljudlöst.</span></div>
+      <div class="rule-item"><span class="r-icon">🚭</span><span>Rökning är förbjuden.</span></div>
+      <div class="rule-item"><span class="r-icon">🚫</span><span>Barnvagn, rullstol och rullator är inte möjligt att ta med.</span></div>
+      <div class="rule-item"><span class="r-icon">🦙</span><span>Vi har rätt att avvisa personer som stör eller stressar djuren.</span></div>
+      <div class="rule-item"><span class="r-icon">🧘</span><span>Kom ihåg att vara lugn – harmonisk stund för människor och djur.</span></div>
+    </div>
+    <div class="rules-note">
+      <span>👕</span>
+      <span>Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</span>
+    </div>
+  </div>
+
+</section>
+
+<!-- ── BOOKING ────────────────────────────── -->
+<section id="booking">
+  <div class="booking-header reveal">
+    <h2>Boka din<br><em>promenad</em></h2>
+    <p>Välj tjänst, datum och tid direkt nedan. Betalning sker på plats.</p>
+  </div>
+
+  <div class="booking-wrap">
+    <div class="booking-iframe-container reveal">
+      <!--
+        INSTRUKTION: Byt ut src-URL:en nedan mot den faktiska URL:en till index.html
+        Exempel: src="https://[ditt-repo].github.io/Honshyltegard/index.html"
+      -->
+      <iframe
+        src="index.html"
+        title="Bokningssystem – Hönshyltegård"
+        scrolling="no"
+        id="booking-iframe">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────── -->
+<footer class="page-footer">
+  <p>
+    <strong>Hönshyltegård</strong> · Gård Hönshyltegård, 362 96 Ryd<br>
+    Frågor? Mejla oss på <a href="mailto:alpacka.honshyltegard@gmail.com">alpacka.honshyltegard@gmail.com</a>
+  </p>
+  <p style="margin-top:8px;font-size:12px">
+    Passar bättre för de yngre barnen: <em>Visning och matning av våra alpackor</em> – boka nedan.
+  </p>
+</footer>
+
+<script>
+// Auto-resize iframe to content
+const iframe = document.getElementById('booking-iframe');
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'resize') {
+    iframe.style.height = e.data.height + 'px';
+  }
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
