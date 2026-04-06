@@ -360,7 +360,7 @@ function logout() { sessionStorage.removeItem('sb_pin'); currentPin = ''; locati
 
 // ── Admin API call ─────────────────────────
 async function adminCall(body, pin) {
-  return fetch('/.netlify/functions/admin', {
+  return fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/admin', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Pin': pin || currentPin },
     body: JSON.stringify(body)
