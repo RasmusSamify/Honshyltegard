@@ -416,7 +416,8 @@ async function loadCalendar() {
   document.getElementById('cal-next').disabled = true;
   try {
     const from = state.year + '-' + String(state.month).padStart(2,'0') + '-01';
-    const to   = state.year + '-' + String(state.month).padStart(2,'0') + '-31';
+    const lastDay = new Date(state.year, state.month, 0).getDate();
+    const to   = state.year + '-' + String(state.month).padStart(2,'0') + '-' + String(lastDay).padStart(2,'0');
     const slots = await sbGet('time_slots?service_id=eq.' + state.service.id + '&slot_date=gte.' + from + '&slot_date=lte.' + to + '&active=eq.true&select=slot_date,booked_spots,max_spots');
     const dateMap = {};
     slots.forEach(s => { if (!dateMap[s.slot_date]) dateMap[s.slot_date] = 0; if (s.booked_spots < s.max_spots) dateMap[s.slot_date]++; });
