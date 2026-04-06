@@ -153,7 +153,15 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .extra-hours{display:inline-block;font-size:11px;font-weight:600;color:var(--green);background:rgba(61,90,62,0.1);padding:3px 9px;border-radius:100px;margin-top:8px}
 .reset-btn{background:var(--green);color:white;border:none;border-radius:10px;padding:13px 28px;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s}
 .reset-btn:hover{background:var(--brown)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  /* GDPR */
+  .gdpr-row{display:flex;align-items:flex-start;gap:10px;padding:14px 0;margin-top:4px}
+  .gdpr-cb{width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0;margin-top:2px}
+  .gdpr-label{font-size:12px;color:var(--muted);line-height:1.6;cursor:pointer}
+  .gdpr-label a{color:var(--green);text-decoration:none}
+  .gdpr-label a:hover{text-decoration:underline}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:500px){.form-row{grid-template-columns:1fr}.panel{padding:18px 14px}}
 </style>
@@ -258,7 +266,14 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
       <div class="form-row full">
         <div class="form-group"><label>Övrigt (allergier, önskemål…)</label><textarea id="f-note" placeholder="Skriv gärna om ni har önskemål."></textarea></div>
       </div>
-    </div>
+        <div class="gdpr-row">
+          <input type="checkbox" class="gdpr-cb" id="f-newsletter">
+          <label class="gdpr-label" for="f-newsletter">
+            Ja, jag vill gärna ta emot nyheter och erbjudanden från Hönshyltegård via e-post.
+            Du kan när som helst avregistrera dig.
+          </label>
+        </div>
+      </div>
 
     <!-- Summary -->
     <div class="summary-panel" id="summary-panel" style="display:none">
@@ -633,7 +648,8 @@ async function handleCTA() {
   btn.disabled = true; btn.textContent = 'Bokar…';
   try {
     const totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children;
-    await sbPost('bookings', { service_id: state.service.id, slot_id: state.selectedSlot, first_name: fname, last_name: lname, email: email, phone: val('f-phone') || null, adults: state.adults, children: state.children + state.childrenFree, alpacas: state.alpacas, note: val('f-note') || null, status: 'confirmed', total_price: totalPrice });
+    const newsletter = document.getElementById('f-newsletter')?.checked || false;
+    await sbPost('bookings', { service_id: state.service.id, slot_id: state.selectedSlot, first_name: fname, last_name: lname, email: email, phone: val('f-phone') || null, adults: state.adults, children: state.children + state.childrenFree, alpacas: state.alpacas, note: val('f-note') || null, status: 'confirmed', total_price: totalPrice, newsletter_consent: newsletter });
     showConfirmation(totalPrice);
   } catch(e) {
     showError('Bokningen misslyckades: ' + e.message);
@@ -661,6 +677,7 @@ function resetWidget() {
   show('booking-view');
   document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
   ['f-name','f-lname','f-email','f-phone','f-note'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const cb = document.getElementById('f-newsletter'); if(cb) cb.checked = false;
   document.getElementById('error-banner').classList.remove('show');
   document.getElementById('cta-btn').textContent = 'Fortsätt →';
   setStep(1); updateSummary();
