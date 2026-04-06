@@ -6,135 +6,229 @@
 <title>Hönshyltegård – Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1A1612;--surface:#231E19;--surface2:#2C2620;--border:#3A3228;--green:#7AB87A;--green-dk:#4A7A4A;--green-xs:rgba(122,184,122,0.1);--amber:#C8922A;--amber-xs:rgba(200,146,42,0.12);--red:#C06060;--red-xs:rgba(192,96,96,0.12);--text:#EDE8E0;--muted:#7A7060;--muted2:#4A4438;--radius:12px}
+:root {
+  --bg:#1A1612; --surface:#231E19; --surface2:#2C2620; --surface3:#342E27;
+  --border:#3A3228; --border2:#4A4438;
+  --green:#7AB87A; --green-dk:#3A6A3C; --green-xs:rgba(122,184,122,0.1); --green-sm:rgba(122,184,122,0.18);
+  --amber:#C8922A; --amber-xs:rgba(200,146,42,0.12); --amber-sm:rgba(200,146,42,0.2);
+  --red:#C06060; --red-xs:rgba(192,96,96,0.1); --red-sm:rgba(192,96,96,0.2);
+  --blue:#6A9FD4; --blue-xs:rgba(106,159,212,0.1);
+  --text:#EDE8E0; --muted:#8A7A68; --muted2:#5A5040;
+  --radius:12px; --radius-sm:8px;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
 body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
 /* PIN */
-#pin-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.pin-box{text-align:center;max-width:340px;width:100%}
-.pin-icon{font-size:48px;margin-bottom:20px}
-.pin-box h1{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--text);margin-bottom:8px}
-.pin-box p{font-size:14px;color:var(--muted);margin-bottom:28px}
-.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:28px}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:all 0.2s}
-.pin-dot.filled{background:var(--green);border-color:var(--green)}
+#pin-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse 80% 60% at 30% 40%,rgba(122,184,122,0.05) 0%,transparent 60%)}
+.pin-box{text-align:center;max-width:320px;width:100%}
+.pin-icon{font-size:52px;margin-bottom:16px;filter:drop-shadow(0 4px 12px rgba(122,184,122,0.3))}
+.pin-box h1{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--text);margin-bottom:6px}
+.pin-box p{font-size:13px;color:var(--muted);margin-bottom:32px}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:32px}
+.pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border2);transition:all 0.25s}
+.pin-dot.filled{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(122,184,122,0.4)}
 .pin-dot.error{background:var(--red);border-color:var(--red);animation:shake 0.4s ease}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:0 auto}
-.pin-btn{aspect-ratio:1;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:'Jost',sans-serif;font-size:20px;font-weight:500;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center}
-.pin-btn:hover{border-color:var(--green);color:var(--green);background:var(--green-xs)}
-.pin-btn:active{transform:scale(0.92)}
-.pin-btn.del{font-size:16px;color:var(--muted)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto}
+.pin-btn{aspect-ratio:1;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:'Jost',sans-serif;font-size:18px;font-weight:400;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center}
+.pin-btn:hover{border-color:var(--green);background:var(--green-xs);color:var(--green)}
+.pin-btn:active{transform:scale(0.9)}
+.pin-btn.del{font-size:14px;color:var(--muted)}
 .pin-btn.empty{pointer-events:none;border:none;background:none}
-.pin-error{font-size:13px;color:var(--red);margin-top:16px;min-height:20px}
+.pin-error{font-size:12px;color:var(--red);margin-top:16px;min-height:18px}
 
 /* Layout */
-#dashboard{display:none}
-.topbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between}
-.topbar-left{display:flex;align-items:center;gap:12px}
-.topbar-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text)}
-.topbar-sub{font-size:12px;color:var(--muted)}
-.logout-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s}
-.logout-btn:hover{border-color:var(--muted);color:var(--text)}
+#dashboard{display:none;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(26,22,18,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-icon{font-size:20px}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px;font-family:'Jost',sans-serif}
+.icon-btn:hover{border-color:var(--border2);color:var(--text)}
 
 /* Tabs */
-.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 24px;background:var(--surface)}
-.tab-btn{font-family:'Jost',sans-serif;font-size:13px;font-weight:500;padding:14px 20px;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s;position:relative;bottom:-1px}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 20px;gap:4px}
+.tab-btn{font-family:'Jost',sans-serif;font-size:12px;font-weight:500;padding:13px 16px;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all 0.2s;position:relative;bottom:-1px;display:flex;align-items:center;gap:6px;letter-spacing:0.02em}
 .tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
 .tab-btn:hover:not(.active){color:var(--text)}
+.tab-badge{background:var(--green-xs);color:var(--green);font-size:10px;font-weight:600;padding:2px 6px;border-radius:100px}
 
-.main{max-width:1000px;margin:0 auto;padding:28px 20px 60px}
+.main{max-width:1100px;margin:0 auto;padding:24px 20px 60px}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
-/* Stats */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px}
-.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
-.stat-value{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--text)}
-.stat-sub{font-size:12px;color:var(--muted);margin-top:2px}
+/* Grid layouts */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:700px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.card-title-left{display:flex;align-items:center;gap:7px}
+
+/* Stat cards */
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;transition:border-color 0.2s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-color,var(--green));opacity:0.6}
+.stat-card.amber::before{background:var(--amber)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.red::before{background:var(--red)}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:5px}
+.stat-trend{font-size:10px;padding:2px 6px;border-radius:100px;font-weight:600}
+.stat-trend.up{background:var(--green-xs);color:var(--green)}
+.stat-trend.neutral{background:var(--amber-xs);color:var(--amber)}
 
 /* Weather */
-.weather-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:24px}
-.section-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
-.section-title span{font-size:14px}
-.weather-row{display:flex;gap:8px;flex-wrap:wrap}
-.w-card{flex:1;min-width:70px;max-width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 7px;text-align:center}
+.weather-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.weather-row::-webkit-scrollbar{height:3px}
+.weather-row::-webkit-scrollbar-track{background:var(--surface2)}
+.weather-row::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.w-card{flex-shrink:0;width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 6px;text-align:center;transition:border-color 0.2s}
 .w-card.today{border-color:var(--green);background:var(--green-xs)}
-.w-date{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px}
-.w-icon{font-size:20px;margin-bottom:5px}
-.w-temp{font-size:12px;font-weight:600;color:var(--text)}
-.w-rain{font-size:10px;color:var(--muted);margin-top:2px}
+.w-date{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px}
+.w-icon{font-size:18px;margin-bottom:4px}
+.w-temp{font-size:11px;font-weight:600;color:var(--text)}
+.w-rain{font-size:9px;color:var(--muted);margin-top:2px}
+.w-warn{margin-top:10px;padding:9px 12px;background:var(--amber-xs);border-radius:var(--radius-sm);font-size:11px;color:var(--amber);display:none;line-height:1.5}
+
+/* Today schedule */
+.schedule-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.schedule-item:last-child{border-bottom:none}
+.schedule-time{font-size:15px;font-weight:600;color:var(--text);min-width:44px;font-family:'Cormorant Garamond',serif}
+.schedule-info{flex:1}
+.schedule-name{font-size:13px;font-weight:500;color:var(--text)}
+.schedule-detail{font-size:11px;color:var(--muted);margin-top:2px}
+.schedule-spots{font-size:11px;padding:3px 8px;border-radius:100px;font-weight:600;white-space:nowrap}
+.schedule-spots.available{background:var(--green-xs);color:var(--green)}
+.schedule-spots.full{background:var(--red-xs);color:var(--red)}
+.schedule-spots.partial{background:var(--amber-xs);color:var(--amber)}
+
+/* Upcoming bookings mini list */
+.booking-mini{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.booking-mini:last-child{border-bottom:none}
+.bm-avatar{width:32px;height:32px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text);flex-shrink:0;text-transform:uppercase}
+.bm-info{flex:1;min-width:0}
+.bm-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm-detail{font-size:11px;color:var(--muted);margin-top:1px}
+.bm-badge{font-size:10px;padding:2px 7px;border-radius:100px;background:var(--green-xs);color:var(--green);white-space:nowrap;flex-shrink:0}
 
 /* Bookings table */
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.filter-btn{padding:7px 14px;border-radius:100px;border:1px solid var(--border);background:none;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s}
-.filter-btn.active{background:var(--green-xs);border-color:var(--green);color:var(--green)}
-.search-wrap{margin-left:auto;position:relative}
-.search-input{background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:7px 14px 7px 34px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text);outline:none;width:200px;transition:border-color 0.2s}
+.table-wrap{overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+.data-row{border-bottom:1px solid var(--border);transition:background 0.15s;cursor:default}
+.data-row:hover{background:var(--surface2)}
+.data-row td{padding:11px 14px;font-size:13px;vertical-align:middle}
+.client-name{font-weight:500;color:var(--text)}
+.client-email{font-size:11px;color:var(--muted);margin-top:2px}
+.svc-pill{display:inline-block;padding:3px 9px;border-radius:100px;background:var(--green-xs);color:var(--green);font-size:11px;font-weight:500;white-space:nowrap}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500}
+.status-pill.confirmed{background:var(--green-xs);color:var(--green)}
+.status-pill.cancelled{background:var(--red-xs);color:var(--red)}
+.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.price-cell{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--text)}
+.empty-row td,.loading-row td{text-align:center;padding:48px;color:var(--muted);font-size:13px}
+
+/* Filter bar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-pill{padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:none;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s}
+.filter-pill.active{background:var(--green-sm);border-color:var(--green);color:var(--green)}
+.filter-pill:hover:not(.active){border-color:var(--border2);color:var(--text)}
+.search-box{margin-left:auto;position:relative}
+.search-input{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:7px 14px 7px 32px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text);outline:none;width:190px;transition:border-color 0.2s}
 .search-input:focus{border-color:var(--green)}
 .search-input::placeholder{color:var(--muted)}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
-.booking-table{width:100%;border-collapse:collapse}
-.booking-table th{text-align:left;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:10px 12px;border-bottom:1px solid var(--border)}
-.booking-row{border-bottom:1px solid var(--border);transition:background 0.15s}
-.booking-row:hover{background:var(--surface2)}
-.booking-row td{padding:12px;font-size:13px;vertical-align:middle}
-.client-name{font-weight:500;color:var(--text)}
-.client-contact{font-size:11px;color:var(--muted);margin-top:2px}
-.service-tag{display:inline-block;padding:3px 9px;border-radius:100px;background:var(--green-xs);color:var(--green);font-size:11px;font-weight:500}
-.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500}
-.status-badge.confirmed{background:var(--green-xs);color:var(--green)}
-.status-badge.cancelled{background:var(--red-xs);color:var(--red)}
-.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
-.empty-row td,.loading-row td{text-align:center;padding:40px;color:var(--muted);font-size:13px}
-.spinner-sm{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:8px}
-.refresh-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px}
-.refresh-btn:hover{border-color:var(--green);color:var(--green)}
-.booking-count{font-size:12px;color:var(--muted)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
 
 /* Slot management */
-.slot-manager{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:700px){.slot-manager{grid-template-columns:1fr}}
-.slot-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-.slot-panel h3{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:16px}
-.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
-.form-group label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
-.form-group input,.form-group select{padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:var(--surface2);color:var(--text);outline:none;transition:border-color 0.2s;width:100%}
-.form-group input:focus,.form-group select:focus{border-color:var(--green)}
-.form-group select option{background:var(--surface2)}
-.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.times-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.time-toggle{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;background:var(--surface2);color:var(--muted)}
-.time-toggle.selected{background:var(--green-xs);border-color:var(--green);color:var(--green)}
-.add-btn{width:100%;padding:11px;background:var(--green-dk);border:none;border-radius:8px;color:white;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s}
+.slot-layout{display:grid;grid-template-columns:1fr 1.1fr;gap:16px}
+@media(max-width:750px){.slot-layout{grid-template-columns:1fr}}
+
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.form-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase}
+.form-input,.form-select{padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:13px;background:var(--surface2);color:var(--text);outline:none;transition:border-color 0.2s;width:100%}
+.form-input:focus,.form-select:focus{border-color:var(--green)}
+.form-select option{background:var(--surface2)}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Toggle chips */
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.chip{padding:6px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Jost',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;background:var(--surface2);color:var(--muted);user-select:none}
+.chip.on{background:var(--green-sm);border-color:var(--green);color:var(--green)}
+.chip:hover:not(.on){border-color:var(--border2);color:var(--text)}
+
+.add-btn{width:100%;padding:11px;background:var(--green-dk);border:none;border-radius:var(--radius-sm);color:white;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:4px}
 .add-btn:hover{background:var(--green)}
-.add-btn:disabled{opacity:0.5;cursor:not-allowed}
-.slot-success{font-size:12px;color:var(--green);margin-top:8px;min-height:18px;text-align:center}
-.slot-error{font-size:12px;color:var(--red);margin-top:8px;min-height:18px;text-align:center}
+.add-btn:disabled{opacity:0.4;cursor:not-allowed}
+.feedback{font-size:12px;min-height:18px;margin-top:8px;text-align:center;transition:opacity 0.3s}
+.feedback.ok{color:var(--green)}
+.feedback.err{color:var(--red)}
 
 /* Slot list */
-.slot-list{max-height:420px;overflow-y:auto}
-.slot-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
-.slot-item:last-child{border-bottom:none}
-.slot-item:hover{background:var(--surface2)}
-.slot-date{font-weight:500;color:var(--text);min-width:90px}
-.slot-time{color:var(--muted)}
-.slot-svc{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--green-xs);color:var(--green)}
-.slot-spots{font-size:11px;color:var(--muted)}
-.slot-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:6px;transition:all 0.18s;line-height:1}
-.slot-delete:hover{color:var(--red);background:var(--red-xs)}
-.slot-filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.slot-filter-btn{padding:5px 12px;border-radius:100px;border:1px solid var(--border);background:none;font-family:'Jost',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all 0.18s}
-.slot-filter-btn.active{background:var(--green-xs);border-color:var(--green);color:var(--green)}
+.slot-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.slot-filters{display:flex;gap:6px}
+.slot-filter{padding:5px 11px;border-radius:100px;border:1px solid var(--border);background:none;font-family:'Jost',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all 0.18s}
+.slot-filter.active{background:var(--green-xs);border-color:var(--green);color:var(--green)}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* Bulk select toolbar */
+.bulk-bar{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:8px;min-height:38px}
+.select-all-btn{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:none;font-family:'Jost',sans-serif;transition:all 0.18s;white-space:nowrap}
+.select-all-btn:hover{border-color:var(--border2);color:var(--text)}
+.select-all-btn.has-selection{border-color:var(--green);color:var(--green);background:var(--green-xs)}
+.check-icon{width:14px;height:14px;border-radius:3px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;transition:all 0.18s}
+.check-icon.checked{background:currentColor}
+.check-icon.checked::after{content:'✓';color:var(--bg);font-weight:700}
+.check-icon.indeterminate{background:currentColor}
+.check-icon.indeterminate::after{content:'−';color:var(--bg);font-weight:700}
+.selection-count{font-size:12px;color:var(--muted);margin-left:2px}
+.bulk-delete-btn{margin-left:auto;display:none;align-items:center;gap:6px;background:var(--red-xs);border:1px solid var(--red);color:var(--red);border-radius:6px;padding:5px 12px;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.bulk-delete-btn.show{display:flex}
+.bulk-delete-btn:hover{background:var(--red);color:white}
+
+/* Slot items */
+.slot-list{max-height:440px;overflow-y:auto}
+.slot-list::-webkit-scrollbar{width:3px}
+.slot-list::-webkit-scrollbar-track{background:var(--surface2)}
+.slot-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.slot-date-header{padding:7px 12px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;background:var(--surface2);border-bottom:1px solid var(--border);position:sticky;top:0}
+.slot-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);transition:background 0.15s}
+.slot-row:hover{background:var(--surface2)}
+.slot-row:last-child{border-bottom:none}
+.slot-cb-wrap{width:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.custom-cb{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--border2);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0}
+.custom-cb:hover{border-color:var(--green)}
+.custom-cb.checked{background:var(--green);border-color:var(--green)}
+.custom-cb.checked::after{content:'✓';color:white;font-size:9px;font-weight:700;line-height:1}
+.slot-time{font-size:13px;font-weight:600;color:var(--text);min-width:40px;font-family:'Cormorant Garamond',serif}
+.slot-svc{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--green-xs);color:var(--green);font-weight:500;flex:1}
+.slot-capacity{font-size:11px;min-width:60px;text-align:right;font-weight:500}
+.slot-capacity.full{color:var(--red)}
+.slot-capacity.partial{color:var(--amber)}
+.slot-capacity.empty{color:var(--green)}
+.slot-del{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:5px;transition:all 0.15s;line-height:1}
+.slot-del:hover{color:var(--red);background:var(--red-xs)}
+
+/* Refresh btn */
+.refresh-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 11px;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px}
+.refresh-btn:hover{border-color:var(--green);color:var(--green)}
+
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text)}
+.count-badge{font-size:12px;color:var(--muted)}
+
+.empty-state{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.spinner-sm{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:6px}
+
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-
-@media(max-width:700px){.booking-table th:nth-child(4),.booking-table td:nth-child(4),.booking-table th:nth-child(5),.booking-table td:nth-child(5){display:none}.search-wrap{margin-left:0;width:100%}.search-input{width:100%}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -146,10 +240,8 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
     <h1>Hönshyltegård</h1>
     <p>Ange PIN för att logga in</p>
     <div class="pin-dots">
-      <div class="pin-dot" id="d0"></div>
-      <div class="pin-dot" id="d1"></div>
-      <div class="pin-dot" id="d2"></div>
-      <div class="pin-dot" id="d3"></div>
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
     </div>
     <div class="pin-pad">
       <button class="pin-btn" onclick="pinPress('1')">1</button>
@@ -171,143 +263,204 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 
 <!-- Dashboard -->
 <div id="dashboard">
+
   <div class="topbar">
-    <div class="topbar-left">
-      <span style="font-size:22px">🦙</span>
+    <div class="topbar-brand">
+      <span class="topbar-icon">🦙</span>
       <div>
         <div class="topbar-title">Hönshyltegård</div>
-        <div class="topbar-sub">Admin</div>
+        <div class="topbar-sub">Bokningsadmin</div>
       </div>
     </div>
-    <button class="logout-btn" onclick="logout()">Logga ut</button>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="refreshAll()">↻ Uppdatera</button>
+      <button class="icon-btn" onclick="logout()">Logga ut</button>
+    </div>
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('overview', this)">📊 Översikt</button>
-    <button class="tab-btn" onclick="showTab('bookings', this)">📅 Bokningar</button>
-    <button class="tab-btn" onclick="showTab('slots', this)">🕐 Tider</button>
+    <button class="tab-btn active" onclick="showTab('overview',this)">📊 Översikt</button>
+    <button class="tab-btn" onclick="showTab('bookings',this)">📋 Bokningar <span class="tab-badge" id="badge-bookings">0</span></button>
+    <button class="tab-btn" onclick="showTab('slots',this)">🕐 Tider</button>
   </div>
 
   <div class="main">
 
-    <!-- OVERVIEW TAB -->
+    <!-- ═══ OVERVIEW ═══ -->
     <div class="tab-panel active" id="tab-overview">
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-label">Idag</div><div class="stat-value" id="stat-today">—</div><div class="stat-sub">bokningar</div></div>
-        <div class="stat-card"><div class="stat-label">Denna vecka</div><div class="stat-value" id="stat-week">—</div><div class="stat-sub">bokningar</div></div>
-        <div class="stat-card"><div class="stat-label">Kommande</div><div class="stat-value" id="stat-upcoming">—</div><div class="stat-sub">totalt</div></div>
-        <div class="stat-card"><div class="stat-label">Totalt</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">bokningar</div></div>
+
+      <!-- Stats -->
+      <div class="grid-4">
+        <div class="stat-card">
+          <div class="stat-label">Idag</div>
+          <div class="stat-value" id="stat-today">—</div>
+          <div class="stat-sub">bokningar</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Denna vecka</div>
+          <div class="stat-value" id="stat-week">—</div>
+          <div class="stat-sub">bokningar</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Totalt</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-sub">alla bokningar</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Intäkter</div>
+          <div class="stat-value" id="stat-revenue">—</div>
+          <div class="stat-sub">bekräftade</div>
+        </div>
       </div>
-      <div class="weather-section">
-        <div class="section-title">🌤 Väderprognos 10 dagar – Hönshylte Gård</div>
-        <div class="weather-row" id="weather-row"><span style="color:var(--muted);font-size:13px">Laddar väder…</span></div>
-        <div id="w-warn" style="margin-top:10px;padding:10px;background:rgba(200,146,42,0.12);border-radius:8px;font-size:12px;color:var(--amber);display:none">⚡ Extremt väder i prognosen – kontrollera om promenader behöver ställas in.</div>
+
+      <div class="grid-2">
+
+        <!-- Today's schedule -->
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-left">📅 Dagens schema</div>
+            <span id="today-date" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div id="today-schedule"><div class="empty-state">Inga bokningar idag</div></div>
+        </div>
+
+        <!-- Upcoming bookings -->
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-left">🔜 Kommande bokningar</div>
+          </div>
+          <div id="upcoming-list"><div class="empty-state">Inga kommande bokningar</div></div>
+        </div>
+
       </div>
+
+      <!-- Weather -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-left">🌤 Väderprognos 10 dagar – Hönshylte Gård</div>
+          <span style="font-size:11px;color:var(--muted)">Ryd, Småland</span>
+        </div>
+        <div class="weather-row" id="weather-row"><span style="color:var(--muted);font-size:12px">Laddar…</span></div>
+        <div id="w-warn" class="w-warn">⚡ Extremt väder i prognosen – kontrollera om promenader behöver ställas in.</div>
+      </div>
+
     </div>
 
-    <!-- BOOKINGS TAB -->
+    <!-- ═══ BOOKINGS ═══ -->
     <div class="tab-panel" id="tab-bookings">
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="setFilter('all',this)">Alla</button>
-        <button class="filter-btn" onclick="setFilter('today',this)">Idag</button>
-        <button class="filter-btn" onclick="setFilter('upcoming',this)">Kommande</button>
-        <button class="filter-btn" onclick="setFilter('past',this)">Historik</button>
-        <div class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input class="search-input" type="text" placeholder="Sök kund, tjänst…" oninput="searchBookings(this.value)">
-        </div>
-      </div>
+
       <div class="section-header">
-        <div class="section-title" style="font-size:18px;margin-bottom:0">Bokningar</div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="booking-count" id="booking-count"></span>
-          <button class="refresh-btn" onclick="loadBookings()"><span>↻</span> Uppdatera</button>
+        <div class="section-title">Alla bokningar</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="count-badge" id="booking-count"></span>
+          <button class="refresh-btn" onclick="renderBookings()">↻</button>
         </div>
       </div>
-      <table class="booking-table">
-        <thead><tr>
-          <th>Kund</th><th>Datum & Tid</th><th>Tjänst</th><th>Pers.</th><th>Status</th>
-        </tr></thead>
-        <tbody id="booking-tbody">
-          <tr class="loading-row"><td colspan="5"><div class="spinner-sm"></div><br>Laddar…</td></tr>
-        </tbody>
-      </table>
+
+      <div class="toolbar">
+        <button class="filter-pill active" onclick="setFilter('all',this)">Alla</button>
+        <button class="filter-pill" onclick="setFilter('today',this)">Idag</button>
+        <button class="filter-pill" onclick="setFilter('upcoming',this)">Bekräftade</button>
+        <button class="filter-pill" onclick="setFilter('cancelled',this)">Avbokade</button>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" type="text" placeholder="Sök namn, e-post…" oninput="searchBookings(this.value)">
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Kund</th>
+            <th>Bokad</th>
+            <th>Tjänst</th>
+            <th>Pers.</th>
+            <th>Pris</th>
+            <th>Status</th>
+          </tr></thead>
+          <tbody id="booking-tbody">
+            <tr class="loading-row"><td colspan="6"><div class="spinner-sm"></div><br>Laddar…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
-    <!-- SLOTS TAB -->
+    <!-- ═══ SLOTS ═══ -->
     <div class="tab-panel" id="tab-slots">
-      <div class="slot-manager">
+      <div class="slot-layout">
 
         <!-- Add slots -->
-        <div class="slot-panel">
-          <h3>➕ Lägg till tider</h3>
+        <div class="card">
+          <div class="card-title"><div class="card-title-left">➕ Lägg till tider</div></div>
 
           <div class="form-group">
-            <label>Tjänst</label>
-            <select id="slot-service">
-              <option value="">Laddar…</option>
-            </select>
+            <div class="form-label">Tjänst</div>
+            <select class="form-select" id="slot-service"></select>
           </div>
 
           <div class="form-row-2">
             <div class="form-group">
-              <label>Från datum</label>
-              <input type="date" id="slot-date-from">
+              <div class="form-label">Från datum</div>
+              <input type="date" class="form-input" id="slot-from">
             </div>
             <div class="form-group">
-              <label>Till datum</label>
-              <input type="date" id="slot-date-to">
+              <div class="form-label">Till datum</div>
+              <input type="date" class="form-input" id="slot-to">
             </div>
           </div>
 
           <div class="form-group">
-            <label>Välj tider (klicka för att markera)</label>
-            <div class="times-grid" id="times-grid">
-              <!-- Populated by JS -->
+            <div class="form-label">Tider (klicka för att välja)</div>
+            <div class="chip-row" id="time-chips"></div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Hoppa över veckodagar</div>
+            <div class="chip-row" id="skip-chips">
+              <div class="chip" data-day="0" onclick="toggleChip(this,'skip')">Sön</div>
+              <div class="chip" data-day="1" onclick="toggleChip(this,'skip')">Mån</div>
+              <div class="chip" data-day="2" onclick="toggleChip(this,'skip')">Tis</div>
+              <div class="chip" data-day="3" onclick="toggleChip(this,'skip')">Ons</div>
+              <div class="chip" data-day="4" onclick="toggleChip(this,'skip')">Tor</div>
+              <div class="chip" data-day="5" onclick="toggleChip(this,'skip')">Fre</div>
+              <div class="chip" data-day="6" onclick="toggleChip(this,'skip')">Lör</div>
             </div>
           </div>
 
           <div class="form-group">
-            <label>Max platser per tid</label>
-            <input type="number" id="slot-max" value="8" min="1" max="50">
+            <div class="form-label">Max platser per tid</div>
+            <input type="number" class="form-input" id="slot-max" value="8" min="1" max="50">
           </div>
 
-          <div class="form-group" style="margin-bottom:8px">
-            <label>Hoppa över veckodagar (valfritt)</label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="skip-days">
-              <button class="time-toggle" data-day="0" onclick="toggleSkipDay(this)">Sön</button>
-              <button class="time-toggle" data-day="1" onclick="toggleSkipDay(this)">Mån</button>
-              <button class="time-toggle" data-day="2" onclick="toggleSkipDay(this)">Tis</button>
-              <button class="time-toggle" data-day="3" onclick="toggleSkipDay(this)">Ons</button>
-              <button class="time-toggle" data-day="4" onclick="toggleSkipDay(this)">Tor</button>
-              <button class="time-toggle" data-day="5" onclick="toggleSkipDay(this)">Fre</button>
-              <button class="time-toggle" data-day="6" onclick="toggleSkipDay(this)">Lör</button>
-            </div>
-          </div>
-
-          <button class="add-btn" id="add-slots-btn" onclick="addSlots()">Lägg till tider</button>
-          <div class="slot-success" id="slot-success"></div>
-          <div class="slot-error" id="slot-error"></div>
+          <button class="add-btn" id="add-btn" onclick="addSlots()">Lägg till tider</button>
+          <div class="feedback" id="slot-feedback"></div>
         </div>
 
         <!-- Slot list -->
-        <div class="slot-panel">
-          <h3>📋 Befintliga tider</h3>
-          <div class="slot-filter-row">
-            <button class="slot-filter-btn active" onclick="setSlotFilter('upcoming',this)">Kommande</button>
-            <button class="slot-filter-btn" onclick="setSlotFilter('all',this)">Alla</button>
+        <div class="card" style="padding:16px">
+          <div class="slot-list-header">
+            <div class="card-title" style="margin-bottom:0">📋 Befintliga tider</div>
+            <div class="slot-filters">
+              <button class="slot-filter active" onclick="setSlotView('upcoming',this)">Kommande</button>
+              <button class="slot-filter" onclick="setSlotView('all',this)">Alla</button>
+            </div>
           </div>
-          <div class="slot-toolbar">
-            <label class="select-all-row">
-              <input type="checkbox" class="slot-checkbox" id="select-all-slots" onchange="toggleSelectAll(this)">
-              <span id="select-all-label">Markera alla</span>
-            </label>
-            <button class="bulk-delete-btn" id="bulk-delete-btn" onclick="deleteBulkSlots()">
-              🗑 Ta bort valda (<span id="selected-count">0</span>)
+
+          <!-- Bulk bar -->
+          <div class="bulk-bar">
+            <button class="select-all-btn" id="select-all-btn" onclick="toggleSelectAll()">
+              <div class="check-icon" id="check-icon"></div>
+              <span id="select-label">Markera alla</span>
+            </button>
+            <span class="selection-count" id="sel-count"></span>
+            <button class="bulk-delete-btn" id="bulk-del-btn" onclick="deleteBulk()">
+              🗑 Ta bort valda
             </button>
           </div>
+
           <div class="slot-list" id="slot-list">
-            <div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Laddar tider…</div>
+            <div class="empty-state"><div class="spinner-sm"></div><br>Laddar…</div>
           </div>
         </div>
 
@@ -318,377 +471,410 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 </div>
 
 <script>
+const EDGE = 'https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/admin';
+const LAT = 56.47739536235032, LNG = 14.690764677283862;
+const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+const DAYS   = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+const TIMES  = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+const WMO    = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
+const WMO_WARN = [65,75,82,95,96,99];
+
 let currentPin = sessionStorage.getItem('sb_pin') || '';
 let allBookings = [], allSlots = [], services = [];
-let activeFilter = 'all', searchQuery = '', slotFilter = 'upcoming';
+let activeFilter = 'all', searchQ = '', slotView = 'upcoming';
+let selectedIds = [];
+let pinBuf = '';
 
-const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-const DAYS_SV = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
-const LAT = 56.47739536235032, LNG = 14.690764677283862;
-
-// Time options
-const TIME_OPTIONS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
-let selectedTimes = [];
-let skipDays = [];
-
-// ── PIN ────────────────────────────────────
-let pinBuffer = '';
 if (currentPin) tryUnlock(currentPin);
 
+// ── PIN ──────────────────────────────────
 function pinPress(d) {
-  if (pinBuffer.length >= 4) return;
-  pinBuffer += d;
-  updateDots();
-  if (pinBuffer.length === 4) setTimeout(() => tryUnlock(pinBuffer), 150);
+  if (pinBuf.length >= 4) return;
+  pinBuf += d; updateDots();
+  if (pinBuf.length === 4) setTimeout(() => tryUnlock(pinBuf), 150);
 }
-function pinDel() { pinBuffer = pinBuffer.slice(0,-1); updateDots(); document.getElementById('pin-error').textContent = ''; }
-function updateDots() { for(let i=0;i<4;i++){const d=document.getElementById('d'+i);d.classList.toggle('filled',i<pinBuffer.length);d.classList.remove('error');} }
-
+function pinDel() { pinBuf = pinBuf.slice(0,-1); updateDots(); document.getElementById('pin-error').textContent = ''; }
+function updateDots() {
+  for(let i=0;i<4;i++){const d=document.getElementById('d'+i);d.classList.toggle('filled',i<pinBuf.length);d.classList.remove('error');}
+}
 async function tryUnlock(pin) {
   try {
-    const r = await adminCall({ action: 'getServices' }, pin);
+    const r = await call({ action: 'getDashboard' }, pin);
     if (r.status === 401) { pinError(); return; }
+    const data = await r.json();
     sessionStorage.setItem('sb_pin', pin);
     currentPin = pin;
     document.getElementById('pin-screen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
-    const data = await r.json();
-    services = data;
-    initDashboard();
+    processData(data);
+    initSlotForm();
+    loadWeather();
   } catch(e) { pinError(); }
 }
-
 function pinError() {
-  pinBuffer = '';
+  pinBuf = '';
   for(let i=0;i<4;i++){const d=document.getElementById('d'+i);d.classList.remove('filled');d.classList.add('error');}
   document.getElementById('pin-error').textContent = 'Fel PIN-kod';
-  setTimeout(() => { for(let i=0;i<4;i++) document.getElementById('d'+i).classList.remove('error'); document.getElementById('pin-error').textContent = ''; }, 1200);
+  setTimeout(() => { for(let i=0;i<4;i++) document.getElementById('d'+i).classList.remove('error'); document.getElementById('pin-error').textContent=''; }, 1400);
 }
+function logout() { sessionStorage.removeItem('sb_pin'); location.reload(); }
 
-function logout() { sessionStorage.removeItem('sb_pin'); currentPin = ''; location.reload(); }
-
-// ── Admin API call ─────────────────────────
-async function adminCall(body, pin) {
-  return fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/admin', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Pin': pin || currentPin },
+// ── API ──────────────────────────────────
+function call(body, pin) {
+  return fetch(EDGE, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Pin': pin || currentPin},
     body: JSON.stringify(body)
   });
 }
 
-// ── Init ───────────────────────────────────
-async function initDashboard() {
-  renderServiceSelect();
-  renderTimeToggles();
-  setDefaultDates();
-  loadBookings();
-  loadWeather();
-  loadSlots();
-}
-
-// ── Tabs ───────────────────────────────────
-function showTab(name, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
-}
-
-// ── Bookings ───────────────────────────────
-async function loadBookings() {
-  setTableLoading();
+// ── Data processing ───────────────────────
+async function refreshAll() {
   try {
-    const r = await adminCall({ action: 'getBookings' });
-    allBookings = await r.json();
-    if (!Array.isArray(allBookings)) allBookings = [];
-    updateStats();
-    renderBookings();
-  } catch(e) {
-    document.getElementById('booking-tbody').innerHTML = '<tr class="empty-row"><td colspan="5">Fel: ' + e.message + '</td></tr>';
+    const r = await call({ action: 'getDashboard' });
+    const data = await r.json();
+    processData(data);
+    loadSlots();
+  } catch(e) { console.error(e); }
+}
+
+function processData(data) {
+  allBookings = Array.isArray(data.bookings) ? data.bookings : [];
+  services    = Array.isArray(data.services)  ? data.services  : [];
+  renderStats();
+  renderOverview(data.upcomingSlots || []);
+  renderBookings();
+  document.getElementById('badge-bookings').textContent = allBookings.filter(b => b.status !== 'cancelled').length;
+}
+
+// ── STATS ─────────────────────────────────
+function renderStats() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().split('T')[0];
+  const weekEnd  = new Date(today); weekEnd.setDate(today.getDate() + 7);
+
+  const confirmed = allBookings.filter(b => b.status !== 'cancelled');
+  const todayBks  = confirmed.filter(b => (b.slot_date || '').startsWith(todayStr) || new Date(b.created_at).toDateString() === today.toDateString());
+  const weekBks   = confirmed.filter(b => { const d = new Date(b.created_at); return d >= today && d <= weekEnd; });
+  const revenue   = confirmed.reduce((s,b) => s + (b.total_price || 0), 0);
+
+  document.getElementById('stat-today').textContent   = todayBks.length;
+  document.getElementById('stat-week').textContent    = weekBks.length;
+  document.getElementById('stat-total').textContent   = confirmed.length;
+  document.getElementById('stat-revenue').textContent = revenue > 0 ? Math.round(revenue/1000) + 'k' : revenue + ' kr';
+}
+
+// ── OVERVIEW ──────────────────────────────
+function renderOverview(upcomingSlots) {
+  const todayStr = new Date().toISOString().split('T')[0];
+  document.getElementById('today-date').textContent = formatDateLabel(todayStr);
+
+  // Today's schedule from slots
+  const todaySlots = upcomingSlots.filter(s => s.slot_date === todayStr);
+  const scheduleEl = document.getElementById('today-schedule');
+  if (!todaySlots.length) {
+    scheduleEl.innerHTML = '<div class="empty-state">Inga tider schemalagda idag</div>';
+  } else {
+    scheduleEl.innerHTML = todaySlots.map(s => {
+      const left = s.max_spots - s.booked_spots;
+      const pct  = s.booked_spots / s.max_spots;
+      const cls  = pct >= 1 ? 'full' : pct > 0 ? 'partial' : 'available';
+      const lbl  = pct >= 1 ? 'Fullt' : left + '/' + s.max_spots + ' kvar';
+      const svc  = s.services?.name || '—';
+      return '<div class="schedule-item">'
+        + '<span class="schedule-time">' + s.slot_time.substring(0,5) + '</span>'
+        + '<div class="schedule-info"><div class="schedule-name">' + esc(svc) + '</div>'
+        + '<div class="schedule-detail">' + s.booked_spots + ' bokade</div></div>'
+        + '<span class="schedule-spots ' + cls + '">' + lbl + '</span>'
+        + '</div>';
+    }).join('');
+  }
+
+  // Next 8 upcoming bookings
+  const upcoming = allBookings.filter(b => b.status !== 'cancelled').slice(0, 8);
+  const upEl = document.getElementById('upcoming-list');
+  if (!upcoming.length) {
+    upEl.innerHTML = '<div class="empty-state">Inga kommande bokningar</div>';
+  } else {
+    upEl.innerHTML = upcoming.map(b => {
+      const name   = esc(b.first_name + ' ' + b.last_name);
+      const initials = (b.first_name[0] || '') + (b.last_name[0] || '');
+      const svc    = b.services?.name || '—';
+      const guests = (b.adults || 0) + (b.children || 0);
+      const d      = new Date(b.created_at);
+      const dateStr = d.getDate() + ' ' + MONTHS[d.getMonth()];
+      return '<div class="booking-mini">'
+        + '<div class="bm-avatar">' + initials.toUpperCase() + '</div>'
+        + '<div class="bm-info"><div class="bm-name">' + name + '</div>'
+        + '<div class="bm-detail">' + dateStr + ' · ' + esc(svc) + ' · ' + guests + ' pers.</div></div>'
+        + (b.total_price ? '<span class="bm-badge">' + b.total_price + ' kr</span>' : '')
+        + '</div>';
+    }).join('');
   }
 }
 
-function updateStats() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
-  document.getElementById('stat-today').textContent    = allBookings.filter(b => isSameDay(new Date(b.created_at), today)).length;
-  document.getElementById('stat-week').textContent     = allBookings.filter(b => { const d=new Date(b.created_at); return d>=today&&d<=weekEnd; }).length;
-  document.getElementById('stat-upcoming').textContent = allBookings.filter(b => b.status === 'confirmed').length;
-  document.getElementById('stat-total').textContent    = allBookings.length;
-}
-
-function isSameDay(a,b) { return a.toDateString() === b.toDateString(); }
-
+// ── BOOKINGS ──────────────────────────────
 function setFilter(f, btn) {
   activeFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderBookings();
 }
-
-function searchBookings(q) { searchQuery = q.toLowerCase(); renderBookings(); }
+function searchBookings(q) { searchQ = q.toLowerCase(); renderBookings(); }
 
 function renderBookings() {
   let list = allBookings.filter(b => {
-    if (activeFilter === 'today')    return isSameDay(new Date(b.created_at), new Date());
-    if (activeFilter === 'upcoming') return b.status === 'confirmed';
-    if (activeFilter === 'past')     return b.status === 'cancelled';
+    if (activeFilter === 'today')     return new Date(b.created_at).toDateString() === new Date().toDateString();
+    if (activeFilter === 'upcoming')  return b.status !== 'cancelled';
+    if (activeFilter === 'cancelled') return b.status === 'cancelled';
     return true;
   });
-  if (searchQuery) {
+  if (searchQ) {
     list = list.filter(b =>
-      (b.first_name + ' ' + b.last_name).toLowerCase().includes(searchQuery) ||
-      (b.email || '').toLowerCase().includes(searchQuery) ||
-      ((b.services && b.services.name) || '').toLowerCase().includes(searchQuery)
+      (b.first_name + ' ' + b.last_name).toLowerCase().includes(searchQ) ||
+      (b.email || '').toLowerCase().includes(searchQ) ||
+      (b.phone || '').includes(searchQ)
     );
   }
   document.getElementById('booking-count').textContent = list.length + ' bokningar';
-  if (!list.length) { document.getElementById('booking-tbody').innerHTML = '<tr class="empty-row"><td colspan="5">Inga bokningar hittades</td></tr>'; return; }
+  if (!list.length) {
+    document.getElementById('booking-tbody').innerHTML = '<tr class="loading-row"><td colspan="6">Inga bokningar hittades</td></tr>';
+    return;
+  }
   document.getElementById('booking-tbody').innerHTML = list.map(b => {
     const d = new Date(b.created_at);
     const dateStr = d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-    const svcName = (b.services && b.services.name) || '—';
-    const guests = (b.adults || 0) + (b.children || 0);
-    const status = b.status === 'cancelled' ? 'cancelled' : 'confirmed';
-    return '<tr class="booking-row">'
+    const guests  = (b.adults || 0) + (b.children || 0);
+    const svc     = b.services?.name || '—';
+    const status  = b.status === 'cancelled' ? 'cancelled' : 'confirmed';
+    return '<tr class="data-row">'
       + '<td><div class="client-name">' + esc(b.first_name + ' ' + b.last_name) + '</div>'
-      + '<div class="client-contact">' + (b.email ? '✉ ' + esc(b.email) : '') + (b.phone ? ' · 📞 ' + esc(b.phone) : '') + '</div></td>'
-      + '<td><div>' + dateStr + '</div></td>'
-      + '<td><span class="service-tag">' + esc(svcName) + '</span></td>'
-      + '<td style="color:var(--muted);font-size:12px">👥 ' + guests + '</td>'
-      + '<td><span class="status-badge ' + status + '"><span class="status-dot"></span>' + (status === 'confirmed' ? 'Bekräftad' : 'Avbokad') + '</span></td>'
+      + '<div class="client-email">' + (b.email ? '✉ ' + esc(b.email) : '') + (b.phone ? ' · 📞 ' + esc(b.phone) : '') + '</div></td>'
+      + '<td style="color:var(--muted);font-size:12px;white-space:nowrap">' + dateStr + '</td>'
+      + '<td><span class="svc-pill">' + esc(svc) + '</span></td>'
+      + '<td style="color:var(--muted)">👥 ' + guests + (b.alpacas ? ' · 🦙 ' + b.alpacas : '') + '</td>'
+      + '<td class="price-cell">' + (b.total_price ? b.total_price + ' kr' : '—') + '</td>'
+      + '<td><span class="status-pill ' + status + '"><span class="status-dot"></span>' + (status === 'confirmed' ? 'Bekräftad' : 'Avbokad') + '</span></td>'
       + '</tr>';
   }).join('');
 }
 
-function setTableLoading() { document.getElementById('booking-tbody').innerHTML = '<tr class="loading-row"><td colspan="5"><div class="spinner-sm"></div><br>Hämtar bokningar…</td></tr>'; }
+// ── SLOTS ─────────────────────────────────
+let selectedTimes = [], skipDays = [], selectedIds = [];
 
-// ── SLOT MANAGEMENT ─────────────────────────
-function renderServiceSelect() {
-  const sel = document.getElementById('slot-service');
-  sel.innerHTML = services.map(s => '<option value="' + s.id + '">' + s.name + '</option>').join('');
-}
-
-function renderTimeToggles() {
-  document.getElementById('times-grid').innerHTML = TIME_OPTIONS.map(t =>
-    '<button class="time-toggle" data-time="' + t + '" onclick="toggleTime(this)">' + t + '</button>'
+function initSlotForm() {
+  // Service select
+  document.getElementById('slot-service').innerHTML = services.map(s =>
+    '<option value="' + s.id + '">' + s.name + '</option>'
   ).join('');
+
+  // Time chips
+  document.getElementById('time-chips').innerHTML = TIMES.map(t =>
+    '<div class="chip" data-time="' + t + '" onclick="toggleChip(this,\'time\')">' + t + '</div>'
+  ).join('');
+
+  // Default dates
+  const today = new Date().toISOString().split('T')[0];
+  const next  = new Date(); next.setMonth(next.getMonth() + 1);
+  document.getElementById('slot-from').value = today;
+  document.getElementById('slot-to').value   = next.toISOString().split('T')[0];
+
+  loadSlots();
 }
 
-function setDefaultDates() {
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  document.getElementById('slot-date-from').value = todayStr;
-  const nextMonth = new Date(today);
-  nextMonth.setMonth(today.getMonth() + 1);
-  document.getElementById('slot-date-to').value = nextMonth.toISOString().split('T')[0];
-}
-
-function toggleTime(btn) {
-  const t = btn.dataset.time;
-  btn.classList.toggle('selected');
-  if (btn.classList.contains('selected')) {
-    if (!selectedTimes.includes(t)) selectedTimes.push(t);
+function toggleChip(el, group) {
+  el.classList.toggle('on');
+  if (group === 'time') {
+    const t = el.dataset.time;
+    selectedTimes = el.classList.contains('on')
+      ? [...selectedTimes, t]
+      : selectedTimes.filter(x => x !== t);
   } else {
-    selectedTimes = selectedTimes.filter(x => x !== t);
-  }
-}
-
-function toggleSkipDay(btn) {
-  const day = parseInt(btn.dataset.day);
-  btn.classList.toggle('selected');
-  if (btn.classList.contains('selected')) {
-    if (!skipDays.includes(day)) skipDays.push(day);
-  } else {
-    skipDays = skipDays.filter(d => d !== day);
+    const d = parseInt(el.dataset.day);
+    skipDays = el.classList.contains('on')
+      ? [...skipDays, d]
+      : skipDays.filter(x => x !== d);
   }
 }
 
 async function addSlots() {
-  const serviceId = document.getElementById('slot-service').value;
-  const from      = document.getElementById('slot-date-from').value;
-  const to        = document.getElementById('slot-date-to').value;
-  const maxSpots  = parseInt(document.getElementById('slot-max').value) || 8;
-  const successEl = document.getElementById('slot-success');
-  const errorEl   = document.getElementById('slot-error');
-  successEl.textContent = '';
-  errorEl.textContent = '';
+  const svcId   = document.getElementById('slot-service').value;
+  const from    = document.getElementById('slot-from').value;
+  const to      = document.getElementById('slot-to').value;
+  const maxSpots= parseInt(document.getElementById('slot-max').value) || 8;
+  const fb      = document.getElementById('slot-feedback');
+  fb.className  = 'feedback'; fb.textContent = '';
 
-  if (!serviceId) { errorEl.textContent = 'Välj en tjänst.'; return; }
-  if (!from || !to) { errorEl.textContent = 'Välj datum.'; return; }
-  if (!selectedTimes.length) { errorEl.textContent = 'Välj minst en tid.'; return; }
+  if (!svcId) { fb.className='feedback err'; fb.textContent='Välj en tjänst.'; return; }
+  if (!from || !to) { fb.className='feedback err'; fb.textContent='Välj datumintervall.'; return; }
+  if (!selectedTimes.length) { fb.className='feedback err'; fb.textContent='Välj minst en tid.'; return; }
 
-  // Generate dates
   const dates = [];
-  let cur = new Date(from);
-  const end = new Date(to);
+  let cur = new Date(from), end = new Date(to);
   while (cur <= end) {
-    if (!skipDays.includes(cur.getDay())) {
-      dates.push(cur.toISOString().split('T')[0]);
-    }
+    if (!skipDays.includes(cur.getDay())) dates.push(cur.toISOString().split('T')[0]);
     cur.setDate(cur.getDate() + 1);
   }
+  if (!dates.length) { fb.className='feedback err'; fb.textContent='Inga datum matchade.'; return; }
 
-  if (!dates.length) { errorEl.textContent = 'Inga datum matchade – justera filter.'; return; }
-
-  const btn = document.getElementById('add-slots-btn');
+  const btn = document.getElementById('add-btn');
   btn.disabled = true; btn.textContent = 'Lägger till…';
-
   try {
-    const r = await adminCall({ action: 'createBulkSlots', service_id: parseInt(serviceId), dates, times: selectedTimes.map(t => t + ':00'), max_spots: maxSpots });
+    const r    = await call({ action:'createBulkSlots', service_id:parseInt(svcId), dates, times:selectedTimes.map(t=>t+':00'), max_spots:maxSpots });
     const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Fel');
-    successEl.textContent = '✓ ' + data.created + ' tider skapade!';
+    if (!r.ok) throw new Error(data.error || 'Okänt fel');
+    fb.className = 'feedback ok';
+    fb.textContent = '✓ ' + data.created + ' tider skapade!';
     loadSlots();
+    refreshAll();
   } catch(e) {
-    errorEl.textContent = 'Fel: ' + e.message;
+    fb.className = 'feedback err'; fb.textContent = 'Fel: ' + e.message;
   }
-
   btn.disabled = false; btn.textContent = 'Lägg till tider';
 }
 
-async function loadSlots() {
-  const today = new Date();
-  const from = slotFilter === 'upcoming' ? today.toISOString().split('T')[0] : '2020-01-01';
-  const to = new Date(today); to.setMonth(today.getMonth() + 6);
-  const toStr = to.toISOString().split('T')[0];
-
-  try {
-    const r = await adminCall({ action: 'getSlots', from, to: toStr });
-    allSlots = await r.json();
-    if (!Array.isArray(allSlots)) allSlots = [];
-    renderSlotList();
-  } catch(e) {
-    document.getElementById('slot-list').innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px;text-align:center">Fel: ' + e.message + '</div>';
-  }
-}
-
-function setSlotFilter(f, btn) {
-  slotFilter = f;
-  document.querySelectorAll('.slot-filter-btn').forEach(b => b.classList.remove('active'));
+function setSlotView(v, btn) {
+  slotView = v;
+  document.querySelectorAll('.slot-filter').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadSlots();
 }
 
-function renderSlotList() {
-  const list = document.getElementById('slot-list');
-  selectedSlotIds = [];
-  updateBulkUI();
-
-  if (!allSlots.length) {
-    list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px;text-align:center">Inga tider hittades.</div>';
-    return;
+async function loadSlots() {
+  document.getElementById('slot-list').innerHTML = '<div class="empty-state"><div class="spinner-sm"></div><br>Laddar…</div>';
+  selectedIds = []; updateBulkBar();
+  try {
+    const from = slotView === 'upcoming' ? new Date().toISOString().split('T')[0] : '2020-01-01';
+    const next = new Date(); next.setMonth(next.getMonth() + 6);
+    const r    = await call({ action:'getSlots', from, to:next.toISOString().split('T')[0] });
+    allSlots   = await r.json();
+    if (!Array.isArray(allSlots)) allSlots = [];
+    renderSlots();
+  } catch(e) {
+    document.getElementById('slot-list').innerHTML = '<div class="empty-state">Fel: ' + e.message + '</div>';
   }
+}
+
+function renderSlots() {
+  selectedIds = []; updateBulkBar();
+  const list = document.getElementById('slot-list');
+  if (!allSlots.length) { list.innerHTML = '<div class="empty-state">Inga tider hittades.</div>'; return; }
 
   const grouped = {};
-  allSlots.forEach(s => {
-    if (!grouped[s.slot_date]) grouped[s.slot_date] = [];
-    grouped[s.slot_date].push(s);
-  });
-
-  const svcMap = {};
-  services.forEach(s => { svcMap[s.id] = s.name; });
+  allSlots.forEach(s => { if(!grouped[s.slot_date]) grouped[s.slot_date]=[]; grouped[s.slot_date].push(s); });
 
   list.innerHTML = Object.keys(grouped).sort().map(date => {
-    const d = new Date(date);
-    const label = DAYS_SV[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+    const d = new Date(date + 'T12:00:00');
+    const label = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
     const rows = grouped[date].map(s => {
       const left = s.max_spots - s.booked_spots;
-      const svcName = svcMap[s.service_id] || '—';
-      const hasBookings = s.booked_spots > 0;
-      return '<div class="slot-item" id="slot-row-' + s.id + '">'
-        + '<span class="slot-item-check"><input type="checkbox" class="slot-checkbox slot-cb" data-id="' + s.id + '" onchange="onSlotCheck(this)"></span>'
-        + '<span class="slot-date">' + s.slot_time.substring(0,5) + '</span>'
-        + '<span class="slot-svc">' + esc(svcName) + '</span>'
-        + '<span class="slot-spots" style="' + (hasBookings ? 'color:var(--amber)' : '') + '">' + left + '/' + s.max_spots + ' kvar</span>'
-        + '<button class="slot-delete" onclick="deleteSlot(' + s.id + ')" title="Ta bort">×</button>'
+      const cls  = left <= 0 ? 'full' : s.booked_spots > 0 ? 'partial' : 'empty';
+      const lbl  = left <= 0 ? 'Fullt' : left + '/' + s.max_spots;
+      const svc  = s.services?.name || '—';
+      return '<div class="slot-row" id="sr-' + s.id + '">'
+        + '<div class="slot-cb-wrap"><div class="custom-cb" id="cb-' + s.id + '" onclick="toggleSlot(' + s.id + ')"></div></div>'
+        + '<span class="slot-time">' + s.slot_time.substring(0,5) + '</span>'
+        + '<span class="slot-svc">' + esc(svc) + '</span>'
+        + '<span class="slot-capacity ' + cls + '">' + lbl + '</span>'
+        + '<button class="slot-del" onclick="deleteSingle(' + s.id + ')">×</button>'
         + '</div>';
     }).join('');
-    return '<div style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border)">' + label + '</div>' + rows;
+    return '<div class="slot-date-header">' + label + '</div>' + rows;
   }).join('');
 }
 
-let selectedSlotIds = [];
-
-function onSlotCheck(cb) {
-  const id = parseInt(cb.dataset.id);
-  if (cb.checked) {
-    if (!selectedSlotIds.includes(id)) selectedSlotIds.push(id);
+// ── Bulk select ───────────────────────────
+function toggleSlot(id) {
+  const cb = document.getElementById('cb-' + id);
+  if (selectedIds.includes(id)) {
+    selectedIds = selectedIds.filter(x => x !== id);
+    cb.classList.remove('checked');
   } else {
-    selectedSlotIds = selectedSlotIds.filter(x => x !== id);
+    selectedIds.push(id);
+    cb.classList.add('checked');
   }
-  updateBulkUI();
+  updateBulkBar();
 }
 
-function toggleSelectAll(cb) {
-  const allCbs = document.querySelectorAll('.slot-cb');
-  selectedSlotIds = [];
-  allCbs.forEach(c => {
-    c.checked = cb.checked;
-    if (cb.checked) selectedSlotIds.push(parseInt(c.dataset.id));
-  });
-  updateBulkUI();
-}
-
-function updateBulkUI() {
-  const btn = document.getElementById('bulk-delete-btn');
-  const countEl = document.getElementById('selected-count');
-  const selectAllCb = document.getElementById('select-all-slots');
-  const allCbs = document.querySelectorAll('.slot-cb');
-  const n = selectedSlotIds.length;
-  countEl.textContent = n;
-  btn.classList.toggle('show', n > 0);
-  if (allCbs.length > 0 && selectAllCb) {
-    selectAllCb.checked = n === allCbs.length;
-    selectAllCb.indeterminate = n > 0 && n < allCbs.length;
+function toggleSelectAll() {
+  const allIds = allSlots.map(s => s.id);
+  if (selectedIds.length === allIds.length) {
+    selectedIds = [];
+    document.querySelectorAll('.custom-cb').forEach(cb => cb.classList.remove('checked'));
+  } else {
+    selectedIds = [...allIds];
+    document.querySelectorAll('.custom-cb').forEach(cb => cb.classList.add('checked'));
   }
-  document.getElementById('select-all-label').textContent = n > 0 ? n + ' valda' : 'Markera alla';
+  updateBulkBar();
 }
 
-async function deleteBulkSlots() {
-  if (!selectedSlotIds.length) return;
-  if (!confirm('Ta bort ' + selectedSlotIds.length + ' tider? Detta går inte att ångra.')) return;
-  try {
-    await adminCall({ action: 'deleteBulkSlots', ids: selectedSlotIds });
-    selectedSlotIds = [];
-    loadSlots();
-  } catch(e) { alert('Fel: ' + e.message); }
+function updateBulkBar() {
+  const total = allSlots.length;
+  const n     = selectedIds.length;
+  const icon  = document.getElementById('check-icon');
+  const lbl   = document.getElementById('select-label');
+  const cnt   = document.getElementById('sel-count');
+  const delBtn= document.getElementById('bulk-del-btn');
+  const selBtn= document.getElementById('select-all-btn');
+
+  icon.className = 'check-icon' + (n === total && total > 0 ? ' checked' : n > 0 ? ' indeterminate' : '');
+  selBtn.classList.toggle('has-selection', n > 0);
+  lbl.textContent = n > 0 ? (n === total ? 'Avmarkera alla' : 'Markera alla') : 'Markera alla';
+  cnt.textContent = n > 0 ? n + ' valda' : '';
+  delBtn.classList.toggle('show', n > 0);
 }
 
-async function deleteSlot(id) {
+async function deleteSingle(id) {
   if (!confirm('Ta bort denna tid?')) return;
-  try {
-    await adminCall({ action: 'deleteSlot', id });
-    loadSlots();
-  } catch(e) { alert('Fel: ' + e.message); }
+  await call({ action:'deleteBulkSlots', ids:[id] });
+  loadSlots();
 }
 
-// ── Weather ────────────────────────────────
-const WMO = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
-const WMO_WARN = [65,75,82,95,96,99];
+async function deleteBulk() {
+  if (!selectedIds.length) return;
+  if (!confirm('Ta bort ' + selectedIds.length + ' tider? Går ej att ångra.')) return;
+  await call({ action:'deleteBulkSlots', ids:selectedIds });
+  selectedIds = [];
+  loadSlots();
+}
 
+// ── Weather ───────────────────────────────
 async function loadWeather() {
   try {
-    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm');
-    const d = (await r.json()).daily;
-    const todayStr = new Date().toISOString().split('T')[0];
-    let hasWarn = false;
-    document.getElementById('weather-row').innerHTML = (d.time || []).map(function(date, i) {
-      const dt = new Date(date);
-      if (WMO_WARN.includes(d.weathercode[i])) hasWarn = true;
+    const r    = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm');
+    const d    = (await r.json()).daily;
+    const today= new Date().toISOString().split('T')[0];
+    let warn   = false;
+    document.getElementById('weather-row').innerHTML = (d.time || []).map((date, i) => {
+      const dt = new Date(date + 'T12:00:00');
+      if (WMO_WARN.includes(d.weathercode[i])) warn = true;
       const rain = d.precipitation_sum[i] > 0 ? Math.round(d.precipitation_sum[i]) + 'mm' : '';
-      return '<div class="w-card ' + (date === todayStr ? 'today' : '') + '">'
-        + '<div class="w-date">' + (date === todayStr ? 'Idag' : DAYS_SV[dt.getDay()] + ' ' + dt.getDate() + ' ' + MONTHS[dt.getMonth()]) + '</div>'
+      return '<div class="w-card ' + (date === today ? 'today' : '') + '">'
+        + '<div class="w-date">' + (date === today ? 'Idag' : DAYS[dt.getDay()] + ' ' + dt.getDate()) + '</div>'
         + '<div class="w-icon">' + (WMO[d.weathercode[i]] || '🌡') + '</div>'
         + '<div class="w-temp">' + Math.round(d.temperature_2m_max[i]) + '°/' + Math.round(d.temperature_2m_min[i]) + '°</div>'
         + (rain ? '<div class="w-rain">' + rain + '</div>' : '')
         + '</div>';
     }).join('');
-    if (hasWarn) document.getElementById('w-warn').style.display = 'block';
-  } catch(e) { document.getElementById('weather-row').innerHTML = '<span style="color:var(--muted);font-size:13px">Väder ej tillgängligt</span>'; }
+    if (warn) document.getElementById('w-warn').style.display = 'block';
+  } catch(e) {}
 }
 
-function esc(s) { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// ── Tabs ──────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'slots') loadSlots();
+}
+
+// ── Utils ─────────────────────────────────
+function esc(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatDateLabel(d) {
+  const dt = new Date(d + 'T12:00:00');
+  return DAYS[dt.getDay()] + ' ' + dt.getDate() + ' ' + MONTHS[dt.getMonth()];
+}
 </script>
 </body>
 </html>
