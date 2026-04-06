@@ -297,6 +297,15 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
             <button class="slot-filter-btn active" onclick="setSlotFilter('upcoming',this)">Kommande</button>
             <button class="slot-filter-btn" onclick="setSlotFilter('all',this)">Alla</button>
           </div>
+          <div class="slot-toolbar">
+            <label class="select-all-row">
+              <input type="checkbox" class="slot-checkbox" id="select-all-slots" onchange="toggleSelectAll(this)">
+              <span id="select-all-label">Markera alla</span>
+            </label>
+            <button class="bulk-delete-btn" id="bulk-delete-btn" onclick="deleteBulkSlots()">
+              🗑 Ta bort valda (<span id="selected-count">0</span>)
+            </button>
+          </div>
           <div class="slot-list" id="slot-list">
             <div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Laddar tider…</div>
           </div>
@@ -563,9 +572,14 @@ function setSlotFilter(f, btn) {
 
 function renderSlotList() {
   const list = document.getElementById('slot-list');
-  if (!allSlots.length) { list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px;text-align:center">Inga tider hittades.</div>'; return; }
+  selectedSlotIds = [];
+  updateBulkUI();
 
-  // Group by date
+  if (!allSlots.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px;text-align:center">Inga tider hittades.</div>';
+    return;
+  }
+
   const grouped = {};
   allSlots.forEach(s => {
     if (!grouped[s.slot_date]) grouped[s.slot_date] = [];
@@ -581,15 +595,64 @@ function renderSlotList() {
     const rows = grouped[date].map(s => {
       const left = s.max_spots - s.booked_spots;
       const svcName = svcMap[s.service_id] || '—';
-      return '<div class="slot-item">'
+      const hasBookings = s.booked_spots > 0;
+      return '<div class="slot-item" id="slot-row-' + s.id + '">'
+        + '<span class="slot-item-check"><input type="checkbox" class="slot-checkbox slot-cb" data-id="' + s.id + '" onchange="onSlotCheck(this)"></span>'
         + '<span class="slot-date">' + s.slot_time.substring(0,5) + '</span>'
         + '<span class="slot-svc">' + esc(svcName) + '</span>'
-        + '<span class="slot-spots">' + left + '/' + s.max_spots + ' kvar</span>'
+        + '<span class="slot-spots" style="' + (hasBookings ? 'color:var(--amber)' : '') + '">' + left + '/' + s.max_spots + ' kvar</span>'
         + '<button class="slot-delete" onclick="deleteSlot(' + s.id + ')" title="Ta bort">×</button>'
         + '</div>';
     }).join('');
     return '<div style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border)">' + label + '</div>' + rows;
   }).join('');
+}
+
+let selectedSlotIds = [];
+
+function onSlotCheck(cb) {
+  const id = parseInt(cb.dataset.id);
+  if (cb.checked) {
+    if (!selectedSlotIds.includes(id)) selectedSlotIds.push(id);
+  } else {
+    selectedSlotIds = selectedSlotIds.filter(x => x !== id);
+  }
+  updateBulkUI();
+}
+
+function toggleSelectAll(cb) {
+  const allCbs = document.querySelectorAll('.slot-cb');
+  selectedSlotIds = [];
+  allCbs.forEach(c => {
+    c.checked = cb.checked;
+    if (cb.checked) selectedSlotIds.push(parseInt(c.dataset.id));
+  });
+  updateBulkUI();
+}
+
+function updateBulkUI() {
+  const btn = document.getElementById('bulk-delete-btn');
+  const countEl = document.getElementById('selected-count');
+  const selectAllCb = document.getElementById('select-all-slots');
+  const allCbs = document.querySelectorAll('.slot-cb');
+  const n = selectedSlotIds.length;
+  countEl.textContent = n;
+  btn.classList.toggle('show', n > 0);
+  if (allCbs.length > 0 && selectAllCb) {
+    selectAllCb.checked = n === allCbs.length;
+    selectAllCb.indeterminate = n > 0 && n < allCbs.length;
+  }
+  document.getElementById('select-all-label').textContent = n > 0 ? n + ' valda' : 'Markera alla';
+}
+
+async function deleteBulkSlots() {
+  if (!selectedSlotIds.length) return;
+  if (!confirm('Ta bort ' + selectedSlotIds.length + ' tider? Detta går inte att ångra.')) return;
+  try {
+    await adminCall({ action: 'deleteBulkSlots', ids: selectedSlotIds });
+    selectedSlotIds = [];
+    loadSlots();
+  } catch(e) { alert('Fel: ' + e.message); }
 }
 
 async function deleteSlot(id) {
