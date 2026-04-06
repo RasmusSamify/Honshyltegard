@@ -502,30 +502,78 @@ function showForm() {
   document.getElementById('cta-btn').textContent = 'Slutför bokning';
 }
 
+function makeGuestRow(label, sublabel, countId, onMinus, onPlus, count) {
+  const row = document.createElement('div');
+  row.className = 'guest-row';
+  row.innerHTML = '<div class="guest-lbl"><h4>' + label + '</h4><p>' + sublabel + '</p></div>'
+    + '<div class="guest-ctrl"></div>';
+  const ctrl = row.querySelector('.guest-ctrl');
+
+  const btnMinus = document.createElement('button');
+  btnMinus.className = 'g-btn';
+  btnMinus.textContent = '−';
+  btnMinus.type = 'button';
+  btnMinus.addEventListener('click', onMinus);
+
+  const countEl = document.createElement('span');
+  countEl.className = 'g-count';
+  countEl.id = countId;
+  countEl.textContent = count;
+
+  const btnPlus = document.createElement('button');
+  btnPlus.className = 'g-btn';
+  btnPlus.textContent = '+';
+  btnPlus.type = 'button';
+  btnPlus.addEventListener('click', onPlus);
+
+  ctrl.appendChild(btnMinus);
+  ctrl.appendChild(countEl);
+  ctrl.appendChild(btnPlus);
+  return row;
+}
+
 function renderGuestRows() {
   const s = state.service;
-  let html = '<div class="guest-row"><div class="guest-lbl"><h4>Vuxen / Ungdom 12+</h4><p>' + s.price + ' kr/person</p></div>'
-    + '<div class="guest-ctrl"><button class="g-btn" onclick="changeG(\'adults\',-1)">−</button><span class="g-count" id="cnt-adults">' + state.adults + '</span><button class="g-btn" onclick="changeG(\'adults\',1)">+</button></div></div>';
+  const container = document.getElementById('guest-rows');
+  container.innerHTML = '';
 
+  // Vuxna
+  container.appendChild(makeGuestRow(
+    'Vuxen / Ungdom 12+', s.price + ' kr/person', 'cnt-adults',
+    () => changeG('adults', -1), () => changeG('adults', 1), state.adults
+  ));
+
+  // Barn med pris
   if (s.price_child > 0) {
-    html += '<div class="guest-row"><div class="guest-lbl"><h4>Barn 5–12 år</h4><p>' + s.price_child + ' kr · 1 barn per vuxet sällskap</p></div>'
-      + '<div class="guest-ctrl"><button class="g-btn" onclick="changeG(\'children\',-1)">−</button><span class="g-count" id="cnt-children">' + state.children + '</span><button class="g-btn" onclick="changeG(\'children\',1)">+</button></div></div>';
+    container.appendChild(makeGuestRow(
+      'Barn 5–12 år', s.price_child + ' kr · 1 barn per vuxet sällskap', 'cnt-children',
+      () => changeG('children', -1), () => changeG('children', 1), state.children
+    ));
   }
 
+  // Gratis barn
   if (s.price_child_free_under > 0) {
-    html += '<div class="guest-row"><div class="guest-lbl"><h4>Barn under ' + s.price_child_free_under + ' år</h4><p>Gratis</p></div>'
-      + '<div class="guest-ctrl"><button class="g-btn" onclick="changeG(\'childrenFree\',-1)">−</button><span class="g-count" id="cnt-childrenFree">' + state.childrenFree + '</span><button class="g-btn" onclick="changeG(\'childrenFree\',1)">+</button></div></div>';
+    container.appendChild(makeGuestRow(
+      'Barn under ' + s.price_child_free_under + ' år', 'Gratis', 'cnt-childrenFree',
+      () => changeG('childrenFree', -1), () => changeG('childrenFree', 1), state.childrenFree
+    ));
   }
 
-  document.getElementById('guest-rows').innerHTML = html;
-
+  // Alpackor
+  const alpacaSection = document.getElementById('alpaca-section');
   if (s.alpaca_booking) {
     const maxA = state.adults + state.children;
-    document.getElementById('alpaca-rows').innerHTML = '<div class="guest-row"><div class="guest-lbl"><h4>Antal alpackor</h4><p id="alpaca-max-lbl">Max ' + maxA + ' (1 per person)</p></div>'
-      + '<div class="guest-ctrl"><button class="g-btn" onclick="changeG(\'alpacas\',-1)">−</button><span class="g-count" id="cnt-alpacas">' + state.alpacas + '</span><button class="g-btn" onclick="changeG(\'alpacas\',1)">+</button></div></div>';
-    document.getElementById('alpaca-section').style.display = 'block';
+    const alpacaContainer = document.getElementById('alpaca-rows');
+    alpacaContainer.innerHTML = '';
+    const alpacaRow = makeGuestRow(
+      'Antal alpackor', 'Max ' + maxA + ' (1 per person)', 'cnt-alpacas',
+      () => changeG('alpacas', -1), () => changeG('alpacas', 1), state.alpacas
+    );
+    alpacaRow.querySelector('.guest-lbl p').id = 'alpaca-max-lbl';
+    alpacaContainer.appendChild(alpacaRow);
+    alpacaSection.style.display = 'block';
   } else {
-    document.getElementById('alpaca-section').style.display = 'none';
+    alpacaSection.style.display = 'none';
   }
 }
 
