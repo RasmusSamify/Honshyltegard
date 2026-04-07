@@ -679,7 +679,7 @@ async function handleCTA() {
         booking_id: bookingId,
         service_name: state.service.name,
         adults: state.adults,
-        children: state.children + state.childrenFree,
+        children: state.children, // Only paid children 5-12yr, NOT free under-3
         return_url: window.location.href.split('?')[0] + '?booking=' + bookingId,
         first_name: fname,
         last_name: lname,
