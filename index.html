@@ -671,27 +671,52 @@ async function handleCTA() {
 
     // 2. Skapa Abicart-order och hämta checkout-URL
     btn.textContent = 'Vidarebefordrar till betalning…';
-    const abRes = await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/abicart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'createOrder',
-        booking_id: bookingId,
-        service_name: state.service.name,
-        adults: state.adults,
-        children: state.children, // Only paid children 5-12yr, NOT free under-3
-        return_url: window.location.href.split('?')[0] + '?booking=' + bookingId,
-        first_name: fname,
-        last_name: lname,
-        email: email,
-        phone: val('f-phone') || ''
-      })
+    // 2. Skapa Abicart-order DIREKT i kundens webbläsare (session-baserad, ej admin)
+    btn.textContent = 'Vidarebefordrar till betalning…';
+    const AB_PUBLIC = 'https://shop.textalk.se/backend/jsonrpc/v1/?webshop=84183';
+    const abCall = async (method, params) => {
+      const r = await fetch(AB_PUBLIC, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params })
+      });
+      const d = await r.json();
+      if (d.error) throw new Error('Abicart: ' + d.error.message);
+      return d.result;
+    };
+
+    // Hämta artikel-UIDs från Supabase
+    const svcRows = await sbGet('services?name=eq.' + encodeURIComponent(state.service.name) + '&select=abicart_article_id,abicart_article_id_child');
+    const svc = svcRows[0];
+    if (!svc) throw new Error('Tjänst hittades inte');
+
+    // Lägg till vuxna (skapar ny order)
+    let orderItem = null;
+    if (state.adults > 0 && svc.abicart_article_id) {
+      orderItem = await abCall('Order.addArticle', [null, svc.abicart_article_id, { quantity: state.adults }, { order: 'uid' }]);
+    }
+    const orderObj = orderItem?.order;
+    const orderUid = typeof orderObj === 'object' ? orderObj?.uid : orderObj;
+    if (!orderUid) throw new Error('Kunde inte skapa order');
+
+    // Lägg till barn
+    if (state.children > 0 && svc.abicart_article_id_child) {
+      await abCall('Order.addArticle', [orderUid, svc.abicart_article_id_child, { quantity: state.children }, ['uid']]);
+    }
+
+    // Spara order-ID till bokning i Supabase
+    await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/rest/v1/bookings?id=eq.' + bookingId, {
+      method: 'PATCH',
+      headers: {
+        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA',
+        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ abicart_order_id: orderUid, payment_status: 'pending' })
     });
-    const abData = await abRes.json();
-    if (!abData.ok) throw new Error(abData.error || 'Kunde inte skapa order');
 
     // 3. Skicka kunden till Abicart-kassan
-    window.location.href = abData.checkout_url;
+    window.location.href = 'https://webshop.honshyltegard.nu/kassa/' + orderUid;
 
   } catch(e) {
     showError('Bokningen misslyckades: ' + e.message);
