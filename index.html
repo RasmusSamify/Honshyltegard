@@ -645,16 +645,91 @@ async function handleCTA() {
   const total = state.adults + state.children;
   if (state.service.min_persons && total < state.service.min_persons) { alert('Minst ' + state.service.min_persons + ' personer krävs.'); return; }
   const btn = document.getElementById('cta-btn');
-  btn.disabled = true; btn.textContent = 'Bokar…';
+  btn.disabled = true; btn.textContent = 'Skapar bokning…';
   try {
     const totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children;
     const newsletter = document.getElementById('f-newsletter')?.checked || false;
-    await sbPost('bookings', { service_id: state.service.id, slot_id: state.selectedSlot, first_name: fname, last_name: lname, email: email, phone: val('f-phone') || null, adults: state.adults, children: state.children + state.childrenFree, alpacas: state.alpacas, note: val('f-note') || null, status: 'confirmed', total_price: totalPrice, newsletter_consent: newsletter });
-    showConfirmation(totalPrice);
+
+    // 1. Spara bokning i Supabase (status: pending_payment)
+    const bookingRows = await sbPost('bookings', {
+      service_id: state.service.id,
+      slot_id: state.selectedSlot,
+      first_name: fname, last_name: lname, email: email,
+      phone: val('f-phone') || null,
+      adults: state.adults,
+      children: state.children + state.childrenFree,
+      alpacas: state.alpacas,
+      note: val('f-note') || null,
+      status: 'pending_payment',
+      payment_status: 'pending',
+      total_price: totalPrice,
+      newsletter_consent: newsletter
+    });
+
+    const bookingId = bookingRows[0]?.id;
+
+    // 2. Skapa Abicart-order och hämta checkout-URL
+    btn.textContent = 'Vidarebefordrar till betalning…';
+    const abRes = await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/abicart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'createOrder',
+        booking_id: bookingId,
+        service_name: state.service.name,
+        adults: state.adults,
+        children: state.children + state.childrenFree,
+        return_url: window.location.href.split('?')[0] + '?booking=' + bookingId
+      })
+    });
+    const abData = await abRes.json();
+    if (!abData.ok) throw new Error(abData.error || 'Kunde inte skapa order');
+
+    // 3. Skicka kunden till Abicart-kassan
+    window.location.href = abData.checkout_url;
+
   } catch(e) {
     showError('Bokningen misslyckades: ' + e.message);
     btn.disabled = false; btn.textContent = 'Slutför bokning';
   }
+}
+
+// Kontrollera betalningsstatus när kunden kommer tillbaka
+async function checkReturnedPayment() {
+  const params = new URLSearchParams(window.location.search);
+  const bookingId = params.get('booking');
+  const cancelled = params.get('cancelled');
+  if (!bookingId) return;
+
+  if (cancelled) {
+    showError('Betalningen avbröts. Du kan försöka igen.');
+    return;
+  }
+
+  // Bekräfta betalning mot Abicart
+  try {
+    const rows = await sbGet('bookings?id=eq.' + bookingId + '&select=*,services(name)');
+    const b = rows[0];
+    if (!b) return;
+
+    if (b.abicart_order_id) {
+      const res = await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/abicart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirmPayment', order_id: b.abicart_order_id })
+      });
+      const data = await res.json();
+      if (data.paid) {
+        // Visa bekräftelse
+        hide('booking-view');
+        const details = '<strong>Tjänst:</strong> ' + (b.services?.name || b.service_id) + '<br>'
+          + '<strong>Boknings-ID:</strong> #' + b.id + '<br>'
+          + '<strong>Totalt:</strong> ' + (b.total_price || 0) + ' kr';
+        document.getElementById('confirm-card').innerHTML = details;
+        document.getElementById('confirm-view').classList.add('show');
+      }
+    }
+  } catch(e) { console.warn('Betalningskontroll:', e.message); }
 }
 
 function showConfirmation(total) {
@@ -709,7 +784,7 @@ let weatherData = null;
 
 async function loadWeather() {
   try {
-    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm');
+    const r = await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/abicart', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({action:'weather',lat:LAT,lng:LNG}) });
     weatherData = (await r.json()).daily;
     renderWeather();
   } catch(e) { console.warn('Väder:', e.message); }
@@ -750,6 +825,7 @@ function markErr(id) { const el = document.getElementById(id); if(el) { el.class
 function formatSEK(p) { return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 }).format(p); }
 
 init();
+checkReturnedPayment();
 </script>
 </body>
 </html>
