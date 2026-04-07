@@ -209,7 +209,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .custom-cb.checked{background:var(--green);border-color:var(--green)}
 .custom-cb.checked::after{content:'✓';color:white;font-size:9px;font-weight:700;line-height:1}
 .slot-time{font-size:13px;font-weight:600;color:var(--text);min-width:40px;font-family:'Cormorant Garamond',serif}
-.slot-svc{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--green-xs);color:var(--green);font-weight:500;flex:1}
+.slot-svc{font-size:11px;padding:2px 8px;border-radius:100px;font-weight:500;flex:1}
 .slot-capacity{font-size:11px;min-width:60px;text-align:right;font-weight:500}
 .slot-capacity.full{color:var(--red)}
 .slot-capacity.partial{color:var(--amber)}
@@ -229,6 +229,22 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .spinner-sm{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:6px}
 
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Light theme */
+body.light {
+  --bg:#F5F0E8; --surface:#FFFFFF; --surface2:#F0EBE0; --surface3:#E8E0D0;
+  --border:#DDD5C5; --border2:#C8BEA8;
+  --green:#2D7A2D; --green-dk:#1A5C1A; --green-xs:rgba(45,122,45,0.1); --green-sm:rgba(45,122,45,0.18);
+  --amber:#9A6800; --amber-xs:rgba(154,104,0,0.1); --amber-sm:rgba(154,104,0,0.2);
+  --red:#B03030; --red-xs:rgba(176,48,48,0.1); --red-sm:rgba(176,48,48,0.2);
+  --blue:#2A6FAA; --blue-xs:rgba(42,111,170,0.1);
+  --text:#1A1208; --muted:#6A5A40; --muted2:#9A8A70;
+}
+body.light .topbar { background:rgba(245,240,232,0.95); }
+body.light .pin-btn { color:var(--text); }
+body.light .data-table th { color:var(--muted); }
+body.light .slot-date-header { color:var(--muted); }
+
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 </style>
@@ -276,6 +292,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
     <div class="topbar-actions">
       <button class="icon-btn" onclick="refreshAll()">↻ Uppdatera</button>
+      <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">☀️ Ljust</button>
       <button class="icon-btn" onclick="logout()">Logga ut</button>
     </div>
   </div>
@@ -783,7 +800,7 @@ function renderSlots() {
       return '<div class="slot-row" id="sr-' + s.id + '">'
         + '<div class="slot-cb-wrap"><div class="custom-cb" id="cb-' + s.id + '" onclick="toggleSlot(' + s.id + ')"></div></div>'
         + '<span class="slot-time">' + s.slot_time.substring(0,5) + '</span>'
-        + '<span class="slot-svc">' + esc(svc) + '</span>'
+        + '<span class="slot-svc" style="background:' + (svc.includes('Visning') ? 'rgba(200,146,42,0.15)' : 'rgba(122,184,122,0.15)') + ';color:' + (svc.includes('Visning') ? 'var(--amber)' : 'var(--green)') + '">' + esc(svc) + '</span>'
         + '<span class="slot-capacity ' + cls + '">' + lbl + '</span>'
         + '<button class="slot-del" onclick="deleteSingle(' + s.id + ')">×</button>'
         + '</div>';
@@ -919,6 +936,24 @@ async function syncPayments() {
   renderStats();
   alert('Synkning klar! ' + synced + ' av ' + pending.length + ' betalningar bekräftade.');
 }
+
+
+function toggleTheme() {
+  const light = document.body.classList.toggle('light');
+  document.getElementById('theme-btn').textContent = light ? '🌙 Mörkt' : '☀️ Ljust';
+  localStorage.setItem('dashboard_theme', light ? 'light' : 'dark');
+}
+
+// Apply saved theme on load
+(function() {
+  if (localStorage.getItem('dashboard_theme') === 'light') {
+    document.body.classList.add('light');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = '🌙 Mörkt';
+    });
+  }
+})();
 
 // ── Utils ─────────────────────────────────
 function esc(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
