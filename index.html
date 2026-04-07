@@ -677,10 +677,11 @@ async function handleCTA() {
     const svcData = svcRows[0];
     if (!svcData) throw new Error('Tjänst saknas i databasen');
 
-    // 3. Skapa order DIREKT i kundens webbläsare (egen session → kassan fungerar)
-    const AB = 'https://shop.textalk.se/backend/jsonrpc/v1/?webshop=84183';
-    const abCall = async (method, params) => {
-      const r = await fetch(AB, {
+    // 3. Skapa Abicart-order med explicit session-token
+    const AB_BASE = 'https://shop.textalk.se/backend/jsonrpc/v1/?webshop=84183';
+    const abCall = async (method, params, token) => {
+      const url = token ? AB_BASE + '&session=' + encodeURIComponent(token) : AB_BASE;
+      const r = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params })
@@ -690,20 +691,26 @@ async function handleCTA() {
       return d.result;
     };
 
-    // Lägg till vuxna – skapar ny order
+    // Steg A: Hämta session-token INNAN ordern skapas
+    const sessionToken = await abCall('Session.getToken', []);
+    console.log('Session token:', sessionToken ? sessionToken.substring(0,8) + '...' : 'SAKNAS');
+    if (!sessionToken) throw new Error('Kunde inte hämta session från Abicart');
+
+    // Steg B: Skapa order med samma session-token
     console.log("Abicart: adults=" + state.adults + " children=" + state.children + " adultUid=" + svcData.abicart_article_id);
     if (!svcData.abicart_article_id) throw new Error("Artikel-UID saknas");
-    let orderItem = await abCall('Order.addArticle', [null, svcData.abicart_article_id, { quantity: state.adults }, { order: 'uid' }]);
+    let orderItem = await abCall('Order.addArticle', [null, svcData.abicart_article_id, { quantity: state.adults }, { order: 'uid' }], sessionToken);
     const rawOrder = orderItem?.order;
     const orderUid = typeof rawOrder === 'object' ? rawOrder?.uid : rawOrder;
     if (!orderUid) throw new Error('Kunde inte skapa order i Abicart');
+    console.log('Order skapad:', orderUid);
 
-    // Lägg till barn (5-12 år) om det finns
+    // Steg C: Lägg till barn med samma session
     if (state.children > 0 && svcData.abicart_article_id_child) {
-      await abCall('Order.addArticle', [orderUid, svcData.abicart_article_id_child, { quantity: state.children }, ['uid']]);
+      await abCall('Order.addArticle', [orderUid, svcData.abicart_article_id_child, { quantity: state.children }, ['uid']], sessionToken);
     }
 
-    // Spara order-ID till bokning i Supabase (asynkront, blockerar ej redirect)
+    // Spara order-ID till bokning i Supabase
     fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/rest/v1/bookings?id=eq.' + bookingId, {
       method: 'PATCH',
       headers: {
@@ -714,9 +721,10 @@ async function handleCTA() {
       body: JSON.stringify({ abicart_order_id: orderUid, payment_status: 'pending' })
     });
 
-    // 4. Skicka kunden direkt till kassan (ordern skapades i kundens session)
-    console.log('Redirecting to kassa, orderUid:', orderUid);
-    window.location.href = 'https://webshop.honshyltegard.nu/kassa/' + orderUid;
+    // Steg D: Skicka till kassan med session-token – ordern och sessionen matchar garanterat
+    const kassaUrl = 'https://webshop.honshyltegard.nu/kassa/' + orderUid + '?session=' + encodeURIComponent(sessionToken);
+    console.log('Kassa URL:', kassaUrl);
+    window.location.href = kassaUrl;
 
   } catch(e) {
     showError('Bokningen misslyckades: ' + e.message);
