@@ -414,7 +414,7 @@ function selectService(id) {
   document.getElementById('svc-' + id).classList.add('selected');
   state.service = services.find(s => s.id === id);
   state.selectedDate = null; state.selectedSlot = null; state.selectedTime = null;
-  state.adults = Math.max(1, state.service.min_persons || 1);
+  state.adults = 1;
   state.children = 0; state.childrenFree = 0; state.alpacas = 0;
   updateSummary();
   setTimeout(showCalendar, 280);
@@ -554,8 +554,9 @@ function renderGuestRows() {
   container.innerHTML = '';
 
   // Vuxna
+  const minNote = s.min_persons > 1 ? ' (min ' + s.min_persons + ' pers. totalt)' : '';
   container.appendChild(makeGuestRow(
-    'Vuxen / Ungdom 12+', s.price + ' kr/person', 'cnt-adults',
+    'Vuxen / Ungdom 12+', s.price + ' kr/person' + minNote, 'cnt-adults',
     () => changeG('adults', -1), () => changeG('adults', 1), state.adults
   ));
 
@@ -596,7 +597,7 @@ function renderGuestRows() {
 function changeG(type, delta) {
   const s = state.service;
   if (type === 'adults') {
-    state.adults = Math.max(s.min_persons || 1, state.adults + delta);
+    state.adults = Math.max(1, state.adults + delta);
     if (state.children > state.adults) { state.children = state.adults; const el = document.getElementById('cnt-children'); if(el) el.textContent = state.children; }
   } else if (type === 'children') {
     state.children = Math.max(0, Math.min(state.adults, state.children + delta));
@@ -643,7 +644,7 @@ async function handleCTA() {
   if (!email || !email.includes('@')) { markErr('f-email'); ok = false; }
   if (!ok) return;
   const total = state.adults + state.children;
-  if (state.service.min_persons && total < state.service.min_persons) { alert('Minst ' + state.service.min_persons + ' personer krävs.'); return; }
+  if (state.service.min_persons && total < state.service.min_persons) { alert('Minst ' + state.service.min_persons + ' personer totalt krävs (vuxna + barn).'); return; }
   const btn = document.getElementById('cta-btn');
   btn.disabled = true; btn.textContent = 'Skapar bokning…';
   try {
