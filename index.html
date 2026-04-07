@@ -714,8 +714,15 @@ async function handleCTA() {
       body: JSON.stringify({ abicart_order_id: orderUid, payment_status: 'pending' })
     });
 
-    // 4. Skicka kunden till kassan – ordern tillhör DERAS session
-    window.location.href = 'https://webshop.honshyltegard.nu/kassa/' + orderUid;
+    // 4. Hämta session-token från SAMMA webbläsarsession som skapade ordern
+    const sessionResult = await abCall('Session.getToken', []);
+    const sessionToken = typeof sessionResult === 'string' ? sessionResult : sessionResult?.token || sessionResult;
+    console.log('Session token:', sessionToken, 'Order:', orderUid);
+
+    // 5. Skicka kunden till kassan med session-token – samma session som har ordern
+    const kassaUrl = 'https://webshop.honshyltegard.nu/kassa/' + orderUid + (sessionToken ? '?session=' + encodeURIComponent(sessionToken) : '');
+    console.log('Checkout URL:', kassaUrl);
+    window.location.href = kassaUrl;
 
   } catch(e) {
     showError('Bokningen misslyckades: ' + e.message);
