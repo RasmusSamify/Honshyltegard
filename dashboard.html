@@ -132,6 +132,8 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
 .status-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500}
 .status-pill.confirmed{background:var(--green-xs);color:var(--green)}
 .status-pill.cancelled{background:var(--red-xs);color:var(--red)}
+.status-pill.amber{background:var(--amber-xs);color:var(--amber)}
+.status-pill.neutral{background:var(--surface2);color:var(--muted)}
 .status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
 .price-cell{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--text)}
 .empty-row td,.loading-row td{text-align:center;padding:48px;color:var(--muted);font-size:13px}
@@ -353,7 +355,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
         <div class="section-title">Alla bokningar</div>
         <div style="display:flex;gap:8px;align-items:center">
           <span class="count-badge" id="booking-count"></span>
-          <button class="refresh-btn" onclick="renderBookings()">↻</button>
+          <button class="refresh-btn" onclick="syncPayments()">💳 Synka betalningar</button><button class="refresh-btn" onclick="renderBookings()">↻</button>
         </div>
       </div>
 
@@ -376,7 +378,7 @@ body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-he
             <th>Tjänst</th>
             <th>Pers.</th>
             <th>Pris</th>
-            <th>Status</th>
+            <th>Betalning</th><th>Status</th><th></th>
           </tr></thead>
           <tbody id="booking-tbody">
             <tr class="loading-row"><td colspan="6"><div class="spinner-sm"></div><br>Laddar…</td></tr>
@@ -663,7 +665,9 @@ function renderBookings() {
       + '<td><span class="svc-pill">' + esc(svc) + '</span></td>'
       + '<td style="color:var(--muted)">👥 ' + guests + (b.alpacas ? ' · 🦙 ' + b.alpacas : '') + '</td>'
       + '<td class="price-cell">' + (b.total_price ? b.total_price + ' kr' : '—') + '</td>'
-      + '<td><span class="status-pill ' + status + '"><span class="status-dot"></span>' + (status === 'confirmed' ? 'Bekräftad' : 'Avbokad') + '</span></td>'
+      + '<td><span class="status-pill ' + (b.payment_status === 'paid' ? 'confirmed' : b.payment_status === 'pending' ? 'amber' : 'neutral') + '"><span class="status-dot"></span>' + (b.payment_status === 'paid' ? '✓ Betald' : b.payment_status === 'pending' ? '⏳ Väntande' : b.payment_status || '—') + '</span></td>'
+      + '<td><span class="status-pill ' + status + '"><span class="status-dot"></span>' + (status === 'confirmed' ? 'Bekräftad' : status === 'pending_payment' ? 'Ej betald' : 'Avbokad') + '</span></td>'
+      + '<td><button class="slot-del" onclick="deleteBooking(' + b.id + ')" title="Ta bort">×</button></td>'
       + '</tr>';
   }).join('');
 }
@@ -846,7 +850,7 @@ async function deleteBulk() {
 // ── Weather ───────────────────────────────
 async function loadWeather() {
   try {
-    const r    = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LNG + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&forecast_days=10&timezone=Europe%2FStockholm');
+    const r    = await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/abicart', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({action:'weather',lat:LAT,lng:LNG}) });
     const d    = (await r.json()).daily;
     const today= new Date().toISOString().split('T')[0];
     let warn   = false;
@@ -872,6 +876,48 @@ function showTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
   if (name === 'slots') loadSlots();
+}
+
+
+async function deleteBooking(id) {
+  if (!confirm('Ta bort bokning #' + id + '? Går ej att ångra.')) return;
+  try {
+    await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/rest/v1/bookings?id=eq.' + id, {
+      method: 'DELETE',
+      headers: {
+        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA',
+        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA'
+      }
+    });
+    allBookings = allBookings.filter(b => b.id !== id);
+    renderBookings();
+    renderStats();
+    document.getElementById('badge-bookings').textContent = allBookings.filter(b => b.status !== 'cancelled').length;
+  } catch(e) { alert('Fel: ' + e.message); }
+}
+
+async function syncPayments() {
+  const pending = allBookings.filter(b => b.abicart_order_id && b.payment_status !== 'paid');
+  if (!pending.length) { alert('Inga väntande betalningar att synka.'); return; }
+  let synced = 0;
+  for (const b of pending) {
+    try {
+      const r = await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/functions/v1/abicart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirmPayment', order_id: b.abicart_order_id })
+      });
+      const data = await r.json();
+      if (data.paid) {
+        const idx = allBookings.findIndex(x => x.id === b.id);
+        if (idx >= 0) { allBookings[idx].payment_status = 'paid'; allBookings[idx].status = 'confirmed'; }
+        synced++;
+      }
+    } catch(e) { console.warn('Sync error for booking', b.id, e.message); }
+  }
+  renderBookings();
+  renderStats();
+  alert('Synkning klar! ' + synced + ' av ' + pending.length + ' betalningar bekräftade.');
 }
 
 // ── Utils ─────────────────────────────────
