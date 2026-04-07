@@ -680,7 +680,11 @@ async function handleCTA() {
         service_name: state.service.name,
         adults: state.adults,
         children: state.children + state.childrenFree,
-        return_url: window.location.href.split('?')[0] + '?booking=' + bookingId
+        return_url: window.location.href.split('?')[0] + '?booking=' + bookingId,
+        first_name: fname,
+        last_name: lname,
+        email: email,
+        phone: val('f-phone') || ''
       })
     });
     const abData = await abRes.json();
