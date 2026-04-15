@@ -362,9 +362,22 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     return r.json();
   }
 
-  // ── ABICART ────────────────────────────────────────
-  // Inga klientsidan-Abicart-anrop. Edge Function 'abicart' (action: createOrder)
-  // sköter all order-skapelse serverside med admin-token.
+  // ── ABICART (klient-side, för korrekt session-bindning) ──
+  // Session.getToken MÅSTE anropas från klienten — sessionen binds till
+  // klient-IP/UA. När användaren senare landar på /kassa/?session=TOKEN
+  // kan Abicart matcha sessionen mot klienten.
+  var AB_BASE = 'https://shop.textalk.se/backend/jsonrpc/v1/?webshop=84183';
+  async function abCall(method, params, sessionToken) {
+    var url = sessionToken ? AB_BASE + '&session=' + encodeURIComponent(sessionToken) : AB_BASE;
+    var r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method: method, params: params })
+    });
+    var d = await r.json();
+    if (d.error) throw new Error('Abicart: ' + d.error.message + ' (' + d.error.code + ')');
+    return d.result;
+  }
 
   // ── DATA ───────────────────────────────────────────
   var SERVICE_INFO = {
@@ -691,35 +704,55 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       });
       var bookingId = bookingRows[0] ? bookingRows[0].id : null;
 
-      // 2. Anropa Edge Function 'abicart' med action 'createOrder'.
-      //    Edge Function använder admin-token serverside för att:
-      //    - skapa Abicart-order (vuxna + barn)
-      //    - pre-fylla kunduppgifter
-      //    - patcha bookings-raden med abicart_order_id
-      //    - returnera färdig checkout_url
-      //    Detta undviker hela cookie/session-problemet helt.
-      btn.textContent = 'Vidarebefordrar till betalning…';
-      var orderRes = await fetch(SB_URL + '/functions/v1/abicart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'createOrder',
-          booking_id: bookingId,
-          service_name: state.service.name,
-          first_name: fname,
-          last_name: lname,
-          email: email,
-          phone: val('f-phone') || null,
-          adults: state.adults,
-          children: state.children
-        })
-      });
-      var orderData = await orderRes.json();
-      if (!orderData.ok) throw new Error(orderData.error || 'Kunde inte skapa order i Abicart');
-      console.log('Order skapad:', orderData.order_id, '→', orderData.checkout_url);
+      // 2. Hämta artikel-UIDs från Supabase
+      btn.textContent = 'F\u00f6rbereder betalning\u2026';
+      var svcRows = await sbGet('services?name=eq.' + encodeURIComponent(state.service.name) + '&select=abicart_article_id,abicart_article_id_child');
+      var svcData = svcRows[0];
+      if (!svcData) throw new Error('Tj\u00e4nst saknas i databasen');
+      if (!svcData.abicart_article_id) throw new Error('Artikel-UID saknas');
 
-      // 3. Skicka till kassan
-      window.location.href = orderData.checkout_url;
+      // 3. Hämta session-token från Abicart KLIENT-SIDE
+      //    Detta är kritiskt: sessionen binds till klientens IP/UA, så att
+      //    kassan kan matcha sessionen när browsern landar dit.
+      var sessionToken = await abCall('Session.getToken', []);
+      if (!sessionToken || typeof sessionToken !== 'string') {
+        throw new Error('Kunde inte h\u00e4mta session fr\u00e5n Abicart');
+      }
+      console.log('Session token:', sessionToken.substring(0, 8) + '...');
+
+      // 4. Skapa order MED session (vuxna)
+      var orderItem = await abCall(
+        'Order.addArticle',
+        [null, svcData.abicart_article_id, { quantity: state.adults }, { order: 'uid' }],
+        sessionToken
+      );
+      var rawOrder = orderItem ? orderItem.order : null;
+      var orderUid = (rawOrder && typeof rawOrder === 'object') ? rawOrder.uid : rawOrder;
+      if (!orderUid) throw new Error('Kunde inte skapa order i Abicart');
+      console.log('Order skapad:', orderUid);
+
+      // 5. Lägg till barn p\u00e5 samma order/session
+      if (state.children > 0 && svcData.abicart_article_id_child) {
+        await abCall(
+          'Order.addArticle',
+          [orderUid, svcData.abicart_article_id_child, { quantity: state.children }, ['uid']],
+          sessionToken
+        );
+      }
+
+      // 6. PATCH bookings-raden i Supabase med abicart_order_id
+      //    Fire-and-forget — om det misslyckas l\u00e5ter vi anv\u00e4ndaren \u00e4nd\u00e5 g\u00e5 vidare till kassan
+      fetch(SB_URL + '/rest/v1/bookings?id=eq.' + bookingId, {
+        method: 'PATCH',
+        headers: Object.assign({}, SB_HEADERS, { 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ abicart_order_id: orderUid, payment_status: 'pending' })
+      }).catch(function(e){ console.warn('Patch booking:', e.message); });
+
+      // 7. Redirect till kassan med session-token i URL
+      btn.textContent = 'Vidarebefordrar till betalning\u2026';
+      var kassaUrl = 'https://webshop.honshyltegard.nu/kassa/' + orderUid + '?session=' + encodeURIComponent(sessionToken);
+      console.log('Kassa URL:', kassaUrl);
+      window.location.href = kassaUrl;
 
     } catch(e) {
       showError('Bokningen misslyckades: ' + e.message);
