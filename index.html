@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boka – Hönshyltegård</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
+
+#sam-widget-root {
+  --bg:#F5F0E8;--surface:#FDFAF4;--surface2:#F0EAE0;--green:#3D5A3E;--green-mid:#5A7D5B;--green-lt:#A8C5A0;--green-xs:#D8EBDA;--brown:#5C3D1E;--accent:#B8832A;--text:#221A0F;--muted:#7A6A55;--border:#D8CFBF;--error:#C0392B;--radius:14px;--shadow:0 4px 24px rgba(34,26,15,0.08);
+  font-family:'Jost',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  position:relative;
+  min-height:600px;
+}
+#sam-widget-root *,#sam-widget-root *::before,#sam-widget-root *::after{box-sizing:border-box;margin:0;padding:0}
+
+#sam-widget-root #loading-screen{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:5;transition:opacity 0.5s ease}
+#sam-widget-root #loading-screen.hidden{opacity:0;pointer-events:none}
+#sam-widget-root .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:sam-spin 0.9s linear infinite}
+#sam-widget-root .loading-text{font-size:13px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
+
+#sam-widget-root #error-banner{display:none;background:#FEF0EE;border:1px solid #F5C6C2;border-radius:var(--radius);padding:16px 20px;margin:24px;font-size:13px;color:var(--error);line-height:1.6}
+#sam-widget-root #error-banner.show{display:block}
+
+#sam-widget-root .widget-wrap{max-width:680px;margin:0 auto;padding:36px 20px 60px;opacity:0;transform:translateY(12px);transition:opacity 0.5s ease,transform 0.5s ease}
+#sam-widget-root .widget-wrap.visible{opacity:1;transform:translateY(0)}
+
+#sam-widget-root .widget-header{text-align:center;margin-bottom:32px}
+#sam-widget-root .eyebrow{font-size:11px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-mid);margin-bottom:12px;display:block}
+#sam-widget-root .widget-header h1{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,6vw,46px);font-weight:600;line-height:1.15;color:var(--brown);margin-bottom:12px}
+#sam-widget-root .widget-header h1 em{color:var(--green);font-style:italic}
+#sam-widget-root .widget-header p{font-size:15px;color:var(--muted);line-height:1.7;max-width:420px;margin:0 auto;font-weight:300}
+#sam-widget-root .deco-line{display:flex;align-items:center;justify-content:center;gap:14px;margin:24px 0 32px}
+#sam-widget-root .deco-line hr{flex:1;max-width:80px;border:none;border-top:1px solid var(--border)}
+#sam-widget-root .deco-line span{font-size:22px}
+
+/* Rules */
+#sam-widget-root .rules-banner{background:var(--green-xs);border:1.5px solid var(--green-lt);border-radius:var(--radius);padding:16px 22px;margin-bottom:24px}
+#sam-widget-root .rules-banner-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+#sam-widget-root .rules-banner-title{font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:8px}
+#sam-widget-root .rules-chevron{font-size:11px;color:var(--green-mid);transition:transform 0.25s}
+#sam-widget-root .rules-chevron.open{transform:rotate(180deg)}
+#sam-widget-root .rules-banner-body{display:none;margin-top:16px}
+#sam-widget-root .rules-list{list-style:none;padding:0}
+#sam-widget-root .rules-list li{font-size:13px;color:var(--text);line-height:1.7;padding:6px 0;border-bottom:1px solid rgba(61,90,62,0.15);display:flex;gap:10px;align-items:flex-start}
+#sam-widget-root .rules-list li:last-child{border-bottom:none}
+#sam-widget-root .rules-list li::before{content:attr(data-icon);font-size:14px;flex-shrink:0;margin-top:2px}
+#sam-widget-root .rules-note{margin-top:14px;padding:12px 14px;background:rgba(61,90,62,0.08);border-radius:8px;font-size:13px;color:var(--green);line-height:1.6}
+
+/* Steps */
+#sam-widget-root .steps-bar{display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+#sam-widget-root .step-item{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--muted);transition:color 0.3s}
+#sam-widget-root .step-item.active{color:var(--green)}
+#sam-widget-root .step-item.done{color:var(--green-lt)}
+#sam-widget-root .step-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--border);color:var(--muted);transition:all 0.3s}
+#sam-widget-root .step-item.active .step-dot{background:var(--green);color:#fff}
+#sam-widget-root .step-item.done .step-dot{background:var(--green-lt);color:#fff}
+#sam-widget-root .step-sep{width:28px;height:1px;background:var(--border);margin:0 2px}
+
+/* Service cards */
+#sam-widget-root .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:500px){#sam-widget-root .service-grid{grid-template-columns:1fr}}
+#sam-widget-root .service-card{border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all 0.25s;background:var(--surface);overflow:hidden;position:relative}
+#sam-widget-root .service-card:hover{border-color:var(--green-lt);box-shadow:0 8px 24px rgba(61,90,62,0.1)}
+#sam-widget-root .service-card.selected{border-color:var(--green);box-shadow:0 0 0 3px rgba(61,90,62,0.12)}
+#sam-widget-root .service-card .check{position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;background:var(--green);color:white;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center}
+#sam-widget-root .service-card.selected .check{display:flex}
+#sam-widget-root .service-card-top{padding:20px 20px 14px}
+#sam-widget-root .service-icon{font-size:32px;margin-bottom:12px}
+#sam-widget-root .service-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--brown);margin-bottom:6px}
+#sam-widget-root .service-tagline{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+#sam-widget-root .service-price-row{display:flex;flex-wrap:wrap;gap:8px}
+#sam-widget-root .price-pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px;background:var(--green-xs);color:var(--green)}
+#sam-widget-root .service-info-box{display:none;background:var(--surface2);border-top:1.5px solid var(--border);padding:16px 20px}
+#sam-widget-root .service-card.selected .service-info-box{display:block}
+#sam-widget-root .info-row{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text);line-height:1.6;padding:6px 0;border-bottom:1px solid var(--border)}
+#sam-widget-root .info-row:last-child{border-bottom:none}
+#sam-widget-root .info-icon{flex-shrink:0;font-size:14px;margin-top:1px}
+
+/* Panel */
+#sam-widget-root .panel{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:26px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+#sam-widget-root .panel-title{font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+#sam-widget-root .panel-title span{font-size:15px}
+#sam-widget-root .back-btn{background:none;border:none;color:var(--muted);font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0;margin-bottom:18px;transition:color 0.2s}
+#sam-widget-root .back-btn:hover{color:var(--text)}
+
+/* Calendar */
+#sam-widget-root .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+#sam-widget-root .cal-month{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--brown)}
+#sam-widget-root .cal-nav{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:15px;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+#sam-widget-root .cal-nav:hover{background:var(--green);color:white;border-color:var(--green)}
+#sam-widget-root .cal-nav:disabled{opacity:0.3;cursor:not-allowed}
+#sam-widget-root .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+#sam-widget-root .cal-label{text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;padding:6px 0}
+#sam-widget-root .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:8px;cursor:default;transition:all 0.18s;position:relative;color:var(--muted)}
+#sam-widget-root .cal-day.available{color:var(--text);font-weight:500;cursor:pointer}
+#sam-widget-root .cal-day.available::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green-mid)}
+#sam-widget-root .cal-day.available:hover{background:var(--green-xs)}
+#sam-widget-root .cal-day.selected{background:var(--green) !important;color:white !important;font-weight:600}
+#sam-widget-root .cal-day.selected::after{background:rgba(255,255,255,0.6)}
+#sam-widget-root .cal-day.past,#sam-widget-root .cal-day.empty{color:var(--border)}
+#sam-widget-root .cal-loading{text-align:center;padding:24px;font-size:13px;color:var(--muted)}
+
+/* Time slots */
+#sam-widget-root .time-grid{display:flex;flex-wrap:wrap;gap:10px}
+#sam-widget-root .time-pill{padding:10px 16px;border:1.5px solid var(--border);border-radius:100px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;background:var(--surface2);color:var(--text);display:flex;flex-direction:column;align-items:center;gap:2px}
+#sam-widget-root .time-pill .spots{font-size:10px;color:var(--muted);font-weight:400}
+#sam-widget-root .time-pill:hover{border-color:var(--green-lt);background:var(--green-xs)}
+#sam-widget-root .time-pill.selected{background:var(--green);color:white;border-color:var(--green)}
+#sam-widget-root .time-pill.selected .spots{color:rgba(255,255,255,0.7)}
+#sam-widget-root .time-pill.full{opacity:0.35;cursor:not-allowed;text-decoration:line-through}
+
+/* Guests */
+#sam-widget-root .guest-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+#sam-widget-root .guest-row:last-child{border-bottom:none}
+#sam-widget-root .guest-lbl h4{font-size:15px;font-weight:500}
+#sam-widget-root .guest-lbl p{font-size:12px;color:var(--muted)}
+#sam-widget-root .guest-ctrl{display:flex;align-items:center;gap:12px}
+#sam-widget-root .g-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:none;font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;transition:all 0.2s;line-height:1}
+#sam-widget-root .g-btn:hover{border-color:var(--green);color:var(--green)}
+#sam-widget-root .g-count{font-size:18px;font-weight:600;min-width:22px;text-align:center}
+#sam-widget-root .alpaca-note{font-size:12px;color:var(--muted);margin-top:10px;padding:10px 14px;background:var(--green-xs);border-radius:8px;line-height:1.6}
+
+/* Form */
+#sam-widget-root .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+#sam-widget-root .form-row.full{grid-template-columns:1fr}
+#sam-widget-root .form-group{display:flex;flex-direction:column;gap:6px}
+#sam-widget-root .form-group label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase}
+#sam-widget-root .form-group input,#sam-widget-root .form-group textarea{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Jost',sans-serif;font-size:14px;background:var(--surface2);color:var(--text);transition:border-color 0.2s;outline:none}
+#sam-widget-root .form-group input:focus,#sam-widget-root .form-group textarea:focus{border-color:var(--green);background:var(--surface)}
+#sam-widget-root .form-group input.error{border-color:var(--error)}
+#sam-widget-root .form-group textarea{resize:vertical;min-height:80px}
+
+/* Weather */
+#sam-widget-root .weather-wrap{margin-top:20px;display:none}
+#sam-widget-root .weather-strip{display:flex;gap:6px;flex-wrap:wrap}
+#sam-widget-root .weather-day{flex:1;min-width:48px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:9px 5px;text-align:center}
+#sam-widget-root .weather-day.selected-day{border-color:var(--green);background:var(--green-xs)}
+#sam-widget-root .wd-date{font-size:9px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em}
+#sam-widget-root .wd-icon{font-size:18px;margin-bottom:4px}
+#sam-widget-root .wd-temp{font-size:11px;font-weight:600;color:var(--text)}
+#sam-widget-root .wd-rain{font-size:10px;color:var(--muted);margin-top:2px}
+#sam-widget-root .weather-warning{background:#FEF3E2;border:1px solid #F5D08A;border-radius:10px;padding:10px 14px;font-size:12px;color:#7A5010;margin-top:12px;display:none;line-height:1.5}
+#sam-widget-root .weather-warning.show{display:block}
+
+/* Summary */
+#sam-widget-root .summary-panel{background:var(--green);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 8px 32px rgba(61,90,62,0.25);margin-top:20px}
+#sam-widget-root .summary-left{color:white}
+#sam-widget-root .summary-tour{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;margin-bottom:4px}
+#sam-widget-root .summary-meta{font-size:13px;opacity:0.75;line-height:1.6}
+#sam-widget-root .summary-price{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:white;white-space:nowrap}
+#sam-widget-root .cta-btn{background:white;color:var(--green);border:none;border-radius:10px;padding:13px 26px;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.22s;white-space:nowrap}
+#sam-widget-root .cta-btn:hover{background:var(--surface2);transform:scale(1.03)}
+#sam-widget-root .cta-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+/* Confirm */
+#sam-widget-root #confirm-view{display:none;text-align:center;padding:40px 20px}
+#sam-widget-root #confirm-view.show{display:block}
+#sam-widget-root .confirm-icon{font-size:64px;margin-bottom:20px}
+#sam-widget-root #confirm-view h2{font-family:'Cormorant Garamond',serif;font-size:32px;color:var(--brown);margin-bottom:10px}
+#sam-widget-root #confirm-view > p{font-size:15px;color:var(--muted);line-height:1.7;max-width:380px;margin:0 auto 24px}
+#sam-widget-root .confirm-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 24px;text-align:left;max-width:380px;margin:0 auto 24px;font-size:14px;line-height:2.1}
+#sam-widget-root .confirm-card strong{color:var(--brown);display:inline-block;width:100px}
+#sam-widget-root .confirm-extras{max-width:380px;margin:0 auto 24px;display:flex;flex-direction:column;gap:12px}
+#sam-widget-root .extra-card{border-radius:12px;padding:16px 18px;text-align:left}
+#sam-widget-root .extra-card.green{background:linear-gradient(135deg,#E8F4E8,#D4EBD4);border:1px solid #A8C5A0}
+#sam-widget-root .extra-card.amber{background:linear-gradient(135deg,#FEF3E2,#FDE8C0);border:1px solid #E8C070}
+#sam-widget-root .extra-card.brown2{background:linear-gradient(135deg,#F5EDE0,#EDD8BC);border:1px solid #C8A878}
+#sam-widget-root .extra-card-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--brown);margin-bottom:6px;display:flex;align-items:center;gap:7px}
+#sam-widget-root .extra-badge{display:inline-block;font-size:10px;font-weight:600;background:var(--accent);color:white;padding:2px 7px;border-radius:100px;letter-spacing:0.05em;margin-left:4px}
+#sam-widget-root .extra-card p{font-size:13px;color:#5A4020;line-height:1.6}
+#sam-widget-root .extra-hours{display:inline-block;font-size:11px;font-weight:600;color:var(--green);background:rgba(61,90,62,0.1);padding:3px 9px;border-radius:100px;margin-top:8px}
+#sam-widget-root .reset-btn{background:var(--green);color:white;border:none;border-radius:10px;padding:13px 28px;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s}
+#sam-widget-root .reset-btn:hover{background:var(--brown)}
+
+/* GDPR */
+#sam-widget-root .gdpr-row{display:flex;align-items:flex-start;gap:10px;padding:14px 0;margin-top:4px}
+#sam-widget-root .gdpr-cb{width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0;margin-top:2px}
+#sam-widget-root .gdpr-label{font-size:12px;color:var(--muted);line-height:1.6;cursor:pointer}
+#sam-widget-root .gdpr-label a{color:var(--green);text-decoration:none}
+#sam-widget-root .gdpr-label a:hover{text-decoration:underline}
+
+@keyframes sam-fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sam-spin{to{transform:rotate(360deg)}}
+@media(max-width:500px){#sam-widget-root .form-row{grid-template-columns:1fr}#sam-widget-root .panel{padding:18px 14px}}
+</style>
+</head>
+<body>
+<div id="sam-widget-root">
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <div class="loading-text">Laddar bokningssystem…</div>
+  </div>
+
+  <div id="error-banner"></div>
+
+  <div class="widget-wrap" id="widget-wrap">
+    <div class="widget-header" style="animation:sam-fadeUp 0.6s ease both">
+      <span class="eyebrow">Boka din upplevelse</span>
+      <h1>Promenera med<br><em>våra alpackor</em></h1>
+      <p>Stanna upp. Andas. Låt alpackorna visa dig takten. Boka en guidad promenad och upplev slow living mitt i naturen.</p>
+      <div class="deco-line"><hr><span>🦙</span><hr></div>
+    </div>
+
+    <div id="booking-view">
+      <!-- Rules -->
+      <div class="rules-banner" style="animation:sam-fadeUp 0.5s 0.05s ease both">
+        <div class="rules-banner-header" onclick="samToggleRules()">
+          <div class="rules-banner-title"><span>📋</span> Läs reglerna innan du bokar</div>
+          <span class="rules-chevron" id="rules-chev">▼</span>
+        </div>
+        <div class="rules-banner-body" id="rules-body">
+          <ul class="rules-list">
+            <li data-icon="🐾">Det är inte tillåtet att ta med andra djur under promenaden.</li>
+            <li data-icon="📵">Mobiltelefoner ska vara på ljudlöst.</li>
+            <li data-icon="🚭">Rökning är förbjuden.</li>
+            <li data-icon="🚫">Barnvagn, rullstol och rullator är inte möjligt att ta med på rundan.</li>
+            <li data-icon="🦙">Vi har rätt att avvisa personer som stör eller stressar djuren.</li>
+            <li data-icon="🧘">Kom ihåg att vara lugn – denna stund ska vara harmonisk för både människor och djur.</li>
+          </ul>
+          <div class="rules-note">👕 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="steps-bar" style="animation:sam-fadeUp 0.5s 0.1s ease both">
+        <div class="step-item active" id="s1"><div class="step-dot">1</div><span>Välj</span></div>
+        <div class="step-sep"></div>
+        <div class="step-item" id="s2"><div class="step-dot">2</div><span>Datum</span></div>
+        <div class="step-sep"></div>
+        <div class="step-item" id="s3"><div class="step-dot">3</div><span>Tid</span></div>
+        <div class="step-sep"></div>
+        <div class="step-item" id="s4"><div class="step-dot">4</div><span>Uppgifter</span></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="service-grid" id="service-grid" style="animation:sam-fadeUp 0.5s 0.15s ease both">
+        <div style="color:var(--muted);font-size:13px;padding:8px 0;grid-column:1/-1">Laddar tjänster…</div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="panel" id="panel-calendar" style="display:none">
+        <button class="back-btn" onclick="samGoBack('calendar')">← Tillbaka</button>
+        <div class="panel-title"><span>📅</span> Välj datum</div>
+        <div class="cal-header">
+          <button class="cal-nav" id="cal-prev" onclick="samChangeMonth(-1)">‹</button>
+          <div class="cal-month" id="cal-month-label">—</div>
+          <button class="cal-nav" id="cal-next" onclick="samChangeMonth(1)">›</button>
+        </div>
+        <div id="cal-content"><div class="cal-loading">Hämtar datum…</div></div>
+        <div class="weather-wrap" id="weather-wrap">
+          <div class="panel-title" style="margin:16px 0 10px"><span>🌤</span> Väderprognos 10 dagar – Hönshylte Gård</div>
+          <div class="weather-strip" id="weather-strip"></div>
+          <div class="weather-warning" id="weather-warning">⚡ Extremt väder i prognosen. Promenaden kan komma att ställas in – vi kontaktar dig vid behov.</div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="panel" id="panel-time" style="display:none">
+        <button class="back-btn" onclick="samGoBack('time')">← Tillbaka</button>
+        <div class="panel-title"><span>🕐</span> Välj tid — <span id="date-label" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);text-transform:none;letter-spacing:0"></span></div>
+        <div class="time-grid" id="time-grid"></div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="panel" id="panel-form" style="display:none">
+        <button class="back-btn" onclick="samGoBack('form')">← Tillbaka</button>
+        <div class="panel-title"><span>👤</span> Antal deltagare</div>
+        <div id="guest-rows"></div>
+        <div id="alpaca-section" style="display:none">
+          <div class="panel-title" style="margin-top:20px"><span>🦙</span> Antal alpackor</div>
+          <div id="alpaca-rows"></div>
+          <div class="alpaca-note">Max 1 alpacka per person. Helt valfritt – man kan delta utan att hålla i en alpacka.</div>
+        </div>
+        <div class="panel-title" style="margin-top:24px"><span>📝</span> Dina uppgifter</div>
+        <div class="form-row">
+          <div class="form-group"><label>Förnamn *</label><input type="text" id="f-name" placeholder="Anna"></div>
+          <div class="form-group"><label>Efternamn *</label><input type="text" id="f-lname" placeholder="Lindström"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>E-post *</label><input type="email" id="f-email" placeholder="anna@example.se"></div>
+          <div class="form-group"><label>Telefon</label><input type="tel" id="f-phone" placeholder="+46 70 123 45 67"></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label>Övrigt (allergier, önskemål…)</label><textarea id="f-note" placeholder="Skriv gärna om ni har önskemål."></textarea></div>
+        </div>
+        <div class="gdpr-row">
+          <input type="checkbox" class="gdpr-cb" id="f-newsletter">
+          <label class="gdpr-label" for="f-newsletter">
+            Ja, jag vill gärna ta emot nyheter och erbjudanden från Hönshyltegård via e-post.
+            Du kan när som helst avregistrera dig.
+          </label>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-panel" id="summary-panel" style="display:none">
+        <div class="summary-left">
+          <div class="summary-tour" id="sum-tour">—</div>
+          <div class="summary-meta" id="sum-meta">Välj datum och tid</div>
+        </div>
+        <div class="summary-price" id="sum-price"></div>
+        <button class="cta-btn" id="cta-btn" onclick="samHandleCTA()">Fortsätt →</button>
+      </div>
+    </div>
+
+    <!-- Confirmation -->
+    <div id="confirm-view">
+      <div class="confirm-icon">🦙</div>
+      <h2>Bokning bekräftad!</h2>
+      <p>Vi ses snart! En bekräftelse har skickats till din e-post.</p>
+      <div class="confirm-card" id="confirm-card"></div>
+      <div class="confirm-extras">
+        <div class="extra-card green">
+          <div class="extra-card-title">🛍 Gårdsbutiken</div>
+          <p>Besök vår loppis &amp; secondhand, gå ett alpackaquiz och träffa våra alpackor.</p>
+          <span class="extra-hours">🕐 Öppet alla dagar i juli &amp; aug, kl. 10–17</span>
+        </div>
+        <div class="extra-card amber">
+          <div class="extra-card-title">☕ Sommarfika <span class="extra-badge">NYHET</span></div>
+          <p>Hembakat, lokal läsk &amp; äppelmust. Slå dig ner och njut!</p>
+          <span class="extra-hours">🕐 Varje dag i juli &amp; aug, kl. 10–16</span>
+        </div>
+        <div class="extra-card brown2">
+          <div class="extra-card-title">🦙 Träffa &amp; mata en alpacka!</div>
+          <p>Kom nära, få information, mata, ta en selfie och titta på årets söta föl.</p>
+          <span class="extra-hours">🕐 Varje dag i juli &amp; aug, kl. 10–12</span>
+        </div>
+      </div>
+      <button class="reset-btn" onclick="samResetWidget()">Gör en ny bokning</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  'use strict';
+
+  // ── KONFIG ─────────────────────────────────────────
+  var SB_URL = 'https://zyokiwrzxpgtrsnfymke.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA';
+  var LAT = 56.47739536235032, LNG = 14.690764677283862;
+
+  var SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+
+  // ── SUPABASE HELPERS ───────────────────────────────
+  async function sbGet(path) {
+    var r = await fetch(SB_URL + '/rest/v1/' + path, { headers: SB_HEADERS });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+  async function sbPost(table, data) {
+    var r = await fetch(SB_URL + '/rest/v1/' + table, {
+      method: 'POST',
+      headers: Object.assign({}, SB_HEADERS, { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+      body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  // ── ABICART ────────────────────────────────────────
+  // Inga klientsidan-Abicart-anrop. Edge Function 'abicart' (action: createOrder)
+  // sköter all order-skapelse serverside med admin-token.
+
+  // ── DATA ───────────────────────────────────────────
+  var SERVICE_INFO = {
+    'Alpackapromenad': [
+      { icon: '💰', text: 'Vuxen/Ungdom 12+: 295 kr · Barn 5–12 år: 195 kr' },
+      { icon: '👥', text: 'Minst 2 personer per bokning' },
+      { icon: '👶', text: '1 barn kräver 1 vuxet sällskap' },
+      { icon: '🦙', text: 'Välj antal alpackor – max 1 per person, valfritt' },
+      { icon: '⏱', text: 'Ca 60 minuter i naturen' }
+    ],
+    'Visning av alpacka': [
+      { icon: '💰', text: 'Vuxen/Ungdom 12+: 60 kr · Barn 3–12 år: 40 kr' },
+      { icon: '🍼', text: 'Barn under 3 år: gratis' },
+      { icon: '📸', text: 'Mata, ta selfie och titta på årets söta föl' },
+      { icon: '⏱', text: 'Ca 30 minuter' }
+    ]
+  };
+  var SVC_ICONS = { 'Alpackapromenad': '🦙', 'Visning av alpacka': '🌿' };
+  var MONTHS = ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
+  var DAYS = ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
+
+  var services = [];
+  var state = { step:1, service:null, year:new Date().getFullYear(), month:new Date().getMonth()+1, availableDates:[], selectedDate:null, selectedDateLabel:'', selectedSlot:null, selectedTime:null, adults:1, children:0, childrenFree:0, alpacas:0 };
+
+  // ── DOM HELPERS (scoped till sam-widget-root) ─────
+  var root = document.getElementById('sam-widget-root');
+  function $(id) { return root.querySelector('#' + id); }
+  function show(id) { var el = $(id); if(el) el.style.display = ''; }
+  function hide(id) { var el = $(id); if(el) el.style.display = 'none'; }
+  function val(id) { var el = $(id); return el ? (el.value || '').trim() : ''; }
+  function markErr(id) {
+    var el = $(id);
+    if(el) {
+      el.classList.add('error');
+      el.addEventListener('input', function(){ el.classList.remove('error'); }, { once: true });
+    }
+  }
+  function formatSEK(p) { return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 }).format(p); }
+
+  // ── INIT ───────────────────────────────────────────
+  async function init() {
+    try {
+      services = await sbGet('services?active=eq.true&order=id');
+      renderServices();
+      loadWeather();
+      hideLoading();
+    } catch(e) {
+      showError('Kunde inte ladda bokningssystemet: ' + e.message);
+      hideLoading();
+    }
+  }
+  function hideLoading() {
+    var ls = $('loading-screen');
+    if (!ls) return;
+    ls.classList.add('hidden');
+    setTimeout(function(){ if (ls.parentNode) ls.parentNode.removeChild(ls); }, 600);
+    $('widget-wrap').classList.add('visible');
+  }
+  function showError(msg) {
+    var b = $('error-banner');
+    b.innerHTML = '⚠️ ' + msg;
+    b.classList.add('show');
+  }
+
+  // ── RENDER SERVICES ────────────────────────────────
+  function renderServices() {
+    var grid = $('service-grid');
+    if (!services.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">Inga tjänster tillgängliga.</div>'; return; }
+    grid.innerHTML = services.map(function(s) {
+      var info = SERVICE_INFO[s.name] || [];
+      var icon = SVC_ICONS[s.name] || '🦙';
+      var prices = '<span class="price-pill">Vuxen ' + s.price + ' kr</span>';
+      if (s.price_child > 0) prices += '<span class="price-pill">Barn ' + s.price_child + ' kr</span>';
+      if (s.price_child_free_under > 0) prices += '<span class="price-pill">Under ' + s.price_child_free_under + ' år gratis</span>';
+      return '<div class="service-card" onclick="samSelectService(' + s.id + ')" id="svc-' + s.id + '">'
+        + '<div class="check">✓</div>'
+        + '<div class="service-card-top">'
+        + '<div class="service-icon">' + icon + '</div>'
+        + '<div class="service-name">' + s.name + '</div>'
+        + '<div class="service-tagline">' + (s.description || '') + '</div>'
+        + '<div class="service-price-row">' + prices + '</div>'
+        + '</div>'
+        + '<div class="service-info-box">'
+        + info.map(function(r){ return '<div class="info-row"><span class="info-icon">' + r.icon + '</span><span>' + r.text + '</span></div>'; }).join('')
+        + '</div></div>';
+    }).join('');
+    $('summary-panel').style.display = 'flex';
+    updateSummary();
+  }
+
+  function selectService(id) {
+    root.querySelectorAll('.service-card').forEach(function(c){ c.classList.remove('selected'); });
+    $('svc-' + id).classList.add('selected');
+    state.service = services.find(function(s){ return s.id === id; });
+    state.selectedDate = null; state.selectedSlot = null; state.selectedTime = null;
+    state.adults = 1; state.children = 0; state.childrenFree = 0; state.alpacas = 0;
+    updateSummary();
+    setTimeout(showCalendar, 280);
+  }
+
+  // ── CALENDAR ───────────────────────────────────────
+  async function showCalendar() {
+    setStep(2); show('panel-calendar'); await loadCalendar();
+  }
+  async function loadCalendar() {
+    $('cal-month-label').textContent = MONTHS[state.month - 1] + ' ' + state.year;
+    $('cal-content').innerHTML = '<div class="cal-loading">Hämtar datum…</div>';
+    $('cal-prev').disabled = true; $('cal-next').disabled = true;
+    try {
+      var from = state.year + '-' + String(state.month).padStart(2,'0') + '-01';
+      var lastDay = new Date(state.year, state.month, 0).getDate();
+      var to = state.year + '-' + String(state.month).padStart(2,'0') + '-' + String(lastDay).padStart(2,'0');
+      var slots = await sbGet('time_slots?service_id=eq.' + state.service.id + '&slot_date=gte.' + from + '&slot_date=lte.' + to + '&active=eq.true&select=slot_date,booked_spots,max_spots');
+      var dateMap = {};
+      slots.forEach(function(s){ if (!dateMap[s.slot_date]) dateMap[s.slot_date] = 0; if (s.booked_spots < s.max_spots) dateMap[s.slot_date]++; });
+      state.availableDates = Object.keys(dateMap).filter(function(d){ return dateMap[d] > 0; });
+      renderCalendar();
+    } catch(e) {
+      $('cal-content').innerHTML = '<div class="cal-loading" style="color:var(--error)">Fel: ' + e.message + '</div>';
+    }
+    var today = new Date();
+    $('cal-prev').disabled = (state.year === today.getFullYear() && state.month <= today.getMonth() + 1);
+    $('cal-next').disabled = false;
+  }
+  function renderCalendar() {
+    var y = state.year, m = state.month;
+    var firstDay = new Date(y, m - 1, 1).getDay();
+    var daysInMonth = new Date(y, m, 0).getDate();
+    var offset = (firstDay + 6) % 7;
+    var today = new Date(); today.setHours(0,0,0,0);
+    var html = DAYS.map(function(d){ return '<div class="cal-label">' + d + '</div>'; }).join('');
+    for (var i = 0; i < offset; i++) html += '<div class="cal-day empty"></div>';
+    for (var d = 1; d <= daysInMonth; d++) {
+      var ds = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      var isPast = new Date(y, m-1, d) < today;
+      var isAvail = state.availableDates.indexOf(ds) !== -1;
+      var isSel = state.selectedDate === ds;
+      var cls = 'cal-day';
+      if (isPast) cls += ' past';
+      else if (isSel) cls += ' selected available';
+      else if (isAvail) cls += ' available';
+      var click = (isAvail && !isPast) ? 'onclick="samSelectDate(\'' + ds + '\',' + d + ')"' : '';
+      html += '<div class="' + cls + '" ' + click + '>' + d + '</div>';
+    }
+    $('cal-content').innerHTML = '<div class="cal-grid">' + html + '</div>';
+  }
+  async function changeMonth(dir) {
+    state.month += dir;
+    if (state.month > 12) { state.month = 1; state.year++; }
+    if (state.month < 1) { state.month = 12; state.year--; }
+    state.selectedDate = null;
+    hide('panel-time');
+    await loadCalendar();
+  }
+  async function selectDate(ds, day) {
+    state.selectedDate = ds;
+    state.selectedDateLabel = day + ' ' + MONTHS[state.month - 1] + ' ' + state.year;
+    renderCalendar();
+    renderWeather(ds);
+    await showTimeSlots();
+  }
+
+  // ── TIME SLOTS ─────────────────────────────────────
+  async function showTimeSlots() {
+    setStep(3); show('panel-time');
+    $('date-label').textContent = state.selectedDateLabel;
+    $('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Hämtar tider…</div>';
+    try {
+      var slots = await sbGet('time_slots?service_id=eq.' + state.service.id + '&slot_date=eq.' + state.selectedDate + '&active=eq.true&order=slot_time');
+      if (!slots.length) { $('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Inga lediga tider denna dag.</div>'; return; }
+      $('time-grid').innerHTML = slots.map(function(s){
+        var full = s.booked_spots >= s.max_spots;
+        var display = s.slot_time.substring(0,5);
+        var left = s.max_spots - s.booked_spots;
+        return '<div class="time-pill ' + (full ? 'full' : '') + '" ' + (!full ? 'onclick="samSelectTime(' + s.id + ',\'' + display + '\')"' : '') + '>'
+          + display + '<span class="spots">' + (full ? 'Fullt' : left + ' platser') + '</span></div>';
+      }).join('');
+    } catch(e) {
+      $('time-grid').innerHTML = '<div style="color:var(--error);font-size:13px">Fel: ' + e.message + '</div>';
+    }
+  }
+  function selectTime(slotId, display) {
+    root.querySelectorAll('.time-pill').forEach(function(p){ p.classList.remove('selected'); });
+    event.currentTarget.classList.add('selected');
+    state.selectedSlot = slotId; state.selectedTime = display;
+    updateSummary();
+    setTimeout(showForm, 250);
+  }
+
+  // ── FORM ───────────────────────────────────────────
+  function showForm() {
+    setStep(4); show('panel-form'); renderGuestRows(); updateSummary();
+    $('cta-btn').textContent = 'Slutför bokning';
+  }
+  function makeGuestRow(label, sublabel, countId, onMinus, onPlus, count) {
+    var row = document.createElement('div');
+    row.className = 'guest-row';
+    row.innerHTML = '<div class="guest-lbl"><h4>' + label + '</h4><p>' + sublabel + '</p></div><div class="guest-ctrl"></div>';
+    var ctrl = row.querySelector('.guest-ctrl');
+    var btnMinus = document.createElement('button');
+    btnMinus.className = 'g-btn'; btnMinus.textContent = '−'; btnMinus.type = 'button';
+    btnMinus.addEventListener('click', onMinus);
+    var countEl = document.createElement('span');
+    countEl.className = 'g-count'; countEl.id = countId; countEl.textContent = count;
+    var btnPlus = document.createElement('button');
+    btnPlus.className = 'g-btn'; btnPlus.textContent = '+'; btnPlus.type = 'button';
+    btnPlus.addEventListener('click', onPlus);
+    ctrl.appendChild(btnMinus); ctrl.appendChild(countEl); ctrl.appendChild(btnPlus);
+    return row;
+  }
+  function renderGuestRows() {
+    var s = state.service;
+    var container = $('guest-rows');
+    container.innerHTML = '';
+    var minNote = s.min_persons > 1 ? ' (min ' + s.min_persons + ' pers. totalt)' : '';
+    container.appendChild(makeGuestRow(
+      'Vuxen / Ungdom 12+', s.price + ' kr/person' + minNote, 'cnt-adults',
+      function(){ changeG('adults', -1); }, function(){ changeG('adults', 1); }, state.adults
+    ));
+    if (s.price_child > 0) {
+      container.appendChild(makeGuestRow(
+        'Barn 5–12 år', s.price_child + ' kr · 1 barn per vuxet sällskap', 'cnt-children',
+        function(){ changeG('children', -1); }, function(){ changeG('children', 1); }, state.children
+      ));
+    }
+    if (s.price_child_free_under > 0) {
+      container.appendChild(makeGuestRow(
+        'Barn under ' + s.price_child_free_under + ' år', 'Gratis', 'cnt-childrenFree',
+        function(){ changeG('childrenFree', -1); }, function(){ changeG('childrenFree', 1); }, state.childrenFree
+      ));
+    }
+    var alpacaSection = $('alpaca-section');
+    if (s.alpaca_booking) {
+      var maxA = state.adults + state.children;
+      var alpacaContainer = $('alpaca-rows');
+      alpacaContainer.innerHTML = '';
+      var alpacaRow = makeGuestRow(
+        'Antal alpackor', 'Max ' + maxA + ' (1 per person)', 'cnt-alpacas',
+        function(){ changeG('alpacas', -1); }, function(){ changeG('alpacas', 1); }, state.alpacas
+      );
+      alpacaRow.querySelector('.guest-lbl p').id = 'alpaca-max-lbl';
+      alpacaContainer.appendChild(alpacaRow);
+      alpacaSection.style.display = 'block';
+    } else {
+      alpacaSection.style.display = 'none';
+    }
+  }
+  function changeG(type, delta) {
+    var s = state.service;
+    if (type === 'adults') {
+      state.adults = Math.max(1, state.adults + delta);
+      if (state.children > state.adults) { state.children = state.adults; var el = $('cnt-children'); if(el) el.textContent = state.children; }
+    } else if (type === 'children') {
+      state.children = Math.max(0, Math.min(state.adults, state.children + delta));
+    } else if (type === 'childrenFree') {
+      state.childrenFree = Math.max(0, state.childrenFree + delta);
+    } else if (type === 'alpacas') {
+      state.alpacas = Math.max(0, Math.min(state.adults + state.children, state.alpacas + delta));
+    }
+    var el2 = $('cnt-' + type);
+    if (el2) el2.textContent = state[type];
+    if (s.alpaca_booking && (type === 'adults' || type === 'children')) {
+      var maxA = state.adults + state.children;
+      if (state.alpacas > maxA) { state.alpacas = maxA; var ae = $('cnt-alpacas'); if(ae) ae.textContent = state.alpacas; }
+      var lbl = $('alpaca-max-lbl');
+      if (lbl) lbl.textContent = 'Max ' + maxA + ' (1 per person)';
+    }
+    updateSummary();
+  }
+
+  // ── SUMMARY ────────────────────────────────────────
+  function updateSummary() {
+    if (!state.service) return;
+    var s = state.service;
+    var total = s.price * state.adults + (s.price_child || 0) * state.children;
+    $('sum-tour').textContent = s.name;
+    $('sum-price').textContent = total > 0 ? formatSEK(total) : '';
+    if (state.selectedDate && state.selectedTime) {
+      var guests = state.adults + ' vuxna';
+      if (state.children) guests += ', ' + state.children + ' barn';
+      if (state.childrenFree) guests += ', ' + state.childrenFree + ' spädbarn';
+      $('sum-meta').textContent = state.selectedDateLabel + ' · ' + state.selectedTime + ' · ' + guests;
+    } else if (state.selectedDate) {
+      $('sum-meta').textContent = state.selectedDateLabel + ' · Välj tid';
+    } else {
+      $('sum-meta').textContent = 'Välj datum och tid';
+    }
+  }
+
+  // ── CHECKOUT ───────────────────────────────────────
+  async function handleCTA() {
+    if (state.step < 4) return;
+    var fname = val('f-name'), lname = val('f-lname'), email = val('f-email');
+    var ok = true;
+    if (!fname) { markErr('f-name'); ok = false; }
+    if (!lname) { markErr('f-lname'); ok = false; }
+    if (!email || email.indexOf('@') === -1) { markErr('f-email'); ok = false; }
+    if (!ok) return;
+    var totalGuests = state.adults + state.children;
+    if (state.service.min_persons && totalGuests < state.service.min_persons) {
+      alert('Minst ' + state.service.min_persons + ' personer totalt krävs (vuxna + barn).');
+      return;
+    }
+    var btn = $('cta-btn');
+    btn.disabled = true; btn.textContent = 'Skapar bokning…';
+    try {
+      var totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children;
+      var newsletter = $('f-newsletter') ? $('f-newsletter').checked : false;
+
+      // 1. Spara bokning i Supabase (status: pending_payment)
+      var bookingRows = await sbPost('bookings', {
+        service_id: state.service.id,
+        slot_id: state.selectedSlot,
+        first_name: fname, last_name: lname, email: email,
+        phone: val('f-phone') || null,
+        adults: state.adults,
+        children: state.children + state.childrenFree,
+        alpacas: state.alpacas,
+        note: val('f-note') || null,
+        status: 'pending_payment',
+        payment_status: 'pending',
+        total_price: totalPrice,
+        newsletter_consent: newsletter
+      });
+      var bookingId = bookingRows[0] ? bookingRows[0].id : null;
+
+      // 2. Anropa Edge Function 'abicart' med action 'createOrder'.
+      //    Edge Function använder admin-token serverside för att:
+      //    - skapa Abicart-order (vuxna + barn)
+      //    - pre-fylla kunduppgifter
+      //    - patcha bookings-raden med abicart_order_id
+      //    - returnera färdig checkout_url
+      //    Detta undviker hela cookie/session-problemet helt.
+      btn.textContent = 'Vidarebefordrar till betalning…';
+      var orderRes = await fetch(SB_URL + '/functions/v1/abicart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'createOrder',
+          booking_id: bookingId,
+          service_name: state.service.name,
+          first_name: fname,
+          last_name: lname,
+          email: email,
+          phone: val('f-phone') || null,
+          adults: state.adults,
+          children: state.children
+        })
+      });
+      var orderData = await orderRes.json();
+      if (!orderData.ok) throw new Error(orderData.error || 'Kunde inte skapa order i Abicart');
+      console.log('Order skapad:', orderData.order_id, '→', orderData.checkout_url);
+
+      // 3. Skicka till kassan
+      window.location.href = orderData.checkout_url;
+
+    } catch(e) {
+      showError('Bokningen misslyckades: ' + e.message);
+      btn.disabled = false; btn.textContent = 'Slutför bokning';
+    }
+  }
+
+  // ── ÅTERKOMST FRÅN BETALNING ───────────────────────
+  async function checkReturnedPayment() {
+    var params = new URLSearchParams(window.location.search);
+    var bookingId = params.get('booking');
+    var cancelled = params.get('cancelled');
+    if (!bookingId) return;
+    if (cancelled) { showError('Betalningen avbröts. Du kan försöka igen.'); return; }
+    try {
+      var rows = await sbGet('bookings?id=eq.' + bookingId + '&select=*,services(name)');
+      var b = rows[0];
+      if (!b) return;
+      if (b.abicart_order_id) {
+        var res = await fetch(SB_URL + '/functions/v1/abicart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'confirmPayment', order_id: b.abicart_order_id })
+        });
+        var data = await res.json();
+        if (data.paid) {
+          hide('booking-view');
+          var details = '<strong>Tjänst:</strong> ' + (b.services && b.services.name ? b.services.name : b.service_id) + '<br>'
+            + '<strong>Boknings-ID:</strong> #' + b.id + '<br>'
+            + '<strong>Totalt:</strong> ' + (b.total_price || 0) + ' kr';
+          $('confirm-card').innerHTML = details;
+          $('confirm-view').classList.add('show');
+        }
+      }
+    } catch(e) { console.warn('Betalningskontroll:', e.message); }
+  }
+
+  // ── RESET ──────────────────────────────────────────
+  function resetWidget() {
+    state = { step:1, service:null, year:new Date().getFullYear(), month:new Date().getMonth()+1, availableDates:[], selectedDate:null, selectedDateLabel:'', selectedSlot:null, selectedTime:null, adults:1, children:0, childrenFree:0, alpacas:0 };
+    ['panel-calendar','panel-time','panel-form'].forEach(hide);
+    $('confirm-view').classList.remove('show');
+    show('booking-view');
+    root.querySelectorAll('.service-card').forEach(function(c){ c.classList.remove('selected'); });
+    ['f-name','f-lname','f-email','f-phone','f-note'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
+    var cb = $('f-newsletter'); if(cb) cb.checked = false;
+    $('error-banner').classList.remove('show');
+    $('cta-btn').textContent = 'Fortsätt →';
+    setStep(1); updateSummary();
+  }
+  function goBack(from) {
+    if (from === 'calendar') { hide('panel-calendar'); hide('panel-time'); hide('summary-panel'); setStep(1); state.selectedDate=null; state.selectedTime=null; }
+    else if (from === 'time') { hide('panel-time'); hide('panel-form'); setStep(2); $('cta-btn').textContent='Fortsätt →'; state.selectedTime=null; }
+    else if (from === 'form') { hide('panel-form'); setStep(3); $('cta-btn').textContent='Fortsätt →'; }
+    updateSummary();
+  }
+  function setStep(n) {
+    state.step = n;
+    [1,2,3,4].forEach(function(i){
+      var el = $('s'+i);
+      el.classList.remove('active','done');
+      if (i < n) el.classList.add('done');
+      if (i === n) el.classList.add('active');
+    });
+  }
+
+  // ── WEATHER ────────────────────────────────────────
+  var WMO = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
+  var WMO_WARN = [65,75,82,95,96,99];
+  var MON_SV = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  var DAY_SV = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+  var weatherData = null;
+
+  async function loadWeather() {
+    try {
+      var r = await fetch(SB_URL + '/functions/v1/abicart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'weather', lat: LAT, lng: LNG })
+      });
+      weatherData = (await r.json()).daily;
+      renderWeather();
+    } catch(e) { console.warn('Väder:', e.message); }
+  }
+  function renderWeather(highlightDate) {
+    if (!weatherData) return;
+    var wrap = $('weather-wrap');
+    var strip = $('weather-strip');
+    var warn = $('weather-warning');
+    wrap.style.display = 'block';
+    var hasWarn = false;
+    strip.innerHTML = (weatherData.time || []).map(function(date, i){
+      var d = new Date(date);
+      if (WMO_WARN.indexOf(weatherData.weathercode[i]) !== -1) hasWarn = true;
+      var rain = weatherData.precipitation_sum[i] > 0 ? Math.round(weatherData.precipitation_sum[i]) + 'mm' : '';
+      return '<div class="weather-day ' + (date === highlightDate ? 'selected-day' : '') + '">'
+        + '<div class="wd-date">' + DAY_SV[d.getDay()] + ' ' + d.getDate() + ' ' + MON_SV[d.getMonth()] + '</div>'
+        + '<div class="wd-icon">' + (WMO[weatherData.weathercode[i]] || '🌡') + '</div>'
+        + '<div class="wd-temp">' + Math.round(weatherData.temperature_2m_max[i]) + '°/' + Math.round(weatherData.temperature_2m_min[i]) + '°</div>'
+        + (rain ? '<div class="wd-rain">' + rain + '</div>' : '')
+        + '</div>';
+    }).join('');
+    warn.classList.toggle('show', hasWarn);
+  }
+
+  // ── RULES TOGGLE ───────────────────────────────────
+  function toggleRules() {
+    var b = $('rules-body');
+    var c = $('rules-chev');
+    b.style.display = b.style.display === 'block' ? 'none' : 'block';
+    c.classList.toggle('open');
+  }
+
+  // ── IFRAME RESIZE (för WordPress-embed senare) ────
+  function postIframeHeight() {
+    if (window.parent === window) return; // inte i iframe
+    var h = root.scrollHeight;
+    window.parent.postMessage({ type: 'resize', source: 'sam-honshyltegard', height: h }, '*');
+  }
+  if (window.parent !== window && 'ResizeObserver' in window) {
+    new ResizeObserver(postIframeHeight).observe(root);
+  }
+
+  // ── EXPONERA HANDLERS PÅ window FÖR onclick-ATTRIBUT ─
+  window.samSelectService = selectService;
+  window.samChangeMonth = changeMonth;
+  window.samSelectDate = selectDate;
+  window.samSelectTime = selectTime;
+  window.samHandleCTA = handleCTA;
+  window.samGoBack = goBack;
+  window.samResetWidget = resetWidget;
+  window.samToggleRules = toggleRules;
+
+  // ── KÖRNING ────────────────────────────────────────
+  init();
+  checkReturnedPayment();
+})();
+</script>
+</body>
+</html>
