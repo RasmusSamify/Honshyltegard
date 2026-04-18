@@ -364,8 +364,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 
   // ── ABICART (klient-side, för korrekt session-bindning) ──
   // Session.getToken MÅSTE anropas från klienten — sessionen binds till
-  // klient-IP/UA. När användaren senare landar på /kassa/?session=TOKEN
-  // kan Abicart matcha sessionen mot klienten.
+  // klient-IP/UA. Kassan laddas via /kassa/?load_cart=TOKEN — ett script
+  // i temats <head> plockar upp tokenen och injicerar den i SPA:ns Redux store.
   var AB_BASE = 'https://shop.textalk.se/backend/jsonrpc/v1/?webshop=84183';
   async function abCall(method, params, sessionToken) {
     var url = sessionToken ? AB_BASE + '&session=' + encodeURIComponent(sessionToken) : AB_BASE;
@@ -748,9 +748,12 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         body: JSON.stringify({ abicart_order_id: orderUid, payment_status: 'pending' })
       }).catch(function(e){ console.warn('Patch booking:', e.message); });
 
-      // 7. Redirect till kassan med session-token i URL
+      // 7. Redirect till kassan med load_cart-parametern
+      //    Abicart's frontend (Diversity SPA) läser INTE ?session= från URL.
+      //    Istället har vi lagt in ett script i temats <head> som plockar upp
+      //    ?load_cart=TOKEN och injicerar sessionen i SPA:ns Redux store.
       btn.textContent = 'Vidarebefordrar till betalning\u2026';
-      var kassaUrl = 'https://webshop.honshyltegard.nu/kassa/' + orderUid + '?session=' + encodeURIComponent(sessionToken);
+      var kassaUrl = 'https://webshop.honshyltegard.nu/kassa/?load_cart=' + encodeURIComponent(sessionToken);
       console.log('Kassa URL:', kassaUrl);
       window.location.href = kassaUrl;
 
