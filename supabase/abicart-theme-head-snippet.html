@@ -23,6 +23,42 @@
     var token = sessionStorage.getItem('_loadCart');
     if (token) {
       sessionStorage.removeItem('_loadCart');
+
+      // Abicart SPA kör flera interna dispatches direkt efter setSession
+      // (fetchSessionData, fetchCart, fetchOrder m.fl.). Efter en nyligen
+      // skapad session misslyckas en eller flera av dessa med 9003/1006 på
+      // grund av race conditions på backend, vilket triggar SystemError-modalen.
+      // Vi kan inte catcha alla dispatches men vi kan dölja modalen när den
+      // dyker upp de första sekunderna efter redirecten.
+      var suppressUntil = Date.now() + 5000;
+      var hideErrorModals = function(){
+        if (Date.now() > suppressUntil) return;
+        document.querySelectorAll('.tws-checkout--system-error-modal').forEach(function(m){
+          m.style.display = 'none';
+          m.setAttribute('aria-hidden', 'true');
+        });
+        // Dolda backdrop:er kan blockera interaktion — ta bort dem också
+        document.querySelectorAll('.modal-backdrop').forEach(function(b){
+          if (b.style.display !== 'none') b.style.display = 'none';
+        });
+      };
+      var mo = new MutationObserver(hideErrorModals);
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function(){ mo.disconnect(); hideErrorModals(); }, 5000);
+
+      // Svälj unhandled promise rejections från Abicarts init (9003, 1006)
+      // så de inte dyker upp som fel i konsollen.
+      var rejectionHandler = function(e){
+        if (Date.now() > suppressUntil) return;
+        var r = e.reason;
+        if (r && typeof r === 'object' && (r.code === 9003 || r.code === 1006)) {
+          console.warn('[HHG] suppressed Abicart init rejection:', r);
+          e.preventDefault();
+        }
+      };
+      window.addEventListener('unhandledrejection', rejectionHandler);
+      setTimeout(function(){ window.removeEventListener('unhandledrejection', rejectionHandler); }, 5000);
+
       var store = window.twsReduxStore;
       var actions = window.twsCore && window.twsCore.actions;
       if (store && actions) {
@@ -34,21 +70,8 @@
         store.dispatch(actions.fetchSessionData())
           .then(goCheckout)
           .catch(function(err){
-            // fetchSessionData rejectar ibland direkt efter en nyligen skapad session
-            // trots att sessionen är giltig på backend. Utan .catch() triggar det
-            // Abicarts generiska "Ett fel har inträffat"-modal. Vi sväljer felet,
-            // fortsätter till checkout ändå, och stänger modalen om den visas.
             console.warn('[HHG] fetchSessionData rejected (ignored):', err);
             goCheckout();
-            setTimeout(function(){
-              var modal = document.querySelector('.tws-checkout--system-error-modal');
-              if (modal) {
-                // Försök stänga via close-knapp, annars dölj via inline-style
-                var closeBtn = modal.querySelector('button, .close, [aria-label*="tiäng" i], [aria-label*="close" i]');
-                if (closeBtn) closeBtn.click();
-                else modal.style.display = 'none';
-              }
-            }, 300);
           });
       }
     }
