@@ -794,7 +794,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   //   2) localStorage 'sam_pending_booking' — fallback om Abicart inte redirectar tillbaka
   //   3) ?cancelled=1 — visar felmeddelande
   async function confirmPaymentForBooking(bookingId) {
-    var rows = await sbGet('bookings?id=eq.' + bookingId + '&select=*,services(name)');
+    // Explicit kolumnlista: RLS-hardening hindrar `select=*` för anon (PII dolt)
+    var rows = await sbGet('bookings?id=eq.' + bookingId + '&select=id,service_id,total_price,abicart_order_id,status,payment_status,services(name)');
     var b = rows[0];
     if (!b) throw new Error('Bokning #' + bookingId + ' hittades inte');
     if (!b.abicart_order_id) return { paid: false, booking: b };
