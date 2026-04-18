@@ -21,6 +21,12 @@
 --
 -- Kör i Supabase SQL Editor.
 
+-- ── 0. Säkerställ att förutsatta kolumner finns (idempotent) ──
+-- reminder_sent_at läggs normalt till av email_setup.sql, men vi skapar den här
+-- också så att den här filen kan köras självständigt.
+ALTER TABLE public.bookings
+  ADD COLUMN IF NOT EXISTS reminder_sent_at timestamptz;
+
 -- ── 1. Reset: ta bort allt anon/authenticated har på tabellen ──
 REVOKE ALL ON public.bookings FROM anon;
 REVOKE ALL ON public.bookings FROM authenticated;
