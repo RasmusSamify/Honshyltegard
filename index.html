@@ -38,6 +38,13 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 #sam-widget-root .deco-line hr{flex:1;max-width:80px;border:none;border-top:1px solid var(--border)}
 #sam-widget-root .deco-line span{font-size:22px}
 
+/* Intro */
+#sam-widget-root .intro-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 26px;margin-bottom:28px;animation:sam-fadeUp 0.6s 0.1s ease both}
+#sam-widget-root .intro-section p{font-size:15px;color:var(--text);line-height:1.8;margin-bottom:14px;font-weight:300}
+#sam-widget-root .intro-section p:last-child{margin-bottom:0}
+#sam-widget-root .intro-section .intro-highlight{background:var(--green-xs);border-left:3px solid var(--green);padding:14px 18px;border-radius:0 var(--radius) var(--radius) 0;margin:18px 0;font-size:14px;color:var(--green);line-height:1.7;font-weight:400}
+#sam-widget-root .intro-section .intro-cta{text-align:center;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);font-size:14px;color:var(--green);font-weight:500}
+
 /* Rules */
 #sam-widget-root .rules-banner{background:var(--green-xs);border:1.5px solid var(--green-lt);border-radius:var(--radius);padding:16px 22px;margin-bottom:24px}
 #sam-widget-root .rules-banner-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
@@ -207,6 +214,16 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     </div>
 
     <div id="booking-view">
+      <!-- Intro -->
+      <div class="intro-section">
+        <p>Lär känna alpackorna på Hönshyltegård genom en trevlig och avslappnad promenad.</p>
+        <p>Släpp vardagsstressen och upplev en fridfull och lantlig miljö tillsammans med våra alpackor. Du får chansen att komma nära och känna deras mjuka och varma ull, och det finns såklart också tillfälle att ta bilder tillsammans med alpackorna.</p>
+        <p>Alpackor är sociala och nyfikna men med hög integritet, när man promenerar med alpackor är det i deras stillsamma tempo. Hela besöket varar cirka 1 timme.</p>
+        <p>Vi börjar med att presentera de alpackor som kommer vara med på promenaden och ger er lite information och intressant fakta om alpackor. Vi går sedan en tur i den småländska naturen. Efteråt besöker vi hagen där stona och årets söta föl går.</p>
+        <div class="intro-highlight">🧥 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
+        <p class="intro-cta">👇 Välj upplevelse och boka direkt nedan</p>
+      </div>
+
       <!-- Rules -->
       <div class="rules-banner" style="animation:sam-fadeUp 0.5s 0.05s ease both">
         <div class="rules-banner-header" onclick="samToggleRules()">
@@ -222,7 +239,6 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
             <li data-icon="🦙">Vi har rätt att avvisa personer som stör eller stressar djuren.</li>
             <li data-icon="🧘">Kom ihåg att vara lugn – denna stund ska vara harmonisk för både människor och djur.</li>
           </ul>
-          <div class="rules-note">👕 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
         </div>
       </div>
 
