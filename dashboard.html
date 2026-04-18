@@ -798,7 +798,7 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
   }
 
   async function loadServices(){
-    const { data, error } = await sb.from('services').select('id,name,price,price_child,max_persons,min_persons').order('id');
+    const { data, error } = await sb.from('services').select('id,name,price,price_child,max_spots,min_persons').order('id');
     if (error) throw error;
     services = data || [];
   }
