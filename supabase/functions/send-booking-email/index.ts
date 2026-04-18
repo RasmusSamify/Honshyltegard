@@ -126,7 +126,7 @@ function renderShell(title: string, bodyHtml: string) {
         <tr><td style="padding:28px 32px">${bodyHtml}</td></tr>
         <tr><td style="padding:20px 32px;background:${BRAND.cream};border-top:1px solid ${BRAND.border};font-family:Arial,sans-serif;font-size:12px;color:${BRAND.muted};line-height:1.7">
           <strong style="color:${BRAND.brown}">Hönshyltegård</strong><br>
-          Hönshylte 1, 360 13 Urshult · <a href="https://honshyltegard.nu" style="color:${BRAND.green}">honshyltegard.nu</a>
+          Hönshyltavägen 8, 360 24 Linneryd · <a href="https://honshyltegard.nu" style="color:${BRAND.green}">honshyltegard.nu</a>
         </td></tr>
       </table>
     </td></tr>
@@ -160,10 +160,12 @@ function tmplConfirmation(b: Booking) {
     ${renderDetails(b)}
     <div style="margin-top:24px;padding:16px 18px;background:${BRAND.cream};border-radius:10px;font-family:Arial,sans-serif;font-size:13px;line-height:1.7;color:${BRAND.brown}">
       <strong>Praktisk info</strong><br>
+      · Adress: Hönshyltavägen 8, 360 24 Linneryd<br>
       · Kom 5–10 min innan avgång<br>
-      · Kläder efter väder – stadiga skor rekommenderas<br>
+      · Klä dig efter väder – stadiga skor rekommenderas<br>
+      · Mobil på ljudlöst, inga andra djur<br>
       · Vid extremt väder kontaktar vi dig i förväg<br>
-      · Frågor? Svara på det här mailet eller ring 0000-00 00 00
+      · Frågor? Svara på det här mailet
     </div>`;
   const text =
 `Tack ${b.first_name}!
@@ -176,11 +178,12 @@ Gäster: ${b.adults} vuxna${b.children ? `, ${b.children} barn` : ""}
 Bokningsnr: #${b.id}
 Totalt: ${formatSEK(b.total_price)}
 
-Kom 5–10 min innan avgång, kläder efter väder.
+Adress: Hönshyltavägen 8, 360 24 Linneryd
+Kom 5–10 min innan avgång. Klä dig efter väder.
+Mobil på ljudlöst. Inga andra djur.
 Frågor? Svara på det här mailet.
 
 Hönshyltegård
-Hönshylte 1, 360 13 Urshult
 honshyltegard.nu`;
   return {
     subject: `Bokningsbekräftelse – Hönshyltegård (#${b.id})`,
