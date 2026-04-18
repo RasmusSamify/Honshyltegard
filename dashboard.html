@@ -899,13 +899,10 @@ function showTab(name, btn) {
 async function deleteBooking(id) {
   if (!confirm('Ta bort bokning #' + id + '? Går ej att ångra.')) return;
   try {
-    await fetch('https://zyokiwrzxpgtrsnfymke.supabase.co/rest/v1/bookings?id=eq.' + id, {
-      method: 'DELETE',
-      headers: {
-        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA',
-        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA'
-      }
-    });
+    // Routas via admin Edge Function (service_role) — RLS blockerar DELETE för anon.
+    const r = await call({ action: 'deleteBooking', id });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || data.ok === false) throw new Error(data.error || ('HTTP ' + r.status));
     allBookings = allBookings.filter(b => b.id !== id);
     renderBookings();
     renderStats();
