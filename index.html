@@ -748,7 +748,18 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         body: JSON.stringify({ abicart_order_id: orderUid, payment_status: 'pending' })
       }).catch(function(e){ console.warn('Patch booking:', e.message); });
 
-      // 7. Redirect till kassan med load_cart-parametern
+      // 7. Stash pending booking i localStorage s\u00e5 vi kan verifiera betalning
+      //    oavsett om Abicart redirectar tillbaka oss eller ej.
+      try {
+        localStorage.setItem('sam_pending_booking', JSON.stringify({
+          booking_id: bookingId,
+          abicart_order_id: orderUid,
+          email: email,
+          ts: Date.now()
+        }));
+      } catch(_) {}
+
+      // 8. Redirect till kassan med load_cart-parametern
       //    Abicart's frontend (Diversity SPA) läser INTE ?session= från URL.
       //    Istället har vi lagt in ett script i temats <head> som plockar upp
       //    ?load_cart=TOKEN och injicerar sessionen i SPA:ns Redux store.
@@ -764,33 +775,117 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   }
 
   // ── ÅTERKOMST FRÅN BETALNING ───────────────────────
+  // Flödet har två triggers:
+  //   1) URL-param (?booking=ID eller ?cancelled=1) — om Abicart redirectar tillbaka
+  //   2) localStorage 'sam_pending_booking' — fallback som alltid funkar, så länge
+  //      kunden kommer tillbaka i samma browser. Visar en banner med verifieringsknapp.
+  async function confirmPaymentForBooking(bookingId) {
+    var rows = await sbGet('bookings?id=eq.' + bookingId + '&select=*,services(name)');
+    var b = rows[0];
+    if (!b) throw new Error('Bokning #' + bookingId + ' hittades inte');
+    if (!b.abicart_order_id) return { paid: false, booking: b, reason: 'no_order' };
+    var res = await fetch(SB_URL + '/functions/v1/abicart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'confirmPayment', order_id: b.abicart_order_id })
+    });
+    var data = await res.json();
+    return { paid: !!data.paid, booking: b, raw: data };
+  }
+
+  function showConfirmation(b) {
+    hide('booking-view');
+    var pendingBanner = $('pending-banner');
+    if (pendingBanner) pendingBanner.style.display = 'none';
+    var name = (b.services && b.services.name) ? b.services.name : b.service_id;
+    var details = '<strong>Tjänst:</strong> ' + name + '<br>'
+      + '<strong>Boknings-ID:</strong> #' + b.id + '<br>'
+      + '<strong>Totalt:</strong> ' + (b.total_price || 0) + ' kr';
+    $('confirm-card').innerHTML = details;
+    $('confirm-view').classList.add('show');
+    try { localStorage.removeItem('sam_pending_booking'); } catch(_) {}
+  }
+
+  function renderPendingBanner(pending) {
+    var host = $('widget-wrap');
+    if (!host) return;
+    if ($('pending-banner')) return; // redan renderad
+    var banner = document.createElement('div');
+    banner.id = 'pending-banner';
+    banner.style.cssText = 'background:#FFF7E6;border:1px solid #E8D4A0;border-radius:14px;padding:16px 20px;margin:0 0 24px;font-size:14px;color:#7A5B20;line-height:1.6;display:flex;flex-direction:column;gap:10px';
+    banner.innerHTML =
+      '<div><strong>Har du nyss betalat?</strong> Vi hittade en påbörjad bokning (#' + pending.booking_id +
+      ') som väntar på bekräftelse. Klicka för att verifiera.</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button id="pending-verify-btn" style="background:var(--green);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Verifiera betalning</button>' +
+      '<button id="pending-dismiss-btn" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">Dölj</button>' +
+      '</div>';
+    host.insertBefore(banner, host.firstChild);
+    $('pending-verify-btn').onclick = async function(){
+      var btn = $('pending-verify-btn');
+      btn.disabled = true; btn.textContent = 'Kontrollerar…';
+      try {
+        var r = await confirmPaymentForBooking(pending.booking_id);
+        if (r.paid) {
+          showConfirmation(r.booking);
+        } else {
+          btn.disabled = false; btn.textContent = 'Verifiera igen';
+          banner.querySelector('div').innerHTML =
+            '<strong>Betalningen är inte registrerad ännu.</strong> Om du precis slutfört betalningen kan det ta några minuter. ' +
+            'Vänta lite och tryck "Verifiera igen", eller kontakta Hönshyltegård om det kvarstår.';
+        }
+      } catch(e) {
+        btn.disabled = false; btn.textContent = 'Försök igen';
+        console.warn('Verify:', e.message);
+      }
+    };
+    $('pending-dismiss-btn').onclick = function(){
+      try { localStorage.removeItem('sam_pending_booking'); } catch(_) {}
+      banner.style.display = 'none';
+    };
+  }
+
   async function checkReturnedPayment() {
     var params = new URLSearchParams(window.location.search);
-    var bookingId = params.get('booking');
+    var urlBookingId = params.get('booking');
+    var urlAbicartOrder = params.get('abicart_order');
     var cancelled = params.get('cancelled');
-    if (!bookingId) return;
     if (cancelled) { showError('Betalningen avbröts. Du kan försöka igen.'); return; }
+
+    // 1a) URL-flöde: Abicart-snippeten redirectade tillbaka med ?abicart_order=UID
+    if (urlAbicartOrder && !urlBookingId) {
+      try {
+        var rows = await sbGet('bookings?abicart_order_id=eq.' + encodeURIComponent(urlAbicartOrder) + '&select=id&order=id.desc&limit=1');
+        if (rows[0]) urlBookingId = rows[0].id;
+      } catch(e) { console.warn('Lookup abicart_order:', e.message); }
+    }
+
+    // 1b) URL-flöde: ?booking=ID (direkt eller efter lookup ovan)
+    if (urlBookingId) {
+      try {
+        var r = await confirmPaymentForBooking(urlBookingId);
+        if (r.paid) { showConfirmation(r.booking); return; }
+      } catch(e) { console.warn('Betalningskontroll URL:', e.message); }
+    }
+
+    // 2) localStorage-fallback: visa banner om det finns en pending booking < 2h gammal
+    var pendingRaw;
+    try { pendingRaw = localStorage.getItem('sam_pending_booking'); } catch(_) {}
+    if (!pendingRaw) return;
+    var pending;
+    try { pending = JSON.parse(pendingRaw); } catch(_) { localStorage.removeItem('sam_pending_booking'); return; }
+    var ageMs = Date.now() - (pending.ts || 0);
+    if (ageMs > 2 * 60 * 60 * 1000) {
+      try { localStorage.removeItem('sam_pending_booking'); } catch(_) {}
+      return;
+    }
+    // Auto-försök först — om redan paid, visa direkt bekräftelse
     try {
-      var rows = await sbGet('bookings?id=eq.' + bookingId + '&select=*,services(name)');
-      var b = rows[0];
-      if (!b) return;
-      if (b.abicart_order_id) {
-        var res = await fetch(SB_URL + '/functions/v1/abicart', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'confirmPayment', order_id: b.abicart_order_id })
-        });
-        var data = await res.json();
-        if (data.paid) {
-          hide('booking-view');
-          var details = '<strong>Tjänst:</strong> ' + (b.services && b.services.name ? b.services.name : b.service_id) + '<br>'
-            + '<strong>Boknings-ID:</strong> #' + b.id + '<br>'
-            + '<strong>Totalt:</strong> ' + (b.total_price || 0) + ' kr';
-          $('confirm-card').innerHTML = details;
-          $('confirm-view').classList.add('show');
-        }
-      }
-    } catch(e) { console.warn('Betalningskontroll:', e.message); }
+      var rr = await confirmPaymentForBooking(pending.booking_id);
+      if (rr.paid) { showConfirmation(rr.booking); return; }
+    } catch(e) { console.warn('Auto-verify:', e.message); }
+    // Annars: visa banner
+    renderPendingBanner(pending);
   }
 
   // ── RESET ──────────────────────────────────────────

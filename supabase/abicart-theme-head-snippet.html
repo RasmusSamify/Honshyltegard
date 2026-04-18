@@ -1,0 +1,59 @@
+<!--
+  Script som ska klistras in i Abicart Nordic-temats <head>.
+  Funktioner:
+    1) Läser ?load_cart=TOKEN och injicerar sessionen i SPA:ns Redux store
+       (nuvarande, fungerande lösning — flyttar kunden direkt till kassan).
+    2) Efter order-completion redirectar tillbaka till widgeten så
+       confirmPayment kan köras automatiskt.
+
+  Installation:
+    Abicart admin → Mall → Nordic v1.1 → HTML/CSS → <head>-sektion.
+-->
+<script>
+(function(){
+  // Widget-URL att redirecta tillbaka till efter betalning
+  var BOOKING_RETURN_URL = 'https://rasmussamify.github.io/Honshyltegard/';
+
+  // ── Del 1: load_cart ──
+  var urlParams = new URLSearchParams(window.location.search);
+  var sessionFromUrl = urlParams.get('load_cart');
+  if (sessionFromUrl) sessionStorage.setItem('_loadCart', sessionFromUrl);
+
+  window.addEventListener('load', function(){
+    var token = sessionStorage.getItem('_loadCart');
+    if (token) {
+      sessionStorage.removeItem('_loadCart');
+      var store = window.twsReduxStore;
+      var actions = window.twsCore && window.twsCore.actions;
+      if (store && actions) {
+        store.dispatch(actions.setSession(token));
+        store.dispatch(actions.fetchSessionData()).then(function(){
+          window.history.replaceState({}, document.title, window.location.pathname);
+          store.dispatch(actions.goToThemeRoute('checkout'));
+        });
+      }
+    }
+
+    // ── Del 2: efter order-completion, redirecta tillbaka till widgeten ──
+    // Prenumererar på Redux store; om routen blir 'orderComplete' / 'thankyou',
+    // hämtar order-UID och skickar kunden tillbaka till widgeten med query-param.
+    var rstore = window.twsReduxStore;
+    if (!rstore) return;
+    var lastRoute = null;
+    rstore.subscribe(function(){
+      try {
+        var s = rstore.getState();
+        var route = s && s.router && s.router.location && s.router.location.pathname;
+        if (!route || route === lastRoute) return;
+        lastRoute = route;
+        // Abicart Nordic använder ofta /ordercomplete eller /thankyou
+        if (/order.?complete|thank|tack/i.test(route)) {
+          var orderUid = s.order && s.order.uid;
+          var u = BOOKING_RETURN_URL + (BOOKING_RETURN_URL.indexOf('?') === -1 ? '?' : '&') + 'abicart_order=' + (orderUid || '');
+          setTimeout(function(){ window.location.href = u; }, 1200);
+        }
+      } catch(_) {}
+    });
+  });
+})();
+</script>

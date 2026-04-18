@@ -1,3 +1,0 @@
-// netlify/functions/bookings.js
-const LOGIN_ENDPOINT = 'https://user-api.simplybook.me/login/';
-...
