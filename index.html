@@ -366,8 +366,11 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   }
-  async function sbPost(table, data) {
-    var r = await fetch(SB_URL + '/rest/v1/' + table, {
+  async function sbPost(table, data, selectCols) {
+    // selectCols filtrerar RETURNING så anon inte behöver table-level SELECT
+    // (RLS-hardening hindrar annars att returnera alla kolumner).
+    var url = SB_URL + '/rest/v1/' + table + (selectCols ? '?select=' + encodeURIComponent(selectCols) : '');
+    var r = await fetch(url, {
       method: 'POST',
       headers: Object.assign({}, SB_HEADERS, { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       body: JSON.stringify(data)
@@ -715,7 +718,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         payment_status: 'pending',
         total_price: totalPrice,
         newsletter_consent: newsletter
-      });
+      }, 'id');
       var bookingId = bookingRows[0] ? bookingRows[0].id : null;
 
       // 2. Hämta artikel-UIDs från Supabase
