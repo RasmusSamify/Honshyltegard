@@ -26,11 +26,30 @@
       var store = window.twsReduxStore;
       var actions = window.twsCore && window.twsCore.actions;
       if (store && actions) {
+        var goCheckout = function(){
+          try { window.history.replaceState({}, document.title, window.location.pathname); } catch(_) {}
+          try { store.dispatch(actions.goToThemeRoute('checkout')); } catch(_) {}
+        };
         store.dispatch(actions.setSession(token));
-        store.dispatch(actions.fetchSessionData()).then(function(){
-          window.history.replaceState({}, document.title, window.location.pathname);
-          store.dispatch(actions.goToThemeRoute('checkout'));
-        });
+        store.dispatch(actions.fetchSessionData())
+          .then(goCheckout)
+          .catch(function(err){
+            // fetchSessionData rejectar ibland direkt efter en nyligen skapad session
+            // trots att sessionen är giltig på backend. Utan .catch() triggar det
+            // Abicarts generiska "Ett fel har inträffat"-modal. Vi sväljer felet,
+            // fortsätter till checkout ändå, och stänger modalen om den visas.
+            console.warn('[HHG] fetchSessionData rejected (ignored):', err);
+            goCheckout();
+            setTimeout(function(){
+              var modal = document.querySelector('.tws-checkout--system-error-modal');
+              if (modal) {
+                // Försök stänga via close-knapp, annars dölj via inline-style
+                var closeBtn = modal.querySelector('button, .close, [aria-label*="tiäng" i], [aria-label*="close" i]');
+                if (closeBtn) closeBtn.click();
+                else modal.style.display = 'none';
+              }
+            }, 300);
+          });
       }
     }
 
