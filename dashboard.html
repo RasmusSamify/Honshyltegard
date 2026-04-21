@@ -241,6 +241,19 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 
 /* ── SLOTS ──────────────────────────────────────────────── */
 .slot-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 20px; }
+.slot-template-row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed var(--border-lt); }
+.slot-template-row .form-field { flex: 1; min-width: 200px; margin: 0; }
+.weekday-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.weekday-pill { padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 100px; background: var(--surface-2); font-size: 12px; font-weight: 500; color: var(--text-muted); transition: all 0.15s; user-select: none; cursor: pointer; }
+.weekday-pill:hover { border-color: var(--green-lt); }
+.weekday-pill.active { background: var(--green); color: #fff; border-color: var(--green); }
+.weekday-quick { font-size: 11px; color: var(--green); background: none; padding: 4px 8px; margin-left: 4px; cursor: pointer; font-weight: 500; }
+.weekday-quick:hover { text-decoration: underline; }
+.slot-preview { margin-top: 14px; padding: 12px 14px; background: var(--surface-2); border-radius: 8px; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+.slot-preview strong { color: var(--brown); font-weight: 600; }
+.slot-preview.warn { background: #FFF7E2; color: #8a6d1f; border: 1px solid #F5D79B; }
+.slot-day-copy-btn { font-size: 12px; color: var(--green); padding: 4px 10px; border: 1px dashed var(--green-lt); border-radius: 6px; background: none; margin-left: auto; cursor: pointer; }
+.slot-day-copy-btn:hover { background: var(--green-xs); }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 .form-field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
 .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); outline: none; transition: border-color 0.15s; }
@@ -514,6 +527,23 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
           <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Skapa nya tidsluckor
         </div>
+
+        <div class="slot-template-row">
+          <div class="form-field">
+            <label>Mall</label>
+            <select id="slot-template-select">
+              <option value="">— Välj en sparad mall —</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" id="save-template-btn" type="button">
+            <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Spara som mall
+          </button>
+          <button class="btn btn-ghost" id="delete-template-btn" type="button" title="Ta bort vald mall" style="display:none">
+            <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+
         <div class="form-grid">
           <div class="form-field">
             <label>Tjänst</label>
@@ -535,7 +565,27 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
             <label>Max platser per tidslucka</label>
             <input type="number" id="new-slot-max" value="8" min="1" max="50">
           </div>
-          <div class="form-field" style="align-self:end">
+          <div class="form-field" style="grid-column: 1 / -1">
+            <label style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              Veckodagar
+              <button type="button" class="weekday-quick" data-quick="weekdays">Vardagar</button>
+              <button type="button" class="weekday-quick" data-quick="weekends">Helger</button>
+              <button type="button" class="weekday-quick" data-quick="all">Alla</button>
+            </label>
+            <div class="weekday-pills" id="weekday-pills">
+              <button type="button" class="weekday-pill active" data-wd="1">Mån</button>
+              <button type="button" class="weekday-pill active" data-wd="2">Tis</button>
+              <button type="button" class="weekday-pill active" data-wd="3">Ons</button>
+              <button type="button" class="weekday-pill active" data-wd="4">Tor</button>
+              <button type="button" class="weekday-pill active" data-wd="5">Fre</button>
+              <button type="button" class="weekday-pill active" data-wd="6">Lör</button>
+              <button type="button" class="weekday-pill active" data-wd="0">Sön</button>
+            </div>
+          </div>
+          <div class="form-field" style="grid-column: 1 / -1">
+            <div class="slot-preview" id="slot-preview">Fyll i datum och tider ovan — preview visas här.</div>
+          </div>
+          <div class="form-field" style="align-self:end;grid-column: 1 / -1">
             <button class="btn btn-primary" id="create-slots-btn" style="width:100%;justify-content:center">Skapa tider</button>
           </div>
         </div>
@@ -1274,6 +1324,8 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
   $('#drawer-backdrop').addEventListener('click', closeDrawer);
 
   // ── SLOTS ──────────────────────────────────────────────
+  const TEMPLATE_KEY = 'sam_hhg_slot_templates';
+
   function populateSlotForm(){
     const sel = $('#new-slot-service');
     sel.innerHTML = services.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
@@ -1281,23 +1333,154 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
     $('#new-slot-from').value = isoDay(today);
     const t = new Date(today); t.setMonth(t.getMonth() + 1);
     $('#new-slot-to').value = isoDay(t);
+    refreshTemplateDropdown();
+    updateSlotPreview();
   }
 
+  function getSlotFormState(){
+    return {
+      serviceId: parseInt($('#new-slot-service').value, 10) || null,
+      from: $('#new-slot-from').value,
+      to: $('#new-slot-to').value,
+      times: $('#new-slot-times').value.split(',').map(s => s.trim()).filter(Boolean),
+      maxSpots: parseInt($('#new-slot-max').value, 10) || null,
+      weekdays: Array.from($$('#weekday-pills .weekday-pill.active')).map(p => parseInt(p.dataset.wd, 10)),
+    };
+  }
+
+  function countSlotsToCreate(s){
+    if (!s.from || !s.to || !s.times.length || !s.weekdays.length) return 0;
+    const start = new Date(s.from + 'T12:00:00');
+    const end = new Date(s.to + 'T12:00:00');
+    if (end < start) return 0;
+    let daysMatched = 0;
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      if (s.weekdays.includes(d.getDay())) daysMatched++;
+    }
+    return daysMatched * s.times.length;
+  }
+
+  function updateSlotPreview(){
+    const s = getSlotFormState();
+    const preview = $('#slot-preview');
+    if (!s.weekdays.length) {
+      preview.className = 'slot-preview warn';
+      preview.innerHTML = '<strong>Välj minst en veckodag</strong>';
+      return;
+    }
+    if (!s.from || !s.to || !s.times.length) {
+      preview.className = 'slot-preview';
+      preview.textContent = 'Fyll i datum och tider — preview visas här.';
+      return;
+    }
+    const n = countSlotsToCreate(s);
+    if (n === 0) {
+      preview.className = 'slot-preview warn';
+      preview.textContent = 'Inga matchande datum i intervallet (kolla veckodagar och datum).';
+      return;
+    }
+    const daysMatched = n / s.times.length;
+    const validTimes = s.times.every(t => /^\d{1,2}:\d{2}$/.test(t));
+    preview.className = 'slot-preview';
+    preview.innerHTML = `Skapar <strong>${fmtInt(n)}</strong> tider · ${fmtInt(daysMatched)} dagar × ${s.times.length} tid(er) per dag` +
+      (!validTimes ? ' · <span style="color:var(--error)">ogiltigt tidsformat</span>' : '');
+  }
+
+  // Weekday pills
+  $$('#weekday-pills .weekday-pill').forEach(p => {
+    p.addEventListener('click', () => { p.classList.toggle('active'); updateSlotPreview(); });
+  });
+  // Weekday quick-buttons (vardagar / helger / alla)
+  $$('.weekday-quick').forEach(b => {
+    b.addEventListener('click', () => {
+      const q = b.dataset.quick;
+      const WEEKDAYS = ['1','2','3','4','5'], WEEKENDS = ['6','0'], ALL = ['0','1','2','3','4','5','6'];
+      const set = q === 'weekdays' ? WEEKDAYS : q === 'weekends' ? WEEKENDS : ALL;
+      $$('#weekday-pills .weekday-pill').forEach(p => p.classList.toggle('active', set.includes(p.dataset.wd)));
+      updateSlotPreview();
+    });
+  });
+  // Trigger preview recalc on any form change
+  ['new-slot-service','new-slot-from','new-slot-to','new-slot-times','new-slot-max']
+    .forEach(id => $('#' + id).addEventListener('input', updateSlotPreview));
+
+  // ── Templates (localStorage) ──
+  function loadTemplates(){
+    try { return JSON.parse(localStorage.getItem(TEMPLATE_KEY) || '{}'); } catch(_) { return {}; }
+  }
+  function saveTemplates(obj){ localStorage.setItem(TEMPLATE_KEY, JSON.stringify(obj)); }
+  function refreshTemplateDropdown(){
+    const templates = loadTemplates();
+    const sel = $('#slot-template-select');
+    const names = Object.keys(templates).sort();
+    sel.innerHTML = '<option value="">— Välj en sparad mall —</option>' +
+      names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+    $('#delete-template-btn').style.display = 'none';
+  }
+  $('#slot-template-select').addEventListener('change', () => {
+    const name = $('#slot-template-select').value;
+    if (!name) { $('#delete-template-btn').style.display = 'none'; return; }
+    const t = loadTemplates()[name];
+    if (!t) return;
+    if (t.serviceId) $('#new-slot-service').value = t.serviceId;
+    if (t.times) $('#new-slot-times').value = t.times.join(', ');
+    if (t.maxSpots) $('#new-slot-max').value = t.maxSpots;
+    if (Array.isArray(t.weekdays)) {
+      const set = t.weekdays.map(String);
+      $$('#weekday-pills .weekday-pill').forEach(p => p.classList.toggle('active', set.includes(p.dataset.wd)));
+    }
+    // Datumintervall kopieras INTE från mallen — varje tillfälle har egna datum
+    $('#delete-template-btn').style.display = 'inline-flex';
+    updateSlotPreview();
+    toast(`Mall "${name}" laddad`, 'info');
+  });
+  $('#save-template-btn').addEventListener('click', () => {
+    const s = getSlotFormState();
+    if (!s.serviceId || !s.times.length || !s.maxSpots || !s.weekdays.length) {
+      toast('Fyll i tjänst, tider, max och veckodagar innan du sparar', 'error'); return;
+    }
+    const name = prompt('Namn på mallen (t.ex. "Sommarhelg")?');
+    if (!name) return;
+    const templates = loadTemplates();
+    templates[name.trim()] = { serviceId: s.serviceId, times: s.times, maxSpots: s.maxSpots, weekdays: s.weekdays };
+    saveTemplates(templates);
+    refreshTemplateDropdown();
+    $('#slot-template-select').value = name.trim();
+    $('#delete-template-btn').style.display = 'inline-flex';
+    toast(`Mall "${name.trim()}" sparad`, 'success');
+  });
+  $('#delete-template-btn').addEventListener('click', () => {
+    const name = $('#slot-template-select').value;
+    if (!name) return;
+    if (!confirm(`Ta bort mallen "${name}"?`)) return;
+    const templates = loadTemplates();
+    delete templates[name];
+    saveTemplates(templates);
+    refreshTemplateDropdown();
+    toast('Mall borttagen', 'info');
+  });
+
+  // ── Skapa tider ──
   $('#create-slots-btn').addEventListener('click', async () => {
-    const serviceId = parseInt($('#new-slot-service').value, 10);
-    const from = $('#new-slot-from').value;
-    const to = $('#new-slot-to').value;
-    const times = $('#new-slot-times').value.split(',').map(s => s.trim()).filter(Boolean);
-    const maxSpots = parseInt($('#new-slot-max').value, 10);
-    if (!serviceId || !from || !to || !times.length || !maxSpots) { toast('Fyll i alla fält', 'error'); return; }
-    if (!times.every(t => /^\d{1,2}:\d{2}$/.test(t))) { toast('Tider måste vara i formatet HH:MM', 'error'); return; }
+    const s = getSlotFormState();
+    if (!s.serviceId || !s.from || !s.to || !s.times.length || !s.maxSpots) { toast('Fyll i alla fält', 'error'); return; }
+    if (!s.weekdays.length) { toast('Välj minst en veckodag', 'error'); return; }
+    if (!s.times.every(t => /^\d{1,2}:\d{2}$/.test(t))) { toast('Tider måste vara i formatet HH:MM', 'error'); return; }
+    const n = countSlotsToCreate(s);
+    if (n === 0) { toast('Inga matchande datum i intervallet', 'error'); return; }
+    if (!confirm(`Skapar ${n} tider. Fortsätt?`)) return;
     const btn = $('#create-slots-btn');
     btn.disabled = true; btn.textContent = 'Skapar…';
     try {
-      await adminCall({ action: 'createBulkSlots', service_id: serviceId, from, to, times, max_spots: maxSpots });
-      toast('Tider skapade', 'success');
+      await adminCall({
+        action: 'createBulkSlots',
+        service_id: s.serviceId, from: s.from, to: s.to, times: s.times,
+        max_spots: s.maxSpots, weekdays: s.weekdays,
+      });
+      toast(`${n} tider skapade`, 'success');
       await loadSlots();
       renderSlotCalendar();
+      renderSlotDay();
     } catch(e) {
       toast('Fel: ' + e.message, 'error');
     } finally {
@@ -1333,7 +1516,16 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
     $('#slot-day-label').textContent = fmtDate(slotCalSelected, true);
     const daySlots = allSlots.filter(s => s.slot_date === slotCalSelected);
     if (!daySlots.length) { el.innerHTML = '<div class="empty">Inga tider denna dag</div>'; return; }
-    el.innerHTML = daySlots.map(s => {
+
+    // Top row: copy-forward button for the whole day
+    const dayWeekday = new Date(slotCalSelected + 'T12:00:00').getDay();
+    const dayName = DAYS_FULL[dayWeekday].toLowerCase();
+    el.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <button class="slot-day-copy-btn" id="copy-day-forward-btn">
+        <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Kopiera denna dag framåt
+      </button>
+    </div>` + daySlots.map(s => {
       const full = s.booked_spots >= s.max_spots;
       return `<div class="schedule-item" style="padding:10px 0">
         <div class="schedule-time">${s.slot_time.substring(0,5)}</div>
@@ -1357,6 +1549,49 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         renderSlotDay();
       } catch(e) { toast('Fel: ' + e.message, 'error'); }
     }));
+
+    // Kopiera hela dagens tider framåt X veckor — grupperar per service_id
+    const copyBtn = $('#copy-day-forward-btn');
+    if (copyBtn) copyBtn.addEventListener('click', async () => {
+      const input = prompt(`Kopiera denna ${dayName}s tider framåt — hur många veckor?`, '4');
+      if (!input) return;
+      const weeks = parseInt(input, 10);
+      if (!weeks || weeks < 1 || weeks > 52) { toast('Ange ett antal veckor 1–52', 'error'); return; }
+      // from = nästa förekomst av samma veckodag, to = +weeks veckor
+      const start = new Date(slotCalSelected + 'T12:00:00');
+      start.setDate(start.getDate() + 7);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 7 * (weeks - 1));
+      const fromIso = isoDay(start), toIso = isoDay(end);
+
+      // Gruppera per (service_id, max_spots) så vi kan göra ett Edge-anrop per grupp
+      const groups = {};
+      daySlots.forEach(s => {
+        const key = `${s.service_id}:${s.max_spots}`;
+        (groups[key] = groups[key] || { service_id: s.service_id, max_spots: s.max_spots, times: [] }).times.push(s.slot_time.substring(0,5));
+      });
+      copyBtn.disabled = true; copyBtn.textContent = 'Kopierar…';
+      let total = 0;
+      try {
+        for (const key in groups) {
+          const g = groups[key];
+          await adminCall({
+            action: 'createBulkSlots',
+            service_id: g.service_id, from: fromIso, to: toIso, times: g.times,
+            max_spots: g.max_spots, weekdays: [dayWeekday],
+          });
+          total += g.times.length * weeks;
+        }
+        toast(`${total} tider skapade över ${weeks} ${weeks === 1 ? 'vecka' : 'veckor'}`, 'success');
+        await loadSlots();
+        renderSlotCalendar();
+        renderSlotDay();
+      } catch(e) {
+        toast('Fel: ' + e.message, 'error');
+      } finally {
+        copyBtn.disabled = false;
+      }
+    });
   }
 
   $('#slot-cal-prev').addEventListener('click', () => { slotCalDate.setMonth(slotCalDate.getMonth() - 1); renderSlotCalendar(); });

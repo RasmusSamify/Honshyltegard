@@ -114,22 +114,29 @@ Deno.serve(async (req) => {
 
   // ── action: createBulkSlots ──
   // Skapar time_slots-rader från (from, to, times, service_id, max_spots).
+  // Optional `weekdays` är en lista av getDay()-värden (0=Sön, 1=Mån, ..., 6=Lör)
+  // — bara datum vars veckodag finns i listan får tider. Utelämnad = alla dagar.
   // Hoppar över tider som redan finns (unique on service_id + slot_date + slot_time).
   if (action === "createBulkSlots") {
-    const { service_id, from, to, times, max_spots } = body as any;
+    const { service_id, from, to, times, max_spots, weekdays } = body as any;
     if (!service_id || !from || !to || !Array.isArray(times) || !max_spots) {
       return json({ ok: false, error: "service_id, from, to, times[], max_spots required" }, 400);
     }
+    const wdFilter: number[] | null = Array.isArray(weekdays) && weekdays.length > 0
+      ? weekdays.map((w: unknown) => Number(w)).filter((w: number) => w >= 0 && w <= 6)
+      : null;
     const rows: Array<{ service_id: number; slot_date: string; slot_time: string; max_spots: number; booked_spots: number; active: boolean }> = [];
     const start = new Date(from + "T12:00:00");
     const end = new Date(to + "T12:00:00");
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      if (wdFilter && !wdFilter.includes(d.getDay())) continue;
       const dateStr = d.toISOString().substring(0, 10);
       for (const t of times) {
         const time = t.length === 5 ? t + ":00" : t;
         rows.push({ service_id: Number(service_id), slot_date: dateStr, slot_time: time, max_spots: Number(max_spots), booked_spots: 0, active: true });
       }
     }
+    if (rows.length === 0) return json({ ok: true, requested: 0, created: 0 });
     const r = await fetch(`${SB_URL}/rest/v1/time_slots`, {
       method: "POST",
       headers: {
