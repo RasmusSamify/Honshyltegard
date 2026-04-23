@@ -62,16 +62,24 @@
       var store = window.twsReduxStore;
       var actions = window.twsCore && window.twsCore.actions;
       if (store && actions) {
-        var goCheckout = function(){
+        // Abicart-rekommendation: hoppa över goToThemeRoute om vi redan är på
+        // /kassa eller /checkout. Att dispatch:a route-byte på en sida vi redan
+        // är på triggar onödiga interna fetch-anrop som racar mot en nyligen
+        // skapad order — vilket är det som ger 9003/1006-felen.
+        var afterFetch = function(){
           try { window.history.replaceState({}, document.title, window.location.pathname); } catch(_) {}
-          try { store.dispatch(actions.goToThemeRoute('checkout')); } catch(_) {}
+          var path = window.location.pathname || '';
+          var alreadyAtCheckout = path.indexOf('/kassa') !== -1 || path.indexOf('/checkout') !== -1;
+          if (!alreadyAtCheckout) {
+            try { store.dispatch(actions.goToThemeRoute('checkout')); } catch(_) {}
+          }
         };
         store.dispatch(actions.setSession(token));
         store.dispatch(actions.fetchSessionData())
-          .then(goCheckout)
+          .then(afterFetch)
           .catch(function(err){
             console.warn('[HHG] fetchSessionData rejected (ignored):', err);
-            goCheckout();
+            afterFetch();
           });
       }
     }
