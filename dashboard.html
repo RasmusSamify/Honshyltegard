@@ -254,6 +254,12 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 .slot-preview.warn { background: #FFF7E2; color: #8a6d1f; border: 1px solid #F5D79B; }
 .slot-day-copy-btn { font-size: 12px; color: var(--green); padding: 4px 10px; border: 1px dashed var(--green-lt); border-radius: 6px; background: none; margin-left: auto; cursor: pointer; }
 .slot-day-copy-btn:hover { background: var(--green-xs); }
+.slot-day-toolbar { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-lt); margin-bottom: 6px; flex-wrap: wrap; }
+.slot-select-all { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; user-select: none; }
+.slot-select-all input { width: 14px; height: 14px; cursor: pointer; accent-color: var(--green); }
+.slot-row-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--green); margin-right: 4px; }
+.slot-row-check:disabled { cursor: not-allowed; opacity: 0.4; }
+.schedule-item.is-selected { background: var(--green-xs); border-radius: 8px; padding-left: 8px !important; padding-right: 8px !important; margin: 0 -8px; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 .form-field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
 .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); outline: none; transition: border-color 0.15s; }
@@ -523,6 +529,12 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
           <h1 class="view-title">Tider</h1>
           <div class="view-subtitle">Hantera bokningsbara tidsluckor</div>
         </div>
+        <div class="view-actions">
+          <button class="btn btn-danger" id="clear-all-slots-btn">
+            <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Rensa alla framtida
+          </button>
+        </div>
       </div>
       <div class="slot-form">
         <div class="section-title" style="margin-bottom:16px">
@@ -709,6 +721,7 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
   let charts = {};
   let slotCalDate = new Date();
   let slotCalSelected = null;
+  let slotDaySelected = new Set();
 
   // ── UTILS ──────────────────────────────────────────────
   const $ = sel => document.querySelector(sel);
@@ -1269,6 +1282,8 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         <div class="drawer-field"><div class="drawer-field-label">Barn</div><div class="drawer-field-value">${b.children || 0}</div></div>
         ${b.alpacas ? `<div class="drawer-field"><div class="drawer-field-label">Alpackor</div><div class="drawer-field-value">${b.alpacas}</div></div>` : ''}
         <div class="drawer-field"><div class="drawer-field-label">Totalt</div><div class="drawer-field-value">${fmtSEK(b.total_price)}</div></div>
+        ${b.private_party ? `<div class="drawer-field"><div class="drawer-field-label">Slutet sällskap</div><div class="drawer-field-value">Ja</div></div>` : ''}
+        ${b.special_needs ? `<div class="drawer-field"><div class="drawer-field-label">Särskilda behov</div><div class="drawer-field-value">${esc(b.special_needs)}</div></div>` : ''}
         ${b.note ? `<div class="drawer-field"><div class="drawer-field-label">Övrigt</div><div class="drawer-field-value">${esc(b.note)}</div></div>` : ''}
       </div>
       <div class="drawer-section">
@@ -1519,17 +1534,31 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
     const daySlots = allSlots.filter(s => s.slot_date === slotCalSelected);
     if (!daySlots.length) { el.innerHTML = '<div class="empty">Inga tider denna dag</div>'; return; }
 
-    // Top row: copy-forward button for the whole day
+    // Drop selections that no longer exist (e.g. after delete)
+    const dayIds = new Set(daySlots.map(s => s.id));
+    slotDaySelected = new Set([...slotDaySelected].filter(id => dayIds.has(id)));
+
+    const selectableSlots = daySlots.filter(s => !s.booked_spots);
+    const allSelectableMarked = selectableSlots.length > 0 && selectableSlots.every(s => slotDaySelected.has(s.id));
     const dayWeekday = new Date(slotCalSelected + 'T12:00:00').getDay();
     const dayName = DAYS_FULL[dayWeekday].toLowerCase();
-    el.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+
+    el.innerHTML = `<div class="slot-day-toolbar">
+      <label class="slot-select-all">
+        <input type="checkbox" id="slot-day-select-all" ${allSelectableMarked ? 'checked' : ''} ${selectableSlots.length === 0 ? 'disabled' : ''}>
+        Markera alla utan bokningar
+      </label>
+      ${slotDaySelected.size > 0 ? `<button class="btn btn-danger" id="delete-selected-btn" style="padding:6px 12px;font-size:12px">Ta bort markerade (${slotDaySelected.size})</button>` : ''}
       <button class="slot-day-copy-btn" id="copy-day-forward-btn">
         <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Kopiera denna dag framåt
       </button>
     </div>` + daySlots.map(s => {
       const full = s.booked_spots >= s.max_spots;
-      return `<div class="schedule-item" style="padding:10px 0">
+      const checked = slotDaySelected.has(s.id);
+      const hasBooking = s.booked_spots > 0;
+      return `<div class="schedule-item ${checked ? 'is-selected' : ''}" style="padding:10px 0">
+        <input type="checkbox" class="slot-row-check" data-slot-id="${s.id}" ${checked ? 'checked' : ''} ${hasBooking ? 'disabled title="Tiden har bokningar"' : ''}>
         <div class="schedule-time">${s.slot_time.substring(0,5)}</div>
         <div class="schedule-body">
           <div class="schedule-name">${esc(s.services?.name || '')}</div>
@@ -1540,11 +1569,45 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         </button>
       </div>`;
     }).join('');
+
+    el.querySelectorAll('.slot-row-check').forEach(cb => cb.addEventListener('change', () => {
+      const id = parseInt(cb.dataset.slotId, 10);
+      if (cb.checked) slotDaySelected.add(id); else slotDaySelected.delete(id);
+      renderSlotDay();
+    }));
+
+    const selectAllCb = $('#slot-day-select-all');
+    if (selectAllCb) selectAllCb.addEventListener('change', e => {
+      if (e.target.checked) selectableSlots.forEach(s => slotDaySelected.add(s.id));
+      else selectableSlots.forEach(s => slotDaySelected.delete(s.id));
+      renderSlotDay();
+    });
+
+    const delSelBtn = $('#delete-selected-btn');
+    if (delSelBtn) delSelBtn.addEventListener('click', async () => {
+      const ids = [...slotDaySelected];
+      if (!ids.length) return;
+      if (!confirm(`Ta bort ${ids.length} markerade tider?`)) return;
+      delSelBtn.disabled = true;
+      try {
+        await adminCall({ action: 'deleteBulkSlots', ids });
+        slotDaySelected.clear();
+        toast(`${ids.length} tider borttagna`, 'success');
+        await loadSlots();
+        renderSlotCalendar();
+        renderSlotDay();
+      } catch(e) {
+        toast('Fel: ' + e.message, 'error');
+        delSelBtn.disabled = false;
+      }
+    });
+
     el.querySelectorAll('button[data-slot-id]').forEach(b => b.addEventListener('click', async () => {
       const id = parseInt(b.dataset.slotId, 10);
       if (!confirm('Ta bort denna tid?')) return;
       try {
         await adminCall({ action: 'deleteBulkSlots', ids: [id] });
+        slotDaySelected.delete(id);
         toast('Tid borttagen', 'success');
         await loadSlots();
         renderSlotCalendar();
@@ -1598,6 +1661,36 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 
   $('#slot-cal-prev').addEventListener('click', () => { slotCalDate.setMonth(slotCalDate.getMonth() - 1); renderSlotCalendar(); });
   $('#slot-cal-next').addEventListener('click', () => { slotCalDate.setMonth(slotCalDate.getMonth() + 1); renderSlotCalendar(); });
+
+  $('#clear-all-slots-btn').addEventListener('click', async () => {
+    const todayStr = isoDay(new Date());
+    const future = allSlots.filter(s => s.slot_date >= todayStr);
+    const cleanable = future.filter(s => !s.booked_spots);
+    const blocked = future.length - cleanable.length;
+    if (!cleanable.length) {
+      toast(blocked ? `Inga tider kan rensas — ${blocked} har bokningar` : 'Inga framtida tider att rensa', 'info');
+      return;
+    }
+    let msg = `Rensa ${cleanable.length} framtida tider?`;
+    if (blocked) msg += `\n\n${blocked} tider med bokningar lämnas kvar.`;
+    msg += '\n\nDetta går inte att ångra.';
+    if (!confirm(msg)) return;
+    const btn = $('#clear-all-slots-btn');
+    btn.disabled = true;
+    try {
+      await adminCall({ action: 'deleteBulkSlots', ids: cleanable.map(s => s.id) });
+      slotDaySelected.clear();
+      toast(`${cleanable.length} tider rensade`, 'success');
+      await loadSlots();
+      renderSlotCalendar();
+      renderSlotDay();
+      renderOverview();
+    } catch(e) {
+      toast('Fel: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // ── NAVIGATION ─────────────────────────────────────────
   $$('.nav-item[data-view]').forEach(btn => {
