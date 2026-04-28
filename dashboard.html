@@ -238,6 +238,15 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 .drawer-field-label { color: var(--text-muted); }
 .drawer-field-value { color: var(--text); font-weight: 500; word-break: break-word; }
 .drawer-actions { padding: 16px 24px; border-top: 1px solid var(--border-lt); display: flex; gap: 8px; flex-wrap: wrap; background: var(--surface-2); }
+.email-gen { background: var(--surface-2); border: 1px solid var(--border-lt); border-radius: 10px; padding: 14px 16px; }
+.email-gen-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.email-lang-pills { display: inline-flex; gap: 2px; background: var(--surface); border: 1px solid var(--border-lt); border-radius: 100px; padding: 3px; }
+.email-lang-pill { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 5px 11px; border-radius: 100px; cursor: pointer; color: var(--text-muted); border: none; background: none; transition: all 0.15s; }
+.email-lang-pill:hover { color: var(--green); }
+.email-lang-pill.active { background: var(--green); color: #fff; }
+.email-gen textarea { width: 100%; min-height: 220px; margin-top: 12px; padding: 12px; border: 1px solid var(--border-lt); border-radius: 8px; font-family: inherit; font-size: 13px; line-height: 1.6; background: var(--surface); color: var(--text); resize: vertical; box-sizing: border-box; }
+.email-gen-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+.email-gen-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
 
 /* ── SLOTS ──────────────────────────────────────────────── */
 .slot-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 20px; }
@@ -1287,6 +1296,28 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         ${b.note ? `<div class="drawer-field"><div class="drawer-field-label">Övrigt</div><div class="drawer-field-value">${esc(b.note)}</div></div>` : ''}
       </div>
       <div class="drawer-section">
+        <h4>Bekräftelsemejl</h4>
+        <div class="email-gen">
+          <div class="email-gen-row">
+            <div class="email-lang-pills" id="email-lang-pills-${b.id}">
+              <button type="button" class="email-lang-pill active" data-lang="sv">SV</button>
+              <button type="button" class="email-lang-pill" data-lang="en">EN</button>
+              <button type="button" class="email-lang-pill" data-lang="de">DE</button>
+            </div>
+            <button class="btn btn-primary" id="email-gen-btn-${b.id}" type="button">Generera mejl</button>
+          </div>
+          <div class="email-gen-hint">AI skriver ett personligt mejl baserat på bokningens detaljer. Du kopierar och skickar själv.</div>
+          <div id="email-result-${b.id}" style="display:none">
+            <textarea id="email-text-${b.id}" placeholder="Genererat mejl visas här…"></textarea>
+            <div class="email-gen-actions">
+              <button class="btn btn-secondary" id="email-copy-${b.id}" type="button">Kopiera mejl</button>
+              <button class="btn btn-ghost" id="email-regen-${b.id}" type="button">Generera om</button>
+              <button class="btn btn-secondary" id="email-mailto-${b.id}" type="button">Öppna i mejlklient</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="drawer-section">
         <h4>Status</h4>
         <div class="drawer-field"><div class="drawer-field-label">Status</div><div class="drawer-field-value"><span class="badge ${b.status}">${statusLabel(b.status)}</span></div></div>
         <div class="drawer-field"><div class="drawer-field-label">Betalning</div><div class="drawer-field-value"><span class="badge ${b.payment_status}">${b.payment_status === 'paid' ? 'Betald' : 'Väntar'}</span></div></div>
@@ -1332,6 +1363,63 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         }
       });
     });
+
+    // ── AI-mejlgenerator ───────────────────────────────
+    let emailLang = 'sv';
+    const langPills = $('#email-lang-pills-' + b.id);
+    langPills.querySelectorAll('.email-lang-pill').forEach(p => p.addEventListener('click', () => {
+      langPills.querySelectorAll('.email-lang-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      emailLang = p.dataset.lang;
+    }));
+
+    async function generateEmail(){
+      const genBtn = $('#email-gen-btn-' + b.id);
+      const regenBtn = $('#email-regen-' + b.id);
+      const result = $('#email-result-' + b.id);
+      const textarea = $('#email-text-' + b.id);
+      genBtn.disabled = true; if (regenBtn) regenBtn.disabled = true;
+      genBtn.textContent = 'Genererar…';
+      try {
+        const data = await adminCall({ action: 'generateConfirmationEmail', id: b.id, lang: emailLang });
+        textarea.value = data.email || '';
+        result.style.display = 'block';
+        genBtn.textContent = 'Generera mejl';
+      } catch(e) {
+        toast('AI-fel: ' + e.message, 'error');
+        genBtn.textContent = 'Generera mejl';
+      } finally {
+        genBtn.disabled = false; if (regenBtn) regenBtn.disabled = false;
+      }
+    }
+    $('#email-gen-btn-' + b.id).addEventListener('click', generateEmail);
+    $('#email-regen-' + b.id).addEventListener('click', generateEmail);
+    $('#email-copy-' + b.id).addEventListener('click', async () => {
+      const text = $('#email-text-' + b.id).value;
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('Mejl kopierat — klistra in i ditt mejlprogram', 'success');
+      } catch(_) {
+        // Fallback för äldre browsers
+        const ta = $('#email-text-' + b.id);
+        ta.select(); document.execCommand('copy');
+        toast('Mejl kopierat', 'success');
+      }
+    });
+    $('#email-mailto-' + b.id).addEventListener('click', () => {
+      const text = $('#email-text-' + b.id).value;
+      if (!text) { toast('Generera mejlet först', 'info'); return; }
+      const slot = parseSlot(b);
+      const subjects = {
+        sv: `Din bokning hos Hönshyltegård · ${slot ? fmtDate(slot.date) + ' kl. ' + slot.time : '#' + b.id}`,
+        en: `Your booking at Hönshyltegård · ${slot ? fmtDate(slot.date) + ' at ' + slot.time : '#' + b.id}`,
+        de: `Ihre Buchung bei Hönshyltegård · ${slot ? fmtDate(slot.date) + ' um ' + slot.time : '#' + b.id}`,
+      };
+      const subject = subjects[emailLang] || subjects.sv;
+      const url = 'mailto:' + encodeURIComponent(b.email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+      window.location.href = url;
+    });
+
     openDrawer();
   };
 
