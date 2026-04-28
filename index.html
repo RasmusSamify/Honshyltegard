@@ -1111,6 +1111,18 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   }
 
   // ── CHECKOUT ───────────────────────────────────────
+  function requestScrollIntoView() {
+    // Scrolla iframe:ns eget innehåll till toppen.
+    try { window.scrollTo(0, 0); } catch(_) {}
+    // Försök scrolla parent-sidan direkt (fungerar bara om same-origin).
+    try { window.parent.scrollTo({ top: 0, behavior: 'smooth' }); } catch(_) {}
+    // Och be parent-sidan scrolla iframe:n i sikte via postMessage
+    // (cross-origin-säkert, kräver listener på värdsidan).
+    try {
+      window.parent.postMessage({ type: 'sam-scroll-into-view', source: 'sam-honshyltegard' }, '*');
+    } catch(_) {}
+  }
+
   async function handleCTA() {
     if (state.step < 4) return;
     var fname = val('f-name'), lname = val('f-lname'), email = val('f-email');
@@ -1126,6 +1138,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     }
     var btn = $('cta-btn');
     btn.disabled = true; btn.textContent = t('cta_creating');
+    // Direkt vid klick: be värdsidan scrolla upp så kunden inte tittar på
+    // botten av formuläret medan vi laddar kassan.
+    requestScrollIntoView();
     try {
       var totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children;
       var newsletter = $('f-newsletter') ? $('f-newsletter').checked : false;
@@ -1257,9 +1272,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       // (snutten ligger i README/handover) — utan listener faller flödet
       // tillbaka till tidigare beteende (kassan laddas men kunden ser den
       // längre ner på sidan).
-      try {
-        window.parent.postMessage({ type: 'sam-scroll-into-view', source: 'sam-honshyltegard' }, '*');
-      } catch(_) {}
+      requestScrollIntoView();
       setTimeout(function(){ window.location.href = kassaUrl; }, 1200);
 
     } catch(e) {
