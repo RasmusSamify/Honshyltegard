@@ -757,6 +757,32 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         );
       }
 
+      // 5b. Skicka bokningsdetaljer till Abicart-ordern så de följer med i
+      //     orderbekraftelsen. customer.comment renderas typiskt i kundmailet,
+      //     note ar admin-anteckning som Helena ser i Abicart-admin.
+      //     Fire-and-forget: blockera inte kassa-redirect om detta failar.
+      var bookingNote = val('f-note');
+      var detailsLines = [
+        state.service.name + ' — ' + state.selectedDateLabel + ' kl. ' + state.selectedTime,
+        'Gäster: ' + state.adults + ' vuxna'
+          + (state.children ? ', ' + state.children + ' barn' : '')
+          + (state.childrenFree ? ', ' + state.childrenFree + ' spädbarn' : '')
+      ];
+      if (state.alpacas) detailsLines.push('Alpackor: ' + state.alpacas + ' st');
+      if (bookingNote) detailsLines.push('Anteckning från kund: ' + bookingNote);
+      detailsLines.push('Bokningsnr: #' + bookingId);
+      var orderDetails = detailsLines.join('\n');
+
+      try {
+        await abCall(
+          'Order.set',
+          [orderUid, { note: orderDetails, customer: { comment: orderDetails } }, ['uid']],
+          sessionToken
+        );
+      } catch(e) {
+        console.warn('Order.set bokningsdetaljer:', e.message);
+      }
+
       // 6. PATCH bookings-raden i Supabase med abicart_order_id
       //    Fire-and-forget — om det misslyckas l\u00e5ter vi anv\u00e4ndaren \u00e4nd\u00e5 g\u00e5 vidare till kassan
       fetch(SB_URL + '/rest/v1/bookings?id=eq.' + bookingId, {
