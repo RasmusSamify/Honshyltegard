@@ -189,137 +189,148 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 #sam-widget-root .gdpr-label a{color:var(--green);text-decoration:none}
 #sam-widget-root .gdpr-label a:hover{text-decoration:underline}
 
+/* Language switcher */
+#sam-widget-root .lang-switch{position:absolute;top:20px;right:20px;display:flex;gap:2px;z-index:10;background:rgba(253,250,244,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:100px;padding:3px}
+#sam-widget-root .lang-btn{background:none;border:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;padding:5px 11px;border-radius:100px;cursor:pointer;color:var(--muted);transition:all 0.18s}
+#sam-widget-root .lang-btn:hover{color:var(--green)}
+#sam-widget-root .lang-btn.active{background:var(--green);color:white}
+
 @keyframes sam-fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sam-spin{to{transform:rotate(360deg)}}
-@media(max-width:500px){#sam-widget-root .form-row{grid-template-columns:1fr}#sam-widget-root .panel{padding:18px 14px}}
+@media(max-width:500px){#sam-widget-root .form-row{grid-template-columns:1fr}#sam-widget-root .panel{padding:18px 14px}#sam-widget-root .lang-switch{top:12px;right:12px}}
 </style>
 </head>
 <body>
 <div id="sam-widget-root">
+  <div class="lang-switch" id="lang-switch">
+    <button class="lang-btn active" data-lang="sv" type="button">SV</button>
+    <button class="lang-btn" data-lang="en" type="button">EN</button>
+    <button class="lang-btn" data-lang="de" type="button">DE</button>
+  </div>
   <div id="loading-screen">
     <div class="spinner"></div>
-    <div class="loading-text">Laddar bokningssystem…</div>
+    <div class="loading-text" data-i18n="loading">Laddar bokningssystem…</div>
   </div>
 
   <div id="error-banner"></div>
 
   <div class="widget-wrap" id="widget-wrap">
     <div class="widget-header" style="animation:sam-fadeUp 0.6s ease both">
-      <span class="eyebrow">Boka din upplevelse</span>
-      <h1>Promenera med<br><em>våra alpackor</em></h1>
-      <p>Stanna upp. Andas. Låt alpackorna visa dig takten. Boka en guidad promenad och upplev slow living mitt i naturen.</p>
+      <span class="eyebrow" data-i18n="eyebrow">Boka din upplevelse</span>
+      <h1 data-i18n-html="title">Promenera med<br><em>våra alpackor</em></h1>
+      <p data-i18n="tagline">Stanna upp. Andas. Låt alpackorna visa dig takten. Boka en guidad promenad och upplev slow living mitt i naturen.</p>
       <div class="deco-line"><hr><span>🦙</span><hr></div>
     </div>
 
     <div id="booking-view">
       <!-- Intro -->
       <div class="intro-section">
-        <p>Lär känna alpackorna på Hönshyltegård genom en trevlig och avslappnad promenad.</p>
-        <p>Släpp vardagsstressen och upplev en fridfull och lantlig miljö tillsammans med våra alpackor. Du får chansen att komma nära och känna deras mjuka och varma ull, och det finns såklart också tillfälle att ta bilder tillsammans med alpackorna.</p>
-        <p>Alpackor är sociala och nyfikna men med hög integritet, när man promenerar med alpackor är det i deras stillsamma tempo. Hela besöket varar cirka 1 timme.</p>
-        <p>Vi börjar med att presentera de alpackor som kommer vara med på promenaden och ger er lite information och intressant fakta om alpackor. Vi går sedan en tur i den småländska naturen. Efteråt besöker vi hagen där stona och årets söta föl går.</p>
-        <div class="intro-highlight">🧥 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
-        <p class="intro-cta">👇 Välj upplevelse och boka direkt nedan</p>
+        <p data-i18n="intro1">Lär känna alpackorna på Hönshyltegård genom en trevlig och avslappnad promenad.</p>
+        <p data-i18n="intro2">Släpp vardagsstressen och upplev en fridfull och lantlig miljö tillsammans med våra alpackor. Du får chansen att komma nära och känna deras mjuka och varma ull, och det finns såklart också tillfälle att ta bilder tillsammans med alpackorna.</p>
+        <p data-i18n="intro3">Alpackor är sociala och nyfikna men med hög integritet, när man promenerar med alpackor är det i deras stillsamma tempo. Hela besöket varar cirka 1 timme.</p>
+        <p data-i18n="intro4">Vi börjar med att presentera de alpackor som kommer vara med på promenaden och ger er lite information och intressant fakta om alpackor. Vi går sedan en tur i den småländska naturen. Efteråt besöker vi hagen där stona och årets söta föl går.</p>
+        <div class="intro-highlight" data-i18n="intro_highlight">🧥 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
+        <p class="intro-cta" data-i18n="intro_cta">👇 Välj upplevelse och boka direkt nedan</p>
       </div>
 
       <!-- Rules -->
       <div class="rules-banner" style="animation:sam-fadeUp 0.5s 0.05s ease both">
         <div class="rules-banner-header" onclick="samToggleRules()">
-          <div class="rules-banner-title"><span>📋</span> Läs reglerna innan du bokar</div>
+          <div class="rules-banner-title"><span>📋</span> <span data-i18n="rules_title">Läs reglerna innan du bokar</span></div>
           <span class="rules-chevron" id="rules-chev">▼</span>
         </div>
         <div class="rules-banner-body" id="rules-body">
           <ul class="rules-list">
-            <li data-icon="🐾">Det är inte tillåtet att ta med andra djur under promenaden.</li>
-            <li data-icon="📵">Mobiltelefoner ska vara på ljudlöst.</li>
-            <li data-icon="🚭">Rökning är förbjuden.</li>
-            <li data-icon="🚫">Barnvagn, rullstol och rullator är inte möjligt att ta med på rundan.</li>
-            <li data-icon="🦙">Vi har rätt att avvisa personer som stör eller stressar djuren.</li>
-            <li data-icon="🧘">Kom ihåg att vara lugn – denna stund ska vara harmonisk för både människor och djur.</li>
+            <li data-icon="🐾" data-i18n="rule1">Det är inte tillåtet att ta med andra djur under promenaden.</li>
+            <li data-icon="📵" data-i18n="rule2">Mobiltelefoner ska vara på ljudlöst.</li>
+            <li data-icon="🚭" data-i18n="rule3">Rökning är förbjuden.</li>
+            <li data-icon="🚫" data-i18n="rule4">Barnvagn, rullstol och rullator är inte möjligt att ta med på rundan.</li>
+            <li data-icon="🦙" data-i18n="rule5">Vi har rätt att avvisa personer som stör eller stressar djuren.</li>
+            <li data-icon="🧘" data-i18n="rule6">Kom ihåg att vara lugn – denna stund ska vara harmonisk för både människor och djur.</li>
           </ul>
         </div>
       </div>
 
       <!-- Steps -->
       <div class="steps-bar" style="animation:sam-fadeUp 0.5s 0.1s ease both">
-        <div class="step-item active" id="s1"><div class="step-dot">1</div><span>Välj</span></div>
+        <div class="step-item active" id="s1"><div class="step-dot">1</div><span data-i18n="step1">Välj</span></div>
         <div class="step-sep"></div>
-        <div class="step-item" id="s2"><div class="step-dot">2</div><span>Datum</span></div>
+        <div class="step-item" id="s2"><div class="step-dot">2</div><span data-i18n="step2">Datum</span></div>
         <div class="step-sep"></div>
-        <div class="step-item" id="s3"><div class="step-dot">3</div><span>Tid</span></div>
+        <div class="step-item" id="s3"><div class="step-dot">3</div><span data-i18n="step3">Tid</span></div>
         <div class="step-sep"></div>
-        <div class="step-item" id="s4"><div class="step-dot">4</div><span>Uppgifter</span></div>
+        <div class="step-item" id="s4"><div class="step-dot">4</div><span data-i18n="step4">Uppgifter</span></div>
       </div>
 
       <!-- Step 1 -->
       <div class="service-grid" id="service-grid" style="animation:sam-fadeUp 0.5s 0.15s ease both">
-        <div style="color:var(--muted);font-size:13px;padding:8px 0;grid-column:1/-1">Laddar tjänster…</div>
+        <div style="color:var(--muted);font-size:13px;padding:8px 0;grid-column:1/-1" data-i18n="services_loading">Laddar tjänster…</div>
       </div>
 
       <!-- Step 2 -->
       <div class="panel" id="panel-calendar" style="display:none">
-        <button class="back-btn" onclick="samGoBack('calendar')">← Tillbaka</button>
-        <div class="panel-title"><span>📅</span> Välj datum</div>
+        <button class="back-btn" onclick="samGoBack('calendar')" data-i18n="back">← Tillbaka</button>
+        <div class="panel-title"><span>📅</span> <span data-i18n="cal_title">Välj datum</span></div>
         <div class="cal-header">
           <button class="cal-nav" id="cal-prev" onclick="samChangeMonth(-1)">‹</button>
           <div class="cal-month" id="cal-month-label">—</div>
           <button class="cal-nav" id="cal-next" onclick="samChangeMonth(1)">›</button>
         </div>
-        <div id="cal-content"><div class="cal-loading">Hämtar datum…</div></div>
+        <div id="cal-content"><div class="cal-loading" data-i18n="cal_loading">Hämtar datum…</div></div>
         <div class="weather-wrap" id="weather-wrap">
-          <div class="panel-title" style="margin:16px 0 10px"><span>🌤</span> Väderprognos 10 dagar – Hönshylte Gård</div>
+          <div class="panel-title" style="margin:16px 0 10px"><span>🌤</span> <span data-i18n="weather_title">Väderprognos 10 dagar – Hönshylte Gård</span></div>
           <div class="weather-strip" id="weather-strip"></div>
-          <div class="weather-warning" id="weather-warning">⚡ Extremt väder i prognosen. Promenaden kan komma att ställas in – vi kontaktar dig vid behov.</div>
+          <div class="weather-warning" id="weather-warning" data-i18n="weather_warning">⚡ Extremt väder i prognosen. Promenaden kan komma att ställas in – vi kontaktar dig vid behov.</div>
         </div>
       </div>
 
       <!-- Step 3 -->
       <div class="panel" id="panel-time" style="display:none">
-        <button class="back-btn" onclick="samGoBack('time')">← Tillbaka</button>
-        <div class="panel-title"><span>🕐</span> Välj tid — <span id="date-label" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);text-transform:none;letter-spacing:0"></span></div>
+        <button class="back-btn" onclick="samGoBack('time')" data-i18n="back">← Tillbaka</button>
+        <div class="panel-title"><span>🕐</span> <span data-i18n="time_title">Välj tid</span> — <span id="date-label" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);text-transform:none;letter-spacing:0"></span></div>
         <div class="time-grid" id="time-grid"></div>
       </div>
 
       <!-- Step 4 -->
       <div class="panel" id="panel-form" style="display:none">
-        <button class="back-btn" onclick="samGoBack('form')">← Tillbaka</button>
-        <div class="panel-title"><span>👤</span> Antal deltagare</div>
+        <button class="back-btn" onclick="samGoBack('form')" data-i18n="back">← Tillbaka</button>
+        <div class="panel-title"><span>👤</span> <span data-i18n="form_guests">Antal deltagare</span></div>
         <div id="guest-rows"></div>
         <div id="alpaca-section" style="display:none">
-          <div class="panel-title" style="margin-top:20px"><span>🦙</span> Antal alpackor</div>
+          <div class="panel-title" style="margin-top:20px"><span>🦙</span> <span data-i18n="form_alpacas">Antal alpackor</span></div>
           <div id="alpaca-rows"></div>
-          <div class="alpaca-note">Max 1 alpacka per person. Helt valfritt – man kan delta utan att hålla i en alpacka.</div>
+          <div class="alpaca-note" data-i18n="form_alpaca_note">Max 1 alpacka per person. Helt valfritt – man kan delta utan att hålla i en alpacka.</div>
         </div>
-        <div class="panel-title" style="margin-top:24px"><span>📝</span> Dina uppgifter</div>
+        <div class="panel-title" style="margin-top:24px"><span>📝</span> <span data-i18n="form_personal">Dina uppgifter</span></div>
         <div class="form-row">
-          <div class="form-group"><label>Förnamn *</label><input type="text" id="f-name" placeholder="Anna"></div>
-          <div class="form-group"><label>Efternamn *</label><input type="text" id="f-lname" placeholder="Lindström"></div>
+          <div class="form-group"><label data-i18n="label_first">Förnamn *</label><input type="text" id="f-name" placeholder="Anna" data-i18n-ph="ph_first"></div>
+          <div class="form-group"><label data-i18n="label_last">Efternamn *</label><input type="text" id="f-lname" placeholder="Lindström" data-i18n-ph="ph_last"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>E-post *</label><input type="email" id="f-email" placeholder="anna@example.se"></div>
-          <div class="form-group"><label>Telefon</label><input type="tel" id="f-phone" placeholder="+46 70 123 45 67"></div>
+          <div class="form-group"><label data-i18n="label_email">E-post *</label><input type="email" id="f-email" placeholder="anna@example.se" data-i18n-ph="ph_email"></div>
+          <div class="form-group"><label data-i18n="label_phone">Telefon</label><input type="tel" id="f-phone" placeholder="+46 70 123 45 67"></div>
         </div>
         <div class="form-row full">
-          <div class="form-group"><label>Övrigt (allergier, önskemål…)</label><textarea id="f-note" placeholder="Skriv gärna om ni har önskemål."></textarea></div>
+          <div class="form-group"><label data-i18n="label_note">Övrigt (allergier, önskemål…)</label><textarea id="f-note" placeholder="Skriv gärna om ni har önskemål." data-i18n-ph="ph_note"></textarea></div>
         </div>
         <div class="gdpr-row">
           <input type="checkbox" class="gdpr-cb" id="f-private-party">
-          <label class="gdpr-label" for="f-private-party">
+          <label class="gdpr-label" for="f-private-party" data-i18n-html="private_party_full">
             <strong>Slutet sällskap</strong> — vi bokar tiden enbart för vår grupp.
           </label>
         </div>
         <div class="gdpr-row">
           <input type="checkbox" class="gdpr-cb" id="f-special-needs-cb" onchange="document.getElementById('special-needs-row').style.display=this.checked?'block':'none'">
-          <label class="gdpr-label" for="f-special-needs-cb">
+          <label class="gdpr-label" for="f-special-needs-cb" data-i18n-html="special_needs_full">
             <strong>Särskilda behov</strong> — någon i sällskapet har behov vi bör veta om (rörelsehinder, syn, hörsel m.m.).
           </label>
         </div>
         <div class="form-row full" id="special-needs-row" style="display:none">
-          <div class="form-group"><label>Beskriv kort era behov</label><textarea id="f-special-needs" placeholder="T.ex. en deltagare använder rullstol, behöver pauser eller bra ljus."></textarea></div>
+          <div class="form-group"><label data-i18n="special_needs_label">Beskriv kort era behov</label><textarea id="f-special-needs" placeholder="T.ex. en deltagare använder rullstol, behöver pauser eller bra ljus." data-i18n-ph="ph_special"></textarea></div>
         </div>
         <div class="gdpr-row">
           <input type="checkbox" class="gdpr-cb" id="f-newsletter">
-          <label class="gdpr-label" for="f-newsletter">
+          <label class="gdpr-label" for="f-newsletter" data-i18n="newsletter">
             Ja, jag vill gärna ta emot nyheter och erbjudanden från Hönshyltegård via e-post.
             Du kan när som helst avregistrera dig.
           </label>
@@ -330,37 +341,37 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       <div class="summary-panel" id="summary-panel" style="display:none">
         <div class="summary-left">
           <div class="summary-tour" id="sum-tour">—</div>
-          <div class="summary-meta" id="sum-meta">Välj datum och tid</div>
+          <div class="summary-meta" id="sum-meta" data-i18n="summary_pick">Välj datum och tid</div>
         </div>
         <div class="summary-price" id="sum-price"></div>
-        <button class="cta-btn" id="cta-btn" onclick="samHandleCTA()">Fortsätt →</button>
+        <button class="cta-btn" id="cta-btn" onclick="samHandleCTA()" data-i18n="cta_continue">Fortsätt →</button>
       </div>
     </div>
 
     <!-- Confirmation -->
     <div id="confirm-view">
       <div class="confirm-icon">🦙</div>
-      <h2>Bokning bekräftad!</h2>
-      <p>Vi ses snart! En bekräftelse har skickats till din e-post.</p>
+      <h2 data-i18n="confirm_title">Bokning bekräftad!</h2>
+      <p data-i18n="confirm_subtitle">Vi ses snart! En bekräftelse har skickats till din e-post.</p>
       <div class="confirm-card" id="confirm-card"></div>
       <div class="confirm-extras">
         <div class="extra-card green">
-          <div class="extra-card-title">🛍 Gårdsbutiken</div>
-          <p>Besök vår loppis &amp; secondhand, gå ett alpackaquiz och träffa våra alpackor.</p>
-          <span class="extra-hours">🕐 Öppet alla dagar i juli &amp; aug, kl. 10–17</span>
+          <div class="extra-card-title" data-i18n="extra_shop_title">🛍 Gårdsbutiken</div>
+          <p data-i18n="extra_shop_text">Besök vår loppis &amp; secondhand, gå ett alpackaquiz och träffa våra alpackor.</p>
+          <span class="extra-hours" data-i18n="extra_shop_hours">🕐 Öppet alla dagar i juli &amp; aug, kl. 10–17</span>
         </div>
         <div class="extra-card amber">
-          <div class="extra-card-title">☕ Sommarfika <span class="extra-badge">NYHET</span></div>
-          <p>Hembakat, lokal läsk &amp; äppelmust. Slå dig ner och njut!</p>
-          <span class="extra-hours">🕐 Varje dag i juli &amp; aug, kl. 10–16</span>
+          <div class="extra-card-title"><span data-i18n="extra_fika_title">☕ Sommarfika</span> <span class="extra-badge" data-i18n="extra_badge_new">NYHET</span></div>
+          <p data-i18n="extra_fika_text">Hembakat, lokal läsk &amp; äppelmust. Slå dig ner och njut!</p>
+          <span class="extra-hours" data-i18n="extra_fika_hours">🕐 Varje dag i juli &amp; aug, kl. 10–16</span>
         </div>
         <div class="extra-card brown2">
-          <div class="extra-card-title">🦙 Träffa &amp; mata en alpacka!</div>
-          <p>Kom nära, få information, mata, ta en selfie och titta på årets söta föl.</p>
-          <span class="extra-hours">🕐 Varje dag i juli &amp; aug, kl. 10–12</span>
+          <div class="extra-card-title" data-i18n="extra_meet_title">🦙 Träffa &amp; mata en alpacka!</div>
+          <p data-i18n="extra_meet_text">Kom nära, få information, mata, ta en selfie och titta på årets söta föl.</p>
+          <span class="extra-hours" data-i18n="extra_meet_hours">🕐 Varje dag i juli &amp; aug, kl. 10–12</span>
         </div>
       </div>
-      <button class="reset-btn" onclick="samResetWidget()">Gör en ny bokning</button>
+      <button class="reset-btn" onclick="samResetWidget()" data-i18n="reset_btn">Gör en ny bokning</button>
     </div>
   </div>
 </div>
@@ -374,6 +385,419 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   var LAT = 56.47739536235032, LNG = 14.690764677283862;
 
   var SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+
+  // ── I18N ──────────────────────────────────────────
+  var STRINGS = {
+    sv: {
+      loading: 'Laddar bokningssystem…',
+      eyebrow: 'Boka din upplevelse',
+      title: 'Promenera med<br><em>våra alpackor</em>',
+      tagline: 'Stanna upp. Andas. Låt alpackorna visa dig takten. Boka en guidad promenad och upplev slow living mitt i naturen.',
+      intro1: 'Lär känna alpackorna på Hönshyltegård genom en trevlig och avslappnad promenad.',
+      intro2: 'Släpp vardagsstressen och upplev en fridfull och lantlig miljö tillsammans med våra alpackor. Du får chansen att komma nära och känna deras mjuka och varma ull, och det finns såklart också tillfälle att ta bilder tillsammans med alpackorna.',
+      intro3: 'Alpackor är sociala och nyfikna men med hög integritet, när man promenerar med alpackor är det i deras stillsamma tempo. Hela besöket varar cirka 1 timme.',
+      intro4: 'Vi börjar med att presentera de alpackor som kommer vara med på promenaden och ger er lite information och intressant fakta om alpackor. Vi går sedan en tur i den småländska naturen. Efteråt besöker vi hagen där stona och årets söta föl går.',
+      intro_highlight: '🧥 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.',
+      intro_cta: '👇 Välj upplevelse och boka direkt nedan',
+      rules_title: 'Läs reglerna innan du bokar',
+      rule1: 'Det är inte tillåtet att ta med andra djur under promenaden.',
+      rule2: 'Mobiltelefoner ska vara på ljudlöst.',
+      rule3: 'Rökning är förbjuden.',
+      rule4: 'Barnvagn, rullstol och rullator är inte möjligt att ta med på rundan.',
+      rule5: 'Vi har rätt att avvisa personer som stör eller stressar djuren.',
+      rule6: 'Kom ihåg att vara lugn – denna stund ska vara harmonisk för både människor och djur.',
+      step1: 'Välj', step2: 'Datum', step3: 'Tid', step4: 'Uppgifter',
+      services_loading: 'Laddar tjänster…',
+      services_empty: 'Inga tjänster tillgängliga.',
+      back: '← Tillbaka',
+      cal_title: 'Välj datum',
+      cal_loading: 'Hämtar datum…',
+      weather_title: 'Väderprognos 10 dagar – Hönshylte Gård',
+      weather_warning: '⚡ Extremt väder i prognosen. Promenaden kan komma att ställas in – vi kontaktar dig vid behov.',
+      time_title: 'Välj tid',
+      time_loading: 'Hämtar tider…',
+      time_empty: 'Inga lediga tider denna dag.',
+      time_full: 'Fullt',
+      time_spots: '{n} platser',
+      form_guests: 'Antal deltagare',
+      form_alpacas: 'Antal alpackor',
+      form_alpaca_note: 'Max 1 alpacka per person. Helt valfritt – man kan delta utan att hålla i en alpacka.',
+      form_personal: 'Dina uppgifter',
+      label_first: 'Förnamn *', label_last: 'Efternamn *', label_email: 'E-post *',
+      label_phone: 'Telefon', label_note: 'Övrigt (allergier, önskemål…)',
+      ph_first: 'Anna', ph_last: 'Lindström', ph_email: 'anna@example.se',
+      ph_note: 'Skriv gärna om ni har önskemål.',
+      ph_special: 'T.ex. en deltagare använder rullstol, behöver pauser eller bra ljus.',
+      private_party_full: '<strong>Slutet sällskap</strong> — vi bokar tiden enbart för vår grupp.',
+      special_needs_full: '<strong>Särskilda behov</strong> — någon i sällskapet har behov vi bör veta om (rörelsehinder, syn, hörsel m.m.).',
+      special_needs_label: 'Beskriv kort era behov',
+      newsletter: 'Ja, jag vill gärna ta emot nyheter och erbjudanden från Hönshyltegård via e-post. Du kan när som helst avregistrera dig.',
+      summary_pick: 'Välj datum och tid',
+      summary_pick_time: 'Välj tid',
+      cta_continue: 'Fortsätt →',
+      cta_finish: 'Slutför bokning',
+      cta_creating: 'Skapar bokning…',
+      cta_preparing_pay: 'Förbereder betalning…',
+      cta_preparing_checkout: 'Förbereder kassan…',
+      confirm_title: 'Bokning bekräftad!',
+      confirm_subtitle: 'Vi ses snart! En bekräftelse har skickats till din e-post.',
+      confirm_service: 'Tjänst:', confirm_id: 'Boknings-ID:', confirm_total: 'Totalt:',
+      extra_shop_title: '🛍 Gårdsbutiken',
+      extra_shop_text: 'Besök vår loppis & secondhand, gå ett alpackaquiz och träffa våra alpackor.',
+      extra_shop_hours: '🕐 Öppet alla dagar i juli & aug, kl. 10–17',
+      extra_fika_title: '☕ Sommarfika',
+      extra_badge_new: 'NYHET',
+      extra_fika_text: 'Hembakat, lokal läsk & äppelmust. Slå dig ner och njut!',
+      extra_fika_hours: '🕐 Varje dag i juli & aug, kl. 10–16',
+      extra_meet_title: '🦙 Träffa & mata en alpacka!',
+      extra_meet_text: 'Kom nära, få information, mata, ta en selfie och titta på årets söta föl.',
+      extra_meet_hours: '🕐 Varje dag i juli & aug, kl. 10–12',
+      reset_btn: 'Gör en ny bokning',
+      err_min_persons: 'Minst {n} personer totalt krävs (vuxna + barn).',
+      err_load_widget: 'Kunde inte ladda bokningssystemet',
+      err_no_service: 'Tjänst saknas i databasen',
+      err_no_article: 'Artikel-UID saknas',
+      err_no_session: 'Kunde inte hämta session från Abicart',
+      err_no_order: 'Kunde inte skapa order i Abicart',
+      err_booking_failed: 'Bokningen misslyckades',
+      err_payment_cancelled: 'Betalningen avbröts. Du kan försöka igen.',
+      err_no_booking: 'Bokning #{id} hittades inte',
+      pending_have_paid: '<strong>Har du nyss betalat?</strong> Vi hittade en påbörjad bokning (#{id}) som väntar på bekräftelse. Klicka för att verifiera.',
+      pending_verify: 'Verifiera betalning',
+      pending_dismiss: 'Dölj',
+      pending_checking: 'Kontrollerar…',
+      pending_again: 'Verifiera igen',
+      pending_retry: 'Försök igen',
+      pending_not_yet: '<strong>Betalningen är inte registrerad ännu.</strong> Om du precis slutfört betalningen kan det ta någon minut. Vänta lite och tryck "Verifiera igen", eller kontakta Hönshyltegård om det kvarstår.',
+      guest_adult: 'Vuxen / Ungdom 12+',
+      guest_adult_price: '{price} kr/person',
+      guest_min_extra: ' (min {n} pers. totalt)',
+      guest_child: 'Barn 5–12 år',
+      guest_child_price: '{price} kr · 1 barn per vuxet sällskap',
+      guest_baby: 'Barn under {n} år',
+      guest_baby_price: 'Gratis',
+      alpaca_max: 'Max {n} (1 per person)',
+      guests_adults: '{n} vuxna', guests_children: '{n} barn', guests_babies: '{n} spädbarn',
+      kl: 'kl.',
+      months_full: ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'],
+      months_short: ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'],
+      days_mon: ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'],
+      days_sun: ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'],
+      svc_info: {
+        'Alpackapromenad': [
+          { icon: '💰', text: 'Vuxen/Ungdom 12+: 295 kr · Barn 5–12 år: 195 kr' },
+          { icon: '👥', text: 'Minst 2 personer per bokning' },
+          { icon: '👶', text: '1 barn kräver 1 vuxet sällskap' },
+          { icon: '🦙', text: 'Välj antal alpackor – max 1 per person, valfritt' },
+          { icon: '⏱', text: 'Ca 60 minuter i naturen' }
+        ],
+        'Visning av alpacka': [
+          { icon: '💰', text: 'Vuxen/Ungdom 12+: 60 kr · Barn 3–12 år: 40 kr' },
+          { icon: '🍼', text: 'Barn under 3 år: gratis' },
+          { icon: '📸', text: 'Mata, ta selfie och titta på årets söta föl' },
+          { icon: '⏱', text: 'Ca 30 minuter' }
+        ]
+      },
+      svc_desc: {
+        'Alpackapromenad': 'En härlig promenad med våra alpackor i naturen. Minst 2 personer per bokning. Max 1 alpacka per person – valfritt om man vill hålla i en. 1 barn kräver 1 vuxet sällskap.',
+        'Visning av alpacka': 'Kom nära våra alpackor! Få information, mata och ta en selfie. Barn under 3 år är gratis.'
+      },
+      price_adult: 'Vuxen', price_child: 'Barn', price_under: 'Under {n} år gratis'
+    },
+    en: {
+      loading: 'Loading booking system…',
+      eyebrow: 'Book your experience',
+      title: 'Walk with<br><em>our alpacas</em>',
+      tagline: 'Pause. Breathe. Let the alpacas set the pace. Book a guided walk and experience slow living in the heart of nature.',
+      intro1: 'Get to know the alpacas at Hönshyltegård on a pleasant and relaxed walk.',
+      intro2: 'Leave everyday stress behind and experience a peaceful, rural setting together with our alpacas. You\'ll have the chance to get close and feel their soft, warm wool — and of course time to take photos with the alpacas.',
+      intro3: 'Alpacas are social and curious but maintain a strong sense of personal space — when you walk with them, you walk at their calm pace. The whole visit lasts about 1 hour.',
+      intro4: 'We start by introducing the alpacas joining the walk and share some interesting facts about them. Then we head out into the Småland countryside. Afterwards we visit the paddock with the mares and this year\'s cute foals.',
+      intro_highlight: '🧥 Dress for the weather! In case of thunderstorms, extreme heat or bad weather, the alpaca walk is cancelled.',
+      intro_cta: '👇 Choose your experience and book directly below',
+      rules_title: 'Read the rules before booking',
+      rule1: 'Other animals are not allowed during the walk.',
+      rule2: 'Mobile phones must be on silent.',
+      rule3: 'Smoking is prohibited.',
+      rule4: 'Strollers, wheelchairs and walkers cannot be brought along on the route.',
+      rule5: 'We reserve the right to turn away anyone who disturbs or stresses the animals.',
+      rule6: 'Please stay calm — this moment should be harmonious for both people and animals.',
+      step1: 'Choose', step2: 'Date', step3: 'Time', step4: 'Details',
+      services_loading: 'Loading services…',
+      services_empty: 'No services available.',
+      back: '← Back',
+      cal_title: 'Choose date',
+      cal_loading: 'Loading dates…',
+      weather_title: '10-day weather forecast — Hönshylte Gård',
+      weather_warning: '⚡ Extreme weather in the forecast. The walk may be cancelled — we will contact you if needed.',
+      time_title: 'Choose time',
+      time_loading: 'Loading times…',
+      time_empty: 'No available times on this day.',
+      time_full: 'Full',
+      time_spots: '{n} spots',
+      form_guests: 'Number of participants',
+      form_alpacas: 'Number of alpacas',
+      form_alpaca_note: 'Max 1 alpaca per person. Completely optional — you can take part without holding one.',
+      form_personal: 'Your details',
+      label_first: 'First name *', label_last: 'Last name *', label_email: 'Email *',
+      label_phone: 'Phone', label_note: 'Other (allergies, requests…)',
+      ph_first: 'Anna', ph_last: 'Smith', ph_email: 'anna@example.com',
+      ph_note: 'Let us know if you have any wishes.',
+      ph_special: 'E.g. one participant uses a wheelchair, needs breaks or good lighting.',
+      private_party_full: '<strong>Private booking</strong> — we are booking the slot only for our group.',
+      special_needs_full: '<strong>Accessibility needs</strong> — someone in our group has needs you should know about (mobility, sight, hearing, etc.).',
+      special_needs_label: 'Briefly describe your needs',
+      newsletter: 'Yes, I\'d like to receive news and offers from Hönshyltegård by email. You can unsubscribe at any time.',
+      summary_pick: 'Choose date and time',
+      summary_pick_time: 'Choose time',
+      cta_continue: 'Continue →',
+      cta_finish: 'Complete booking',
+      cta_creating: 'Creating booking…',
+      cta_preparing_pay: 'Preparing payment…',
+      cta_preparing_checkout: 'Preparing checkout…',
+      confirm_title: 'Booking confirmed!',
+      confirm_subtitle: 'See you soon! A confirmation has been sent to your email.',
+      confirm_service: 'Service:', confirm_id: 'Booking ID:', confirm_total: 'Total:',
+      extra_shop_title: '🛍 The Farm Shop',
+      extra_shop_text: 'Visit our flea market & secondhand store, try the alpaca quiz and meet our alpacas.',
+      extra_shop_hours: '🕐 Open daily in July & August, 10:00–17:00',
+      extra_fika_title: '☕ Summer fika',
+      extra_badge_new: 'NEW',
+      extra_fika_text: 'Home-baked treats, local sodas & apple must. Sit down and enjoy!',
+      extra_fika_hours: '🕐 Every day in July & August, 10:00–16:00',
+      extra_meet_title: '🦙 Meet & feed an alpaca!',
+      extra_meet_text: 'Get close, learn about them, feed them, take a selfie and see this year\'s cute foals.',
+      extra_meet_hours: '🕐 Every day in July & August, 10:00–12:00',
+      reset_btn: 'Make another booking',
+      err_min_persons: 'At least {n} people in total are required (adults + children).',
+      err_load_widget: 'Could not load the booking system',
+      err_no_service: 'Service missing in database',
+      err_no_article: 'Article UID missing',
+      err_no_session: 'Could not get session from Abicart',
+      err_no_order: 'Could not create order in Abicart',
+      err_booking_failed: 'Booking failed',
+      err_payment_cancelled: 'Payment was cancelled. You can try again.',
+      err_no_booking: 'Booking #{id} not found',
+      pending_have_paid: '<strong>Have you just paid?</strong> We found a pending booking (#{id}) awaiting confirmation. Click to verify.',
+      pending_verify: 'Verify payment',
+      pending_dismiss: 'Dismiss',
+      pending_checking: 'Checking…',
+      pending_again: 'Verify again',
+      pending_retry: 'Try again',
+      pending_not_yet: '<strong>Payment not yet registered.</strong> If you just completed the payment it may take a minute. Please wait and click "Verify again", or contact Hönshyltegård if it persists.',
+      guest_adult: 'Adult / Youth 12+',
+      guest_adult_price: '{price} kr/person',
+      guest_min_extra: ' (min. {n} people total)',
+      guest_child: 'Children 5–12 years',
+      guest_child_price: '{price} kr · 1 child per accompanying adult',
+      guest_baby: 'Children under {n} years',
+      guest_baby_price: 'Free',
+      alpaca_max: 'Max {n} (1 per person)',
+      guests_adults: '{n} adults', guests_children: '{n} children', guests_babies: '{n} infants',
+      kl: 'at',
+      months_full: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+      months_short: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      days_mon: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      days_sun: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+      svc_info: {
+        'Alpackapromenad': [
+          { icon: '💰', text: 'Adult/Youth 12+: 295 kr · Children 5–12 yrs: 195 kr' },
+          { icon: '👥', text: 'Minimum 2 people per booking' },
+          { icon: '👶', text: '1 child requires 1 accompanying adult' },
+          { icon: '🦙', text: 'Choose number of alpacas — max 1 per person, optional' },
+          { icon: '⏱', text: 'About 60 minutes in nature' }
+        ],
+        'Visning av alpacka': [
+          { icon: '💰', text: 'Adult/Youth 12+: 60 kr · Children 3–12 yrs: 40 kr' },
+          { icon: '🍼', text: 'Children under 3: free' },
+          { icon: '📸', text: 'Feed them, take a selfie and see this year\'s cute foals' },
+          { icon: '⏱', text: 'About 30 minutes' }
+        ]
+      },
+      svc_desc: {
+        'Alpackapromenad': 'A lovely walk with our alpacas in nature. Minimum 2 people per booking. Max 1 alpaca per person — optional if you want to lead one. 1 child requires 1 accompanying adult.',
+        'Visning av alpacka': 'Get close to our alpacas! Learn about them, feed them and take a selfie. Children under 3 years are free.'
+      },
+      price_adult: 'Adult', price_child: 'Child', price_under: 'Under {n} yrs free'
+    },
+    de: {
+      loading: 'Buchungssystem wird geladen…',
+      eyebrow: 'Buchen Sie Ihr Erlebnis',
+      title: 'Spazieren mit<br><em>unseren Alpakas</em>',
+      tagline: 'Innehalten. Durchatmen. Lassen Sie die Alpakas das Tempo vorgeben. Buchen Sie einen geführten Spaziergang und erleben Sie Slow Living mitten in der Natur.',
+      intro1: 'Lernen Sie die Alpakas auf Hönshyltegård bei einem angenehmen und entspannten Spaziergang kennen.',
+      intro2: 'Lassen Sie den Alltagsstress hinter sich und erleben Sie eine friedliche, ländliche Umgebung gemeinsam mit unseren Alpakas. Sie haben die Möglichkeit, ihnen nahe zu kommen und ihre weiche, warme Wolle zu spüren — und natürlich auch Zeit für Fotos mit den Alpakas.',
+      intro3: 'Alpakas sind gesellig und neugierig, haben aber einen ausgeprägten Sinn für ihre Distanz — beim Spazieren bestimmen sie das ruhige Tempo. Der gesamte Besuch dauert etwa eine Stunde.',
+      intro4: 'Wir beginnen damit, die Alpakas vorzustellen, die uns auf dem Spaziergang begleiten, und teilen einige interessante Informationen über sie. Anschließend gehen wir in die småländische Natur. Danach besuchen wir die Koppel mit den Stuten und den süßen diesjährigen Fohlen.',
+      intro_highlight: '🧥 Ziehen Sie sich dem Wetter entsprechend an! Bei Gewitter, extremer Hitze oder schlechtem Wetter wird der Alpakaspaziergang abgesagt.',
+      intro_cta: '👇 Wählen Sie Ihr Erlebnis und buchen Sie direkt unten',
+      rules_title: 'Lesen Sie die Regeln vor der Buchung',
+      rule1: 'Andere Tiere dürfen während des Spaziergangs nicht mitgebracht werden.',
+      rule2: 'Mobiltelefone müssen auf lautlos gestellt sein.',
+      rule3: 'Rauchen ist verboten.',
+      rule4: 'Kinderwagen, Rollstühle und Rollatoren können nicht mitgenommen werden.',
+      rule5: 'Wir behalten uns das Recht vor, Personen abzuweisen, die die Tiere stören oder ihnen Stress bereiten.',
+      rule6: 'Bitte bleiben Sie ruhig — dieser Moment soll für Menschen und Tiere harmonisch sein.',
+      step1: 'Wählen', step2: 'Datum', step3: 'Zeit', step4: 'Daten',
+      services_loading: 'Leistungen werden geladen…',
+      services_empty: 'Keine Leistungen verfügbar.',
+      back: '← Zurück',
+      cal_title: 'Datum wählen',
+      cal_loading: 'Daten werden geladen…',
+      weather_title: '10-Tage-Wettervorhersage — Hönshylte Gård',
+      weather_warning: '⚡ Extremes Wetter in der Vorhersage. Der Spaziergang kann ausfallen — wir melden uns bei Bedarf.',
+      time_title: 'Zeit wählen',
+      time_loading: 'Zeiten werden geladen…',
+      time_empty: 'Keine verfügbaren Zeiten an diesem Tag.',
+      time_full: 'Voll',
+      time_spots: '{n} Plätze',
+      form_guests: 'Anzahl der Teilnehmer',
+      form_alpacas: 'Anzahl der Alpakas',
+      form_alpaca_note: 'Max. 1 Alpaka pro Person. Völlig optional — Sie können auch ohne Alpaka teilnehmen.',
+      form_personal: 'Ihre Daten',
+      label_first: 'Vorname *', label_last: 'Nachname *', label_email: 'E-Mail *',
+      label_phone: 'Telefon', label_note: 'Sonstiges (Allergien, Wünsche…)',
+      ph_first: 'Anna', ph_last: 'Müller', ph_email: 'anna@beispiel.de',
+      ph_note: 'Teilen Sie uns gerne Ihre Wünsche mit.',
+      ph_special: 'Z. B. ein Teilnehmer benutzt einen Rollstuhl, braucht Pausen oder gutes Licht.',
+      private_party_full: '<strong>Geschlossene Gesellschaft</strong> — wir buchen den Termin nur für unsere Gruppe.',
+      special_needs_full: '<strong>Besondere Bedürfnisse</strong> — jemand in unserer Gruppe hat besondere Bedürfnisse (Mobilität, Sehen, Hören usw.).',
+      special_needs_label: 'Beschreiben Sie kurz Ihre Bedürfnisse',
+      newsletter: 'Ja, ich möchte Neuigkeiten und Angebote von Hönshyltegård per E-Mail erhalten. Sie können sich jederzeit abmelden.',
+      summary_pick: 'Datum und Zeit wählen',
+      summary_pick_time: 'Zeit wählen',
+      cta_continue: 'Weiter →',
+      cta_finish: 'Buchung abschließen',
+      cta_creating: 'Buchung wird erstellt…',
+      cta_preparing_pay: 'Zahlung wird vorbereitet…',
+      cta_preparing_checkout: 'Kasse wird vorbereitet…',
+      confirm_title: 'Buchung bestätigt!',
+      confirm_subtitle: 'Bis bald! Eine Bestätigung wurde an Ihre E-Mail gesendet.',
+      confirm_service: 'Leistung:', confirm_id: 'Buchungsnr.:', confirm_total: 'Gesamt:',
+      extra_shop_title: '🛍 Der Hofladen',
+      extra_shop_text: 'Besuchen Sie unseren Flohmarkt & Secondhand-Bereich, machen Sie ein Alpaka-Quiz und treffen Sie unsere Alpakas.',
+      extra_shop_hours: '🕐 Täglich im Juli & August geöffnet, 10:00–17:00',
+      extra_fika_title: '☕ Sommer-Fika',
+      extra_badge_new: 'NEU',
+      extra_fika_text: 'Hausgebackenes, lokale Limonaden & Apfelmost. Setzen Sie sich und genießen!',
+      extra_fika_hours: '🕐 Jeden Tag im Juli & August, 10:00–16:00',
+      extra_meet_title: '🦙 Treffen & füttern Sie ein Alpaka!',
+      extra_meet_text: 'Kommen Sie nah heran, erfahren Sie mehr, füttern Sie sie, machen Sie ein Selfie und sehen Sie die süßen diesjährigen Fohlen.',
+      extra_meet_hours: '🕐 Jeden Tag im Juli & August, 10:00–12:00',
+      reset_btn: 'Neue Buchung erstellen',
+      err_min_persons: 'Mindestens {n} Personen insgesamt erforderlich (Erwachsene + Kinder).',
+      err_load_widget: 'Buchungssystem konnte nicht geladen werden',
+      err_no_service: 'Leistung fehlt in der Datenbank',
+      err_no_article: 'Artikel-UID fehlt',
+      err_no_session: 'Sitzung von Abicart konnte nicht abgerufen werden',
+      err_no_order: 'Bestellung in Abicart konnte nicht erstellt werden',
+      err_booking_failed: 'Buchung fehlgeschlagen',
+      err_payment_cancelled: 'Die Zahlung wurde abgebrochen. Sie können es erneut versuchen.',
+      err_no_booking: 'Buchung #{id} nicht gefunden',
+      pending_have_paid: '<strong>Haben Sie gerade bezahlt?</strong> Wir haben eine begonnene Buchung (#{id}) gefunden, die auf Bestätigung wartet. Klicken Sie zum Verifizieren.',
+      pending_verify: 'Zahlung verifizieren',
+      pending_dismiss: 'Ausblenden',
+      pending_checking: 'Wird geprüft…',
+      pending_again: 'Erneut verifizieren',
+      pending_retry: 'Erneut versuchen',
+      pending_not_yet: '<strong>Zahlung noch nicht registriert.</strong> Wenn Sie die Zahlung gerade abgeschlossen haben, kann es eine Minute dauern. Bitte warten und auf "Erneut verifizieren" klicken, oder Hönshyltegård kontaktieren, falls es weiter besteht.',
+      guest_adult: 'Erwachsene / Jugendliche 12+',
+      guest_adult_price: '{price} kr/Person',
+      guest_min_extra: ' (mind. {n} Pers. insgesamt)',
+      guest_child: 'Kinder 5–12 Jahre',
+      guest_child_price: '{price} kr · 1 Kind pro erwachsenem Begleiter',
+      guest_baby: 'Kinder unter {n} Jahren',
+      guest_baby_price: 'Kostenlos',
+      alpaca_max: 'Max. {n} (1 pro Person)',
+      guests_adults: '{n} Erwachsene', guests_children: '{n} Kinder', guests_babies: '{n} Babys',
+      kl: 'um',
+      months_full: ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+      months_short: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+      days_mon: ['Mo','Di','Mi','Do','Fr','Sa','So'],
+      days_sun: ['So','Mo','Di','Mi','Do','Fr','Sa'],
+      svc_info: {
+        'Alpackapromenad': [
+          { icon: '💰', text: 'Erwachsene/Jugendliche 12+: 295 kr · Kinder 5–12 J.: 195 kr' },
+          { icon: '👥', text: 'Mindestens 2 Personen pro Buchung' },
+          { icon: '👶', text: '1 Kind benötigt 1 erwachsenen Begleiter' },
+          { icon: '🦙', text: 'Anzahl der Alpakas wählen — max. 1 pro Person, optional' },
+          { icon: '⏱', text: 'Ca. 60 Minuten in der Natur' }
+        ],
+        'Visning av alpacka': [
+          { icon: '💰', text: 'Erwachsene/Jugendliche 12+: 60 kr · Kinder 3–12 J.: 40 kr' },
+          { icon: '🍼', text: 'Kinder unter 3 Jahren: kostenlos' },
+          { icon: '📸', text: 'Füttern, Selfie machen und die süßen diesjährigen Fohlen sehen' },
+          { icon: '⏱', text: 'Ca. 30 Minuten' }
+        ]
+      },
+      svc_desc: {
+        'Alpackapromenad': 'Ein schöner Spaziergang mit unseren Alpakas in der Natur. Mindestens 2 Personen pro Buchung. Max. 1 Alpaka pro Person — optional, wenn Sie eines führen möchten. 1 Kind benötigt 1 erwachsenen Begleiter.',
+        'Visning av alpacka': 'Kommen Sie unseren Alpakas nah! Erfahren Sie mehr, füttern Sie sie und machen Sie ein Selfie. Kinder unter 3 Jahren sind kostenlos.'
+      },
+      price_adult: 'Erwachsene', price_child: 'Kind', price_under: 'Unter {n} J. kostenlos'
+    }
+  };
+
+  var currentLang = 'sv';
+  try { var saved = localStorage.getItem('sam_lang'); if (saved && STRINGS[saved]) currentLang = saved; } catch(_) {}
+
+  function t(key, vars) {
+    var s = STRINGS[currentLang][key];
+    if (s == null) s = STRINGS.sv[key];
+    if (s == null) return key;
+    if (typeof s !== 'string') return s;
+    if (vars) Object.keys(vars).forEach(function(k){ s = s.replace(new RegExp('\\{' + k + '\\}','g'), vars[k]); });
+    return s;
+  }
+
+  function applyTranslations(){
+    var rootEl = document.getElementById('sam-widget-root');
+    if (!rootEl) return;
+    rootEl.querySelectorAll('[data-i18n]').forEach(function(el){
+      el.textContent = t(el.dataset.i18n);
+    });
+    rootEl.querySelectorAll('[data-i18n-html]').forEach(function(el){
+      el.innerHTML = t(el.dataset.i18nHtml);
+    });
+    rootEl.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+      el.placeholder = t(el.dataset.i18nPh);
+    });
+  }
+
+  function setLang(lang){
+    if (!STRINGS[lang]) return;
+    currentLang = lang;
+    try { localStorage.setItem('sam_lang', lang); } catch(_) {}
+    document.documentElement.setAttribute('lang', lang);
+    var sw = document.getElementById('lang-switch');
+    if (sw) sw.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.lang === lang); });
+    applyTranslations();
+    // Re-render dynamic delar som är på skärmen
+    if (services && services.length) renderServices();
+    if (state.service) {
+      updateSummary();
+      if (state.step >= 4) renderGuestRows();
+    }
+    if (state.year && state.month) {
+      var lbl = $('cal-month-label'); if (lbl) lbl.textContent = t('months_full')[state.month - 1] + ' ' + state.year;
+      if ($('panel-calendar').style.display !== 'none') renderCalendar();
+    }
+    if (weatherData) renderWeather(state.selectedDate);
+    if (state.selectedDateLabel && state.selectedDate) {
+      // Update slot date label format
+      var d = new Date(state.selectedDate + 'T12:00:00');
+      state.selectedDateLabel = d.getDate() + ' ' + t('months_full')[d.getMonth()] + ' ' + d.getFullYear();
+      var dl = $('date-label'); if (dl) dl.textContent = state.selectedDateLabel;
+    }
+    var cta = $('cta-btn');
+    if (cta && !cta.disabled) cta.textContent = state.step >= 4 ? t('cta_finish') : t('cta_continue');
+  }
+
+  // Wire up language buttons
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.lang-btn');
+    if (b && b.dataset.lang) setLang(b.dataset.lang);
+  });
 
   // ── SUPABASE HELPERS ───────────────────────────────
   async function sbGet(path) {
@@ -412,24 +836,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   }
 
   // ── DATA ───────────────────────────────────────────
-  var SERVICE_INFO = {
-    'Alpackapromenad': [
-      { icon: '💰', text: 'Vuxen/Ungdom 12+: 295 kr · Barn 5–12 år: 195 kr' },
-      { icon: '👥', text: 'Minst 2 personer per bokning' },
-      { icon: '👶', text: '1 barn kräver 1 vuxet sällskap' },
-      { icon: '🦙', text: 'Välj antal alpackor – max 1 per person, valfritt' },
-      { icon: '⏱', text: 'Ca 60 minuter i naturen' }
-    ],
-    'Visning av alpacka': [
-      { icon: '💰', text: 'Vuxen/Ungdom 12+: 60 kr · Barn 3–12 år: 40 kr' },
-      { icon: '🍼', text: 'Barn under 3 år: gratis' },
-      { icon: '📸', text: 'Mata, ta selfie och titta på årets söta föl' },
-      { icon: '⏱', text: 'Ca 30 minuter' }
-    ]
-  };
   var SVC_ICONS = { 'Alpackapromenad': '🦙', 'Visning av alpacka': '🌿' };
-  var MONTHS = ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
-  var DAYS = ['Mån','Tis','Ons','Tor','Fre','Lör','Sön'];
 
   var services = [];
   var state = { step:1, service:null, year:new Date().getFullYear(), month:new Date().getMonth()+1, availableDates:[], selectedDate:null, selectedDateLabel:'', selectedSlot:null, selectedTime:null, adults:1, children:0, childrenFree:0, alpacas:0 };
@@ -451,13 +858,14 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 
   // ── INIT ───────────────────────────────────────────
   async function init() {
+    setLang(currentLang); // applies translations + activates correct button
     try {
       services = await sbGet('services?active=eq.true&order=id');
       renderServices();
       loadWeather();
       hideLoading();
     } catch(e) {
-      showError('Kunde inte ladda bokningssystemet: ' + e.message);
+      showError(t('err_load_widget') + ': ' + e.message);
       hideLoading();
     }
   }
@@ -477,19 +885,20 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   // ── RENDER SERVICES ────────────────────────────────
   function renderServices() {
     var grid = $('service-grid');
-    if (!services.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">Inga tjänster tillgängliga.</div>'; return; }
+    if (!services.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">' + t('services_empty') + '</div>'; return; }
     grid.innerHTML = services.map(function(s) {
-      var info = SERVICE_INFO[s.name] || [];
+      var info = (STRINGS[currentLang].svc_info && STRINGS[currentLang].svc_info[s.name]) || [];
       var icon = SVC_ICONS[s.name] || '🦙';
-      var prices = '<span class="price-pill">Vuxen ' + s.price + ' kr</span>';
-      if (s.price_child > 0) prices += '<span class="price-pill">Barn ' + s.price_child + ' kr</span>';
-      if (s.price_child_free_under > 0) prices += '<span class="price-pill">Under ' + s.price_child_free_under + ' år gratis</span>';
+      var prices = '<span class="price-pill">' + t('price_adult') + ' ' + s.price + ' kr</span>';
+      if (s.price_child > 0) prices += '<span class="price-pill">' + t('price_child') + ' ' + s.price_child + ' kr</span>';
+      if (s.price_child_free_under > 0) prices += '<span class="price-pill">' + t('price_under', { n: s.price_child_free_under }) + '</span>';
+      var desc = (STRINGS[currentLang].svc_desc && STRINGS[currentLang].svc_desc[s.name]) || s.description || '';
       return '<div class="service-card" onclick="samSelectService(' + s.id + ')" id="svc-' + s.id + '">'
         + '<div class="check">✓</div>'
         + '<div class="service-card-top">'
         + '<div class="service-icon">' + icon + '</div>'
         + '<div class="service-name">' + s.name + '</div>'
-        + '<div class="service-tagline">' + (s.description || '') + '</div>'
+        + '<div class="service-tagline">' + desc + '</div>'
         + '<div class="service-price-row">' + prices + '</div>'
         + '</div>'
         + '<div class="service-info-box">'
@@ -515,8 +924,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     setStep(2); show('panel-calendar'); await loadCalendar();
   }
   async function loadCalendar() {
-    $('cal-month-label').textContent = MONTHS[state.month - 1] + ' ' + state.year;
-    $('cal-content').innerHTML = '<div class="cal-loading">Hämtar datum…</div>';
+    $('cal-month-label').textContent = t('months_full')[state.month - 1] + ' ' + state.year;
+    $('cal-content').innerHTML = '<div class="cal-loading">' + t('cal_loading') + '</div>';
     $('cal-prev').disabled = true; $('cal-next').disabled = true;
     try {
       var from = state.year + '-' + String(state.month).padStart(2,'0') + '-01';
@@ -542,7 +951,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     // Tidigaste bokningsbara dag = imorgon (24h framförhållning så Helena hinner förbereda).
     var minBookable = new Date(); minBookable.setHours(0,0,0,0);
     minBookable.setDate(minBookable.getDate() + 1);
-    var html = DAYS.map(function(d){ return '<div class="cal-label">' + d + '</div>'; }).join('');
+    var html = t('days_mon').map(function(d){ return '<div class="cal-label">' + d + '</div>'; }).join('');
     for (var i = 0; i < offset; i++) html += '<div class="cal-day empty"></div>';
     for (var d = 1; d <= daysInMonth; d++) {
       var ds = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
@@ -568,7 +977,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   }
   async function selectDate(ds, day) {
     state.selectedDate = ds;
-    state.selectedDateLabel = day + ' ' + MONTHS[state.month - 1] + ' ' + state.year;
+    state.selectedDateLabel = day + ' ' + t('months_full')[state.month - 1] + ' ' + state.year;
     renderCalendar();
     renderWeather(ds);
     await showTimeSlots();
@@ -578,19 +987,19 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   async function showTimeSlots() {
     setStep(3); show('panel-time');
     $('date-label').textContent = state.selectedDateLabel;
-    $('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Hämtar tider…</div>';
+    $('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">' + t('time_loading') + '</div>';
     try {
       var slots = await sbGet('time_slots?service_id=eq.' + state.service.id + '&slot_date=eq.' + state.selectedDate + '&active=eq.true&order=slot_time');
-      if (!slots.length) { $('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">Inga lediga tider denna dag.</div>'; return; }
+      if (!slots.length) { $('time-grid').innerHTML = '<div style="color:var(--muted);font-size:13px">' + t('time_empty') + '</div>'; return; }
       $('time-grid').innerHTML = slots.map(function(s){
         var full = s.booked_spots >= s.max_spots;
         var display = s.slot_time.substring(0,5);
         var left = s.max_spots - s.booked_spots;
         return '<div class="time-pill ' + (full ? 'full' : '') + '" ' + (!full ? 'onclick="samSelectTime(' + s.id + ',\'' + display + '\')"' : '') + '>'
-          + display + '<span class="spots">' + (full ? 'Fullt' : left + ' platser') + '</span></div>';
+          + display + '<span class="spots">' + (full ? t('time_full') : t('time_spots', { n: left })) + '</span></div>';
       }).join('');
     } catch(e) {
-      $('time-grid').innerHTML = '<div style="color:var(--error);font-size:13px">Fel: ' + e.message + '</div>';
+      $('time-grid').innerHTML = '<div style="color:var(--error);font-size:13px">Error: ' + e.message + '</div>';
     }
   }
   function selectTime(slotId, display) {
@@ -604,7 +1013,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   // ── FORM ───────────────────────────────────────────
   function showForm() {
     setStep(4); show('panel-form'); renderGuestRows(); updateSummary();
-    $('cta-btn').textContent = 'Slutför bokning';
+    $('cta-btn').textContent = t('cta_finish');
   }
   function makeGuestRow(label, sublabel, countId, onMinus, onPlus, count) {
     var row = document.createElement('div');
@@ -626,20 +1035,20 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     var s = state.service;
     var container = $('guest-rows');
     container.innerHTML = '';
-    var minNote = s.min_persons > 1 ? ' (min ' + s.min_persons + ' pers. totalt)' : '';
+    var minNote = s.min_persons > 1 ? t('guest_min_extra', { n: s.min_persons }) : '';
     container.appendChild(makeGuestRow(
-      'Vuxen / Ungdom 12+', s.price + ' kr/person' + minNote, 'cnt-adults',
+      t('guest_adult'), t('guest_adult_price', { price: s.price }) + minNote, 'cnt-adults',
       function(){ changeG('adults', -1); }, function(){ changeG('adults', 1); }, state.adults
     ));
     if (s.price_child > 0) {
       container.appendChild(makeGuestRow(
-        'Barn 5–12 år', s.price_child + ' kr · 1 barn per vuxet sällskap', 'cnt-children',
+        t('guest_child'), t('guest_child_price', { price: s.price_child }), 'cnt-children',
         function(){ changeG('children', -1); }, function(){ changeG('children', 1); }, state.children
       ));
     }
     if (s.price_child_free_under > 0) {
       container.appendChild(makeGuestRow(
-        'Barn under ' + s.price_child_free_under + ' år', 'Gratis', 'cnt-childrenFree',
+        t('guest_baby', { n: s.price_child_free_under }), t('guest_baby_price'), 'cnt-childrenFree',
         function(){ changeG('childrenFree', -1); }, function(){ changeG('childrenFree', 1); }, state.childrenFree
       ));
     }
@@ -649,7 +1058,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       var alpacaContainer = $('alpaca-rows');
       alpacaContainer.innerHTML = '';
       var alpacaRow = makeGuestRow(
-        'Antal alpackor', 'Max ' + maxA + ' (1 per person)', 'cnt-alpacas',
+        t('form_alpacas'), t('alpaca_max', { n: maxA }), 'cnt-alpacas',
         function(){ changeG('alpacas', -1); }, function(){ changeG('alpacas', 1); }, state.alpacas
       );
       alpacaRow.querySelector('.guest-lbl p').id = 'alpaca-max-lbl';
@@ -677,7 +1086,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       var maxA = state.adults + state.children;
       if (state.alpacas > maxA) { state.alpacas = maxA; var ae = $('cnt-alpacas'); if(ae) ae.textContent = state.alpacas; }
       var lbl = $('alpaca-max-lbl');
-      if (lbl) lbl.textContent = 'Max ' + maxA + ' (1 per person)';
+      if (lbl) lbl.textContent = t('alpaca_max', { n: maxA });
     }
     updateSummary();
   }
@@ -690,14 +1099,14 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     $('sum-tour').textContent = s.name;
     $('sum-price').textContent = total > 0 ? formatSEK(total) : '';
     if (state.selectedDate && state.selectedTime) {
-      var guests = state.adults + ' vuxna';
-      if (state.children) guests += ', ' + state.children + ' barn';
-      if (state.childrenFree) guests += ', ' + state.childrenFree + ' spädbarn';
-      $('sum-meta').textContent = state.selectedDateLabel + ' · ' + state.selectedTime + ' · ' + guests;
+      var guests = t('guests_adults', { n: state.adults });
+      if (state.children) guests += ', ' + t('guests_children', { n: state.children });
+      if (state.childrenFree) guests += ', ' + t('guests_babies', { n: state.childrenFree });
+      $('sum-meta').textContent = state.selectedDateLabel + ' · ' + t('kl') + ' ' + state.selectedTime + ' · ' + guests;
     } else if (state.selectedDate) {
-      $('sum-meta').textContent = state.selectedDateLabel + ' · Välj tid';
+      $('sum-meta').textContent = state.selectedDateLabel + ' · ' + t('summary_pick_time');
     } else {
-      $('sum-meta').textContent = 'Välj datum och tid';
+      $('sum-meta').textContent = t('summary_pick');
     }
   }
 
@@ -712,11 +1121,11 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     if (!ok) return;
     var totalGuests = state.adults + state.children;
     if (state.service.min_persons && totalGuests < state.service.min_persons) {
-      alert('Minst ' + state.service.min_persons + ' personer totalt krävs (vuxna + barn).');
+      alert(t('err_min_persons', { n: state.service.min_persons }));
       return;
     }
     var btn = $('cta-btn');
-    btn.disabled = true; btn.textContent = 'Skapar bokning…';
+    btn.disabled = true; btn.textContent = t('cta_creating');
     try {
       var totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children;
       var newsletter = $('f-newsletter') ? $('f-newsletter').checked : false;
@@ -743,18 +1152,18 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       var bookingId = bookingRows[0] ? bookingRows[0].id : null;
 
       // 2. Hämta artikel-UIDs från Supabase
-      btn.textContent = 'F\u00f6rbereder betalning\u2026';
+      btn.textContent = t('cta_preparing_pay');
       var svcRows = await sbGet('services?name=eq.' + encodeURIComponent(state.service.name) + '&select=abicart_article_id,abicart_article_id_child');
       var svcData = svcRows[0];
-      if (!svcData) throw new Error('Tj\u00e4nst saknas i databasen');
-      if (!svcData.abicart_article_id) throw new Error('Artikel-UID saknas');
+      if (!svcData) throw new Error(t('err_no_service'));
+      if (!svcData.abicart_article_id) throw new Error(t('err_no_article'));
 
       // 3. Hämta session-token från Abicart KLIENT-SIDE
       //    Detta är kritiskt: sessionen binds till klientens IP/UA, så att
       //    kassan kan matcha sessionen när browsern landar dit.
       var sessionToken = await abCall('Session.getToken', []);
       if (!sessionToken || typeof sessionToken !== 'string') {
-        throw new Error('Kunde inte h\u00e4mta session fr\u00e5n Abicart');
+        throw new Error(t('err_no_session'));
       }
       console.log('Session token:', sessionToken.substring(0, 8) + '...');
 
@@ -766,7 +1175,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       );
       var rawOrder = orderItem ? orderItem.order : null;
       var orderUid = (rawOrder && typeof rawOrder === 'object') ? rawOrder.uid : rawOrder;
-      if (!orderUid) throw new Error('Kunde inte skapa order i Abicart');
+      if (!orderUid) throw new Error(t('err_no_order'));
       console.log('Order skapad:', orderUid);
 
       // 5. Lägg till barn p\u00e5 samma order/session
@@ -830,7 +1239,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       //    Abicart's frontend (Diversity SPA) läser INTE ?session= från URL.
       //    Istället har vi lagt in ett script i temats <head> som plockar upp
       //    ?load_cart=TOKEN och injicerar sessionen i SPA:ns Redux store.
-      btn.textContent = 'F\u00f6rbereder kassan\u2026';
+      btn.textContent = t('cta_preparing_checkout');
       var kassaUrl = 'https://webshop.honshyltegard.nu/kassa/?load_cart=' + encodeURIComponent(sessionToken);
       console.log('Kassa URL:', kassaUrl);
       // Abicart-tipset: vänta ~1.2s innan redirect så att backend hinner synka
@@ -855,8 +1264,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       }, 1200);
 
     } catch(e) {
-      showError('Bokningen misslyckades: ' + e.message);
-      btn.disabled = false; btn.textContent = 'Slutför bokning';
+      showError(t('err_booking_failed') + ': ' + e.message);
+      btn.disabled = false; btn.textContent = t('cta_finish');
     }
   }
 
@@ -869,7 +1278,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     // Explicit kolumnlista: RLS-hardening hindrar `select=*` för anon (PII dolt)
     var rows = await sbGet('bookings?id=eq.' + bookingId + '&select=id,service_id,total_price,abicart_order_id,status,payment_status,services(name)');
     var b = rows[0];
-    if (!b) throw new Error('Bokning #' + bookingId + ' hittades inte');
+    if (!b) throw new Error(t('err_no_booking', { id: bookingId }));
     if (!b.abicart_order_id) return { paid: false, booking: b };
     var res = await fetch(SB_URL + '/functions/v1/abicart', {
       method: 'POST',
@@ -884,9 +1293,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     hide('booking-view');
     var pb = $('pending-banner'); if (pb) pb.style.display = 'none';
     var name = (b.services && b.services.name) ? b.services.name : b.service_id;
-    var details = '<strong>Tjänst:</strong> ' + name + '<br>'
-      + '<strong>Boknings-ID:</strong> #' + b.id + '<br>'
-      + '<strong>Totalt:</strong> ' + (b.total_price || 0) + ' kr';
+    var details = '<strong>' + t('confirm_service') + '</strong> ' + name + '<br>'
+      + '<strong>' + t('confirm_id') + '</strong> #' + b.id + '<br>'
+      + '<strong>' + t('confirm_total') + '</strong> ' + (b.total_price || 0) + ' kr';
     $('confirm-card').innerHTML = details;
     $('confirm-view').classList.add('show');
     try { localStorage.removeItem('sam_pending_booking'); } catch(_) {}
@@ -899,25 +1308,22 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     banner.id = 'pending-banner';
     banner.style.cssText = 'background:#FFF7E6;border:1px solid #E8D4A0;border-radius:14px;padding:16px 20px;margin:0 0 24px;font-size:14px;color:#7A5B20;line-height:1.6;display:flex;flex-direction:column;gap:10px';
     banner.innerHTML =
-      '<div id="pending-msg"><strong>Har du nyss betalat?</strong> Vi hittade en påbörjad bokning (#' + pending.booking_id +
-      ') som väntar på bekräftelse. Klicka för att verifiera.</div>' +
+      '<div id="pending-msg">' + t('pending_have_paid', { id: pending.booking_id }) + '</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button id="pending-verify-btn" style="background:var(--green);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">Verifiera betalning</button>' +
-      '<button id="pending-dismiss-btn" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">Dölj</button>' +
+      '<button id="pending-verify-btn" style="background:var(--green);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">' + t('pending_verify') + '</button>' +
+      '<button id="pending-dismiss-btn" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">' + t('pending_dismiss') + '</button>' +
       '</div>';
     host.insertBefore(banner, host.firstChild);
     $('pending-verify-btn').onclick = async function(){
       var btn = $('pending-verify-btn');
-      btn.disabled = true; btn.textContent = 'Kontrollerar…';
+      btn.disabled = true; btn.textContent = t('pending_checking');
       try {
         var r = await confirmPaymentForBooking(pending.booking_id);
         if (r.paid) { showConfirmation(r.booking); return; }
-        btn.disabled = false; btn.textContent = 'Verifiera igen';
-        $('pending-msg').innerHTML =
-          '<strong>Betalningen är inte registrerad ännu.</strong> Om du precis slutfört betalningen kan det ta någon minut. ' +
-          'Vänta lite och tryck "Verifiera igen", eller kontakta Hönshyltegård om det kvarstår.';
+        btn.disabled = false; btn.textContent = t('pending_again');
+        $('pending-msg').innerHTML = t('pending_not_yet');
       } catch(e) {
-        btn.disabled = false; btn.textContent = 'Försök igen';
+        btn.disabled = false; btn.textContent = t('pending_retry');
         console.warn('Verify:', e.message);
       }
     };
@@ -932,7 +1338,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     var urlBookingId = params.get('booking');
     var urlAbicartOrder = params.get('abicart_order');
     var cancelled = params.get('cancelled');
-    if (cancelled) { showError('Betalningen avbröts. Du kan försöka igen.'); return; }
+    if (cancelled) { showError(t('err_payment_cancelled')); return; }
 
     // 1a) Slå upp booking_id om bara abicart_order är satt
     if (urlAbicartOrder && !urlBookingId) {
@@ -976,13 +1382,13 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     ['f-newsletter','f-private-party','f-special-needs-cb'].forEach(function(id){ var c=$(id); if(c) c.checked = false; });
     var snRow = $('special-needs-row'); if(snRow) snRow.style.display = 'none';
     $('error-banner').classList.remove('show');
-    $('cta-btn').textContent = 'Fortsätt →';
+    $('cta-btn').textContent = t('cta_continue');
     setStep(1); updateSummary();
   }
   function goBack(from) {
     if (from === 'calendar') { hide('panel-calendar'); hide('panel-time'); hide('summary-panel'); setStep(1); state.selectedDate=null; state.selectedTime=null; }
-    else if (from === 'time') { hide('panel-time'); hide('panel-form'); setStep(2); $('cta-btn').textContent='Fortsätt →'; state.selectedTime=null; }
-    else if (from === 'form') { hide('panel-form'); setStep(3); $('cta-btn').textContent='Fortsätt →'; }
+    else if (from === 'time') { hide('panel-time'); hide('panel-form'); setStep(2); $('cta-btn').textContent=t('cta_continue'); state.selectedTime=null; }
+    else if (from === 'form') { hide('panel-form'); setStep(3); $('cta-btn').textContent=t('cta_continue'); }
     updateSummary();
   }
   function setStep(n) {
@@ -998,8 +1404,6 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   // ── WEATHER ────────────────────────────────────────
   var WMO = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
   var WMO_WARN = [65,75,82,95,96,99];
-  var MON_SV = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-  var DAY_SV = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
   var weatherData = null;
 
   async function loadWeather() {
@@ -1025,7 +1429,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       if (WMO_WARN.indexOf(weatherData.weathercode[i]) !== -1) hasWarn = true;
       var rain = weatherData.precipitation_sum[i] > 0 ? Math.round(weatherData.precipitation_sum[i]) + 'mm' : '';
       return '<div class="weather-day ' + (date === highlightDate ? 'selected-day' : '') + '">'
-        + '<div class="wd-date">' + DAY_SV[d.getDay()] + ' ' + d.getDate() + ' ' + MON_SV[d.getMonth()] + '</div>'
+        + '<div class="wd-date">' + t('days_sun')[d.getDay()] + ' ' + d.getDate() + ' ' + t('months_short')[d.getMonth()] + '</div>'
         + '<div class="wd-icon">' + (WMO[weatherData.weathercode[i]] || '🌡') + '</div>'
         + '<div class="wd-temp">' + Math.round(weatherData.temperature_2m_max[i]) + '°/' + Math.round(weatherData.temperature_2m_min[i]) + '°</div>'
         + (rain ? '<div class="wd-rain">' + rain + '</div>' : '')
