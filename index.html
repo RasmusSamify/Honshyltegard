@@ -1247,21 +1247,20 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       // Utan denna paus uppstår race conditions (9003 "Object not found", 1006
       // "Forbidden") som triggar SystemError-modalen.
       //
-      // Redirecta top-fönstret om vi är i en iframe (t.ex. inbäddad på
-      // honshyltegard.nu). Annars laddas kassan inuti iframe:n och kunden
-      // ser den längst ner på värdsidan istället för som en egen sida.
-      setTimeout(function(){
-        try {
-          if (window.top && window.top !== window.self) {
-            window.top.location.href = kassaUrl;
-            return;
-          }
-        } catch(_) {
-          // Cross-origin parent — be parent att redirecta via postMessage som fallback.
-          try { window.parent.postMessage({ type: 'sam-redirect', url: kassaUrl, source: 'sam-honshyltegard' }, '*'); } catch(_) {}
-        }
-        window.location.href = kassaUrl;
-      }, 1200);
+      // VIKTIGT: redirecta iframe:n (window.location.href), INTE top-fönstret.
+      // Abicart-sessionen är bunden till iframe-kontextens tredjeparts-cookies
+      // för shop.textalk.se. Om vi navigerar bort top-fönstret förloras
+      // sessionen och kassan landar med tom varukorg.
+      //
+      // Be parent-sidan scrolla iframe:n i sikte via postMessage så kunden
+      // inte hamnar längst ner. Värdsidan måste lyssna på meddelandet
+      // (snutten ligger i README/handover) — utan listener faller flödet
+      // tillbaka till tidigare beteende (kassan laddas men kunden ser den
+      // längre ner på sidan).
+      try {
+        window.parent.postMessage({ type: 'sam-scroll-into-view', source: 'sam-honshyltegard' }, '*');
+      } catch(_) {}
+      setTimeout(function(){ window.location.href = kassaUrl; }, 1200);
 
     } catch(e) {
       showError(t('err_booking_failed') + ': ' + e.message);
