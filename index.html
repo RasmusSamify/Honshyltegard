@@ -303,6 +303,21 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           <div class="form-group"><label>Övrigt (allergier, önskemål…)</label><textarea id="f-note" placeholder="Skriv gärna om ni har önskemål."></textarea></div>
         </div>
         <div class="gdpr-row">
+          <input type="checkbox" class="gdpr-cb" id="f-private-party">
+          <label class="gdpr-label" for="f-private-party">
+            <strong>Slutet sällskap</strong> — vi bokar tiden enbart för vår grupp.
+          </label>
+        </div>
+        <div class="gdpr-row">
+          <input type="checkbox" class="gdpr-cb" id="f-special-needs-cb" onchange="document.getElementById('special-needs-row').style.display=this.checked?'block':'none'">
+          <label class="gdpr-label" for="f-special-needs-cb">
+            <strong>Särskilda behov</strong> — någon i sällskapet har behov vi bör veta om (rörelsehinder, syn, hörsel m.m.).
+          </label>
+        </div>
+        <div class="form-row full" id="special-needs-row" style="display:none">
+          <div class="form-group"><label>Beskriv kort era behov</label><textarea id="f-special-needs" placeholder="T.ex. en deltagare använder rullstol, behöver pauser eller bra ljus."></textarea></div>
+        </div>
+        <div class="gdpr-row">
           <input type="checkbox" class="gdpr-cb" id="f-newsletter">
           <label class="gdpr-label" for="f-newsletter">
             Ja, jag vill gärna ta emot nyheter och erbjudanden från Hönshyltegård via e-post.
@@ -524,12 +539,14 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     var firstDay = new Date(y, m - 1, 1).getDay();
     var daysInMonth = new Date(y, m, 0).getDate();
     var offset = (firstDay + 6) % 7;
-    var today = new Date(); today.setHours(0,0,0,0);
+    // Tidigaste bokningsbara dag = imorgon (24h framförhållning så Helena hinner förbereda).
+    var minBookable = new Date(); minBookable.setHours(0,0,0,0);
+    minBookable.setDate(minBookable.getDate() + 1);
     var html = DAYS.map(function(d){ return '<div class="cal-label">' + d + '</div>'; }).join('');
     for (var i = 0; i < offset; i++) html += '<div class="cal-day empty"></div>';
     for (var d = 1; d <= daysInMonth; d++) {
       var ds = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-      var isPast = new Date(y, m-1, d) < today;
+      var isPast = new Date(y, m-1, d) < minBookable;
       var isAvail = state.availableDates.indexOf(ds) !== -1;
       var isSel = state.selectedDate === ds;
       var cls = 'cal-day';
@@ -703,6 +720,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     try {
       var totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children;
       var newsletter = $('f-newsletter') ? $('f-newsletter').checked : false;
+      var privateParty = $('f-private-party') ? $('f-private-party').checked : false;
+      var specialNeeds = ($('f-special-needs-cb') && $('f-special-needs-cb').checked) ? (val('f-special-needs') || null) : null;
 
       // 1. Spara bokning i Supabase (status: pending_payment)
       var bookingRows = await sbPost('bookings', {
@@ -717,7 +736,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         status: 'pending_payment',
         payment_status: 'pending',
         total_price: totalPrice,
-        newsletter_consent: newsletter
+        newsletter_consent: newsletter,
+        private_party: privateParty,
+        special_needs: specialNeeds
       }, 'id');
       var bookingId = bookingRows[0] ? bookingRows[0].id : null;
 
@@ -769,6 +790,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           + (state.childrenFree ? ', ' + state.childrenFree + ' spädbarn' : '')
       ];
       if (state.alpacas) detailsLines.push('Alpackor: ' + state.alpacas + ' st');
+      if (privateParty) detailsLines.push('Slutet sällskap');
+      if (specialNeeds) detailsLines.push('Särskilda behov: ' + specialNeeds);
+      else if ($('f-special-needs-cb') && $('f-special-needs-cb').checked) detailsLines.push('Särskilda behov (ej beskrivet)');
       if (bookingNote) detailsLines.push('Anteckning från kund: ' + bookingNote);
       detailsLines.push('Bokningsnr: #' + bookingId);
       var orderDetails = detailsLines.join('\n');
@@ -933,8 +957,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     $('confirm-view').classList.remove('show');
     show('booking-view');
     root.querySelectorAll('.service-card').forEach(function(c){ c.classList.remove('selected'); });
-    ['f-name','f-lname','f-email','f-phone','f-note'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
-    var cb = $('f-newsletter'); if(cb) cb.checked = false;
+    ['f-name','f-lname','f-email','f-phone','f-note','f-special-needs'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
+    ['f-newsletter','f-private-party','f-special-needs-cb'].forEach(function(id){ var c=$(id); if(c) c.checked = false; });
+    var snRow = $('special-needs-row'); if(snRow) snRow.style.display = 'none';
     $('error-banner').classList.remove('show');
     $('cta-btn').textContent = 'Fortsätt →';
     setStep(1); updateSummary();
