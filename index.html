@@ -192,7 +192,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 /* Language switcher */
 #sam-widget-root .lang-switch{position:absolute;top:20px;right:20px;display:flex;gap:2px;z-index:10;background:rgba(253,250,244,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:100px;padding:3px}
 #sam-widget-root .lang-btn{background:none;border:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;padding:5px 11px;border-radius:100px;cursor:pointer;color:var(--muted);transition:all 0.18s;display:inline-flex;align-items:center;gap:5px}
-#sam-widget-root .lang-flag{font-size:13px;line-height:1}
+#sam-widget-root .lang-flag{width:16px;height:12px;object-fit:cover;border-radius:2px;display:inline-block;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,0.05)}
 #sam-widget-root .lang-btn:hover{color:var(--green)}
 #sam-widget-root .lang-btn.active{background:var(--green);color:white}
 
@@ -204,9 +204,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 <body>
 <div id="sam-widget-root">
   <div class="lang-switch" id="lang-switch">
-    <button class="lang-btn active" data-lang="sv" type="button"><span class="lang-flag">🇸🇪</span> SV</button>
-    <button class="lang-btn" data-lang="en" type="button"><span class="lang-flag">🇬🇧</span> EN</button>
-    <button class="lang-btn" data-lang="de" type="button"><span class="lang-flag">🇩🇪</span> DE</button>
+    <button class="lang-btn active" data-lang="sv" type="button"><img class="lang-flag" src="https://flagcdn.com/se.svg" alt="" aria-hidden="true"> SV</button>
+    <button class="lang-btn" data-lang="en" type="button"><img class="lang-flag" src="https://flagcdn.com/gb.svg" alt="" aria-hidden="true"> EN</button>
+    <button class="lang-btn" data-lang="de" type="button"><img class="lang-flag" src="https://flagcdn.com/de.svg" alt="" aria-hidden="true"> DE</button>
   </div>
   <div id="loading-screen">
     <div class="spinner"></div>
