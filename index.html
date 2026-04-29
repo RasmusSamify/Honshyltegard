@@ -971,7 +971,15 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     $('svc-' + id).classList.add('selected');
     state.service = services.find(function(s){ return s.id === id; });
     state.selectedDate = null; state.selectedSlot = null; state.selectedTime = null;
-    state.adults = 1; state.children = 0; state.childrenFree = 0; state.alpacas = 0;
+    // Behåll adults/children mellan service-byten så priset räknas korrekt
+    // för antalet personer kunden redan valt. Reset bara service-specifika
+    // fält (alpackor/spädbarn-rabatt) om de inte gäller för nya tjänsten.
+    if (!state.service.alpaca_booking) state.alpacas = 0;
+    if (!state.service.price_child_free_under) state.childrenFree = 0;
+    // Dölj stale panels från ev. tidigare flöde och återställ CTA-knappen
+    // (kund börjar om från kalender + tid för nya tjänsten).
+    hide('panel-time'); hide('panel-form');
+    $('cta-btn').textContent = t('cta_continue');
     updateSummary();
     setTimeout(showCalendar, 280);
   }
