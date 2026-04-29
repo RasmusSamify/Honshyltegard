@@ -223,6 +223,25 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, booking: rows[0] || null });
     }
 
+    if (action === 'setConfirmationSent') {
+      const id = Number(body.id);
+      const sent = body.sent !== false; // default true
+      if (!id) return json({ ok: false, error: 'id required' }, 400);
+      const r = await fetch(`${SB_URL}/rest/v1/bookings?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SB_SERVICE_KEY,
+          Authorization: `Bearer ${SB_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ confirmation_sent_at: sent ? new Date().toISOString() : null }),
+      });
+      if (!r.ok) return json({ ok: false, error: await r.text() }, r.status);
+      const rows = await r.json();
+      return json({ ok: true, booking: rows[0] || null });
+    }
+
     if (action === 'generateConfirmationEmail') {
       if (!ANTHROPIC_API_KEY) return json({ ok: false, error: 'ANTHROPIC_API_KEY saknas i edge function-secrets' }, 500);
       const id = Number(body.id);

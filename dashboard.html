@@ -247,6 +247,10 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 .email-gen textarea { width: 100%; min-height: 220px; margin-top: 12px; padding: 12px; border: 1px solid var(--border-lt); border-radius: 8px; font-family: inherit; font-size: 13px; line-height: 1.6; background: var(--surface); color: var(--text); resize: vertical; box-sizing: border-box; }
 .email-gen-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
 .email-gen-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.email-gen-status { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--green); font-weight: 500; padding: 4px 10px; background: var(--green-xs); border-radius: 100px; margin-left: 4px; }
+.email-gen-status svg { width: 12px; height: 12px; }
+.confirm-check-wrap { display: inline-flex; align-items: center; vertical-align: middle; margin-left: 4px; }
+.confirm-check { width: 12px; height: 12px; color: var(--green); }
 
 /* ── SLOTS ──────────────────────────────────────────────── */
 .slot-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 20px; }
@@ -1248,10 +1252,13 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
       body.innerHTML = '<tr><td colspan="7" class="empty">Inga bokningar matchade</td></tr>';
       return;
     }
+    const checkIcon = '<svg class="confirm-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     body.innerHTML = rows.map(b => {
       const slot = parseSlot(b);
+      const sent = !!b.confirmation_sent_at;
+      const idCell = `<div class="td-main">#${b.id}${sent ? ' <span title="Bekräftelsemejl skickat" class="confirm-check-wrap">' + checkIcon + '</span>' : ''}</div><div class="td-sub">${fmtDate(b.created_at)}</div>`;
       return `<tr onclick="window.__openBooking(${b.id})">
-        <td><div class="td-main">#${b.id}</div><div class="td-sub">${fmtDate(b.created_at)}</div></td>
+        <td>${idCell}</td>
         <td><div class="td-main">${esc(b.first_name)} ${esc(b.last_name)}</div><div class="td-sub">${esc(b.email)}</div></td>
         <td><div class="td-main">${esc(b.services?.name || '—')}</div></td>
         <td>${slot ? `<div class="td-main">${fmtDate(slot.date)}</div><div class="td-sub">kl. ${slot.time}</div>` : '<span class="td-sub">—</span>'}</td>
@@ -1296,7 +1303,10 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         ${b.note ? `<div class="drawer-field"><div class="drawer-field-label">Övrigt</div><div class="drawer-field-value">${esc(b.note)}</div></div>` : ''}
       </div>
       <div class="drawer-section">
-        <h4>Bekräftelsemejl</h4>
+        <h4 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          Bekräftelsemejl
+          ${b.confirmation_sent_at ? `<span class="email-gen-status" id="email-status-${b.id}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Skickat ${new Date(b.confirmation_sent_at).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'})}</span>` : `<span class="email-gen-status" id="email-status-${b.id}" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Skickat</span>`}
+        </h4>
         <div class="email-gen">
           <div class="email-gen-row">
             <div class="email-lang-pills" id="email-lang-pills-${b.id}">
@@ -1314,6 +1324,9 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
               <button class="btn btn-ghost" id="email-regen-${b.id}" type="button">Generera om</button>
               <button class="btn btn-secondary" id="email-mailto-${b.id}" type="button">Öppna i mejlklient</button>
             </div>
+          </div>
+          <div class="email-gen-actions" style="margin-top:10px;border-top:1px solid var(--border-lt);padding-top:10px">
+            <button class="btn btn-ghost" id="email-mark-sent-${b.id}" type="button">${b.confirmation_sent_at ? 'Ångra "skickat"' : 'Markera som skickat'}</button>
           </div>
         </div>
       </div>
@@ -1418,6 +1431,30 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
       const subject = subjects[emailLang] || subjects.sv;
       const url = 'mailto:' + encodeURIComponent(b.email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
       window.location.href = url;
+      // Markera automatiskt som skickat när Helena öppnar i mejlklient
+      if (!b.confirmation_sent_at) markConfirmationSent(true);
+    });
+
+    async function markConfirmationSent(sent){
+      const btn = $('#email-mark-sent-' + b.id);
+      btn.disabled = true;
+      try {
+        const data = await adminCall({ action: 'setConfirmationSent', id: b.id, sent });
+        const ts = data?.booking?.confirmation_sent_at || null;
+        b.confirmation_sent_at = ts;
+        const idx = allBookings.findIndex(x => x.id === b.id);
+        if (idx >= 0) allBookings[idx].confirmation_sent_at = ts;
+        toast(sent ? 'Markerad som skickat' : 'Markering borttagen', 'success');
+        renderBookings();
+        // Re-rendera drawer för att visa uppdaterad pill + knapp-text
+        window.__openBooking(b.id);
+      } catch(e) {
+        toast('Fel: ' + e.message, 'error');
+        btn.disabled = false;
+      }
+    }
+    $('#email-mark-sent-' + b.id).addEventListener('click', () => {
+      markConfirmationSent(!b.confirmation_sent_at);
     });
 
     openDrawer();
