@@ -666,6 +666,19 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         </div>
       </div>
       <div class="settings-card">
+        <h3>Nyhetsbrev</h3>
+        <div class="settings-row">
+          <div>
+            <div class="settings-value" id="newsletter-count">— prenumeranter</div>
+            <div class="settings-label">Kunder som bockat i nyhetsbrevsrutan vid bokning (deduperat på e-post)</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-secondary" id="newsletter-copy" type="button">Kopiera e-postadresser</button>
+            <button class="btn btn-secondary" id="newsletter-csv" type="button">Exportera CSV</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-card">
         <h3>Säkerhet</h3>
         <div class="settings-row">
           <div>
@@ -874,11 +887,64 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
       renderBookings();
       renderSlotCalendar();
       populateSlotForm();
+      renderNewsletter();
     } catch(e) {
       console.error(e);
       toast('Kunde inte ladda data: ' + e.message, 'error');
     }
   }
+
+  // ── NYHETSBREV ──────────────────────────────────────────
+  function uniqueSubscribers(){
+    const seen = new Map();
+    allBookings.forEach(b => {
+      if (!b.newsletter_consent || !b.email) return;
+      const key = b.email.toLowerCase().trim();
+      // Behåll senaste bokningens namn-version
+      if (!seen.has(key) || new Date(b.created_at) > new Date(seen.get(key).created_at)) {
+        seen.set(key, b);
+      }
+    });
+    return Array.from(seen.values());
+  }
+
+  function renderNewsletter(){
+    const subs = uniqueSubscribers();
+    const el = $('#newsletter-count');
+    if (el) el.textContent = `${subs.length} ${subs.length === 1 ? 'prenumerant' : 'prenumeranter'}`;
+  }
+
+  $('#newsletter-copy')?.addEventListener('click', async () => {
+    const subs = uniqueSubscribers();
+    if (!subs.length) { toast('Inga prenumeranter ännu', 'info'); return; }
+    const emails = subs.map(s => s.email).join(', ');
+    try {
+      await navigator.clipboard.writeText(emails);
+      toast(`${subs.length} e-postadresser kopierade — klistra in i BCC`, 'success');
+    } catch(_) {
+      const ta = document.createElement('textarea');
+      ta.value = emails; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+      toast(`${subs.length} e-postadresser kopierade`, 'success');
+    }
+  });
+
+  $('#newsletter-csv')?.addEventListener('click', () => {
+    const subs = uniqueSubscribers();
+    if (!subs.length) { toast('Inga prenumeranter ännu', 'info'); return; }
+    const csvEsc = v => '"' + String(v || '').replace(/"/g, '""') + '"';
+    const rows = [['Förnamn','Efternamn','E-post','Bokningsdatum'].map(csvEsc).join(',')];
+    subs.forEach(s => rows.push([s.first_name, s.last_name, s.email, new Date(s.created_at).toLocaleDateString('sv-SE')].map(csvEsc).join(',')));
+    // BOM så Excel öppnar UTF-8 korrekt
+    const blob = new Blob(['﻿' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nyhetsbrev-honshyltegard-${new Date().toISOString().substring(0,10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    toast(`${subs.length} prenumeranter exporterade`, 'success');
+  });
 
   async function loadServices(){
     const { data, error } = await sb.from('services').select('id,name,price,price_child,max_spots,min_persons').order('id');
