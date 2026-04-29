@@ -191,7 +191,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 
 /* Language switcher */
 #sam-widget-root .lang-switch{position:absolute;top:20px;right:20px;display:flex;gap:2px;z-index:10;background:rgba(253,250,244,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:100px;padding:3px}
-#sam-widget-root .lang-btn{background:none;border:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;padding:5px 11px;border-radius:100px;cursor:pointer;color:var(--muted);transition:all 0.18s}
+#sam-widget-root .lang-btn{background:none;border:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;padding:5px 11px;border-radius:100px;cursor:pointer;color:var(--muted);transition:all 0.18s;display:inline-flex;align-items:center;gap:5px}
+#sam-widget-root .lang-flag{font-size:13px;line-height:1}
 #sam-widget-root .lang-btn:hover{color:var(--green)}
 #sam-widget-root .lang-btn.active{background:var(--green);color:white}
 
@@ -203,9 +204,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 <body>
 <div id="sam-widget-root">
   <div class="lang-switch" id="lang-switch">
-    <button class="lang-btn active" data-lang="sv" type="button">SV</button>
-    <button class="lang-btn" data-lang="en" type="button">EN</button>
-    <button class="lang-btn" data-lang="de" type="button">DE</button>
+    <button class="lang-btn active" data-lang="sv" type="button"><span class="lang-flag">🇸🇪</span> SV</button>
+    <button class="lang-btn" data-lang="en" type="button"><span class="lang-flag">🇬🇧</span> EN</button>
+    <button class="lang-btn" data-lang="de" type="button"><span class="lang-flag">🇩🇪</span> DE</button>
   </div>
   <div id="loading-screen">
     <div class="spinner"></div>
@@ -314,7 +315,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           <div class="form-group"><label data-i18n="label_note">Övrigt (allergier, önskemål…)</label><textarea id="f-note" placeholder="Skriv gärna om ni har önskemål." data-i18n-ph="ph_note"></textarea></div>
         </div>
         <div class="gdpr-row">
-          <input type="checkbox" class="gdpr-cb" id="f-private-party">
+          <input type="checkbox" class="gdpr-cb" id="f-private-party" onchange="if(window.samUpdateSummary)window.samUpdateSummary()">
           <label class="gdpr-label" for="f-private-party" data-i18n-html="private_party_full">
             <strong>Slutet sällskap</strong> — vi bokar tiden enbart för vår grupp.
           </label>
@@ -383,6 +384,12 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   var SB_URL = 'https://zyokiwrzxpgtrsnfymke.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5b2tpd3J6eHBndHJzbmZ5bWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0OTcxMDYsImV4cCI6MjA5MTA3MzEwNn0.4TvagfYOOamslTS7G3LWGViTSYLn9cj3iVv_jH2e4pA';
   var LAT = 56.47739536235032, LNG = 14.690764677283862;
+
+  // Slutet sällskap: 150 kr extra avgift för exklusiv bokning. Tillåter
+  // även bokning av 1 person (annars min_persons från services-tabellen).
+  // Skapa produkten i Abicart och fyll i artikel-UID:t här.
+  var PRIVATE_PARTY_PRICE = 150;
+  var PRIVATE_PARTY_ARTICLE_ID = ''; // TODO: fyll i artikel-UID från Abicart
 
   var SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
@@ -454,6 +461,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       extra_meet_hours: '🕐 Varje dag i juli & aug, kl. 10–12',
       reset_btn: 'Gör en ny bokning',
       err_min_persons: 'Minst {n} personer totalt krävs (vuxna + barn).',
+      err_min_persons_private: 'Minst {n} personer krävs — eller bocka i "Slutet sällskap" (+{fee} kr) för att boka som ensam person.',
+      private_party_fee: 'Slutet sällskap (+{fee} kr)',
       err_load_widget: 'Kunde inte ladda bokningssystemet',
       err_no_service: 'Tjänst saknas i databasen',
       err_no_article: 'Artikel-UID saknas',
@@ -570,6 +579,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       extra_meet_hours: '🕐 Every day in July & August, 10:00–12:00',
       reset_btn: 'Make another booking',
       err_min_persons: 'At least {n} people in total are required (adults + children).',
+      err_min_persons_private: 'At least {n} people required — or check "Private booking" (+{fee} kr) to book as a solo guest.',
+      private_party_fee: 'Private booking (+{fee} kr)',
       err_load_widget: 'Could not load the booking system',
       err_no_service: 'Service missing in database',
       err_no_article: 'Article UID missing',
@@ -686,6 +697,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       extra_meet_hours: '🕐 Jeden Tag im Juli & August, 10:00–12:00',
       reset_btn: 'Neue Buchung erstellen',
       err_min_persons: 'Mindestens {n} Personen insgesamt erforderlich (Erwachsene + Kinder).',
+      err_min_persons_private: 'Mindestens {n} Personen erforderlich — oder wählen Sie "Geschlossene Gesellschaft" (+{fee} kr) für eine Einzelbuchung.',
+      private_party_fee: 'Geschlossene Gesellschaft (+{fee} kr)',
       err_load_widget: 'Buchungssystem konnte nicht geladen werden',
       err_no_service: 'Leistung fehlt in der Datenbank',
       err_no_article: 'Artikel-UID fehlt',
@@ -1095,14 +1108,17 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   function updateSummary() {
     if (!state.service) return;
     var s = state.service;
-    var total = s.price * state.adults + (s.price_child || 0) * state.children;
+    var pp = $('f-private-party') ? $('f-private-party').checked : false;
+    var total = s.price * state.adults + (s.price_child || 0) * state.children + (pp ? PRIVATE_PARTY_PRICE : 0);
     $('sum-tour').textContent = s.name;
     $('sum-price').textContent = total > 0 ? formatSEK(total) : '';
     if (state.selectedDate && state.selectedTime) {
       var guests = t('guests_adults', { n: state.adults });
       if (state.children) guests += ', ' + t('guests_children', { n: state.children });
       if (state.childrenFree) guests += ', ' + t('guests_babies', { n: state.childrenFree });
-      $('sum-meta').textContent = state.selectedDateLabel + ' · ' + t('kl') + ' ' + state.selectedTime + ' · ' + guests;
+      var meta = state.selectedDateLabel + ' · ' + t('kl') + ' ' + state.selectedTime + ' · ' + guests;
+      if (pp) meta += ' · ' + t('private_party_fee', { fee: PRIVATE_PARTY_PRICE });
+      $('sum-meta').textContent = meta;
     } else if (state.selectedDate) {
       $('sum-meta').textContent = state.selectedDateLabel + ' · ' + t('summary_pick_time');
     } else {
@@ -1132,8 +1148,10 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     if (!email || email.indexOf('@') === -1) { markErr('f-email'); ok = false; }
     if (!ok) return;
     var totalGuests = state.adults + state.children;
-    if (state.service.min_persons && totalGuests < state.service.min_persons) {
-      alert(t('err_min_persons', { n: state.service.min_persons }));
+    var privateParty = $('f-private-party') ? $('f-private-party').checked : false;
+    var minNeeded = state.service.min_persons || 1;
+    if (totalGuests < minNeeded && !privateParty) {
+      alert(t('err_min_persons_private', { n: minNeeded, fee: PRIVATE_PARTY_PRICE }));
       return;
     }
     var btn = $('cta-btn');
@@ -1142,9 +1160,8 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
     // botten av formuläret medan vi laddar kassan.
     requestScrollIntoView();
     try {
-      var totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children;
+      var totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children + (privateParty ? PRIVATE_PARTY_PRICE : 0);
       var newsletter = $('f-newsletter') ? $('f-newsletter').checked : false;
-      var privateParty = $('f-private-party') ? $('f-private-party').checked : false;
       var specialNeeds = ($('f-special-needs-cb') && $('f-special-needs-cb').checked) ? (val('f-special-needs') || null) : null;
 
       // 1. Spara bokning i Supabase (status: pending_payment)
@@ -1200,6 +1217,17 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           [orderUid, svcData.abicart_article_id_child, { quantity: state.children }, ['uid']],
           sessionToken
         );
+      }
+
+      // 5a. Lägg till slutet sällskap-avgift om kunden bockat i den
+      if (privateParty && PRIVATE_PARTY_ARTICLE_ID) {
+        await abCall(
+          'Order.addArticle',
+          [orderUid, PRIVATE_PARTY_ARTICLE_ID, { quantity: 1 }, ['uid']],
+          sessionToken
+        );
+      } else if (privateParty && !PRIVATE_PARTY_ARTICLE_ID) {
+        console.warn('Slutet sällskap ibockad men PRIVATE_PARTY_ARTICLE_ID inte satt — avgiften läggs INTE i Abicart-ordern.');
       }
 
       // 5b. Skicka bokningsdetaljer till Abicart-ordern så de följer med i
@@ -1477,6 +1505,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
   window.samGoBack = goBack;
   window.samResetWidget = resetWidget;
   window.samToggleRules = toggleRules;
+  window.samUpdateSummary = updateSummary;
 
   // ── KÖRNING ────────────────────────────────────────
   init();
