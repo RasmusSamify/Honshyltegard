@@ -223,6 +223,28 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, booking: rows[0] || null });
     }
 
+    if (action === 'setNewsletterConsent') {
+      const email = String(body.email || '').trim();
+      const consent = body.consent !== false; // default true
+      if (!email) return json({ ok: false, error: 'email required' }, 400);
+      // ilike utan wildcards = case-insensitive exact match. Uppdaterar
+      // ALLA bokningar med denna e-post så kunden är garanterat
+      // avregistrerad oavsett hur många bokningar de har.
+      const r = await fetch(`${SB_URL}/rest/v1/bookings?email=ilike.${encodeURIComponent(email)}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SB_SERVICE_KEY,
+          Authorization: `Bearer ${SB_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ newsletter_consent: consent }),
+      });
+      if (!r.ok) return json({ ok: false, error: await r.text() }, r.status);
+      const rows = await r.json();
+      return json({ ok: true, updated: rows.length });
+    }
+
     if (action === 'setConfirmationSent') {
       const id = Number(body.id);
       const sent = body.sent !== false; // default true

@@ -251,6 +251,16 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 .email-gen-status svg { width: 12px; height: 12px; }
 .confirm-check-wrap { display: inline-flex; align-items: center; vertical-align: middle; margin-left: 4px; }
 .confirm-check { width: 12px; height: 12px; color: var(--green); }
+.subscriber-list { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-lt); max-height: 360px; overflow-y: auto; }
+.subscriber-list:empty { display: none; }
+.subscriber-row { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--border-lt); font-size: 13px; }
+.subscriber-row:last-child { border-bottom: none; }
+.subscriber-info { flex: 1; min-width: 0; }
+.subscriber-name { color: var(--text); font-weight: 500; }
+.subscriber-email { color: var(--text-muted); font-size: 12px; word-break: break-all; }
+.subscriber-unsubscribe { background: none; border: 1px solid var(--border-lt); color: var(--text-muted); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+.subscriber-unsubscribe:hover { background: var(--error); color: #fff; border-color: var(--error); }
+.subscriber-unsubscribe:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── SLOTS ──────────────────────────────────────────────── */
 .slot-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 20px; }
@@ -677,6 +687,7 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
             <button class="btn btn-secondary" id="newsletter-csv" type="button">Exportera CSV</button>
           </div>
         </div>
+        <div class="subscriber-list" id="subscriber-list"></div>
       </div>
       <div class="settings-card">
         <h3>Säkerhet</h3>
@@ -910,8 +921,39 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 
   function renderNewsletter(){
     const subs = uniqueSubscribers();
-    const el = $('#newsletter-count');
-    if (el) el.textContent = `${subs.length} ${subs.length === 1 ? 'prenumerant' : 'prenumeranter'}`;
+    const countEl = $('#newsletter-count');
+    if (countEl) countEl.textContent = `${subs.length} ${subs.length === 1 ? 'prenumerant' : 'prenumeranter'}`;
+    const listEl = $('#subscriber-list');
+    if (!listEl) return;
+    if (!subs.length) { listEl.innerHTML = ''; return; }
+    listEl.innerHTML = subs
+      .sort((a,b) => (a.first_name + a.last_name).localeCompare(b.first_name + b.last_name, 'sv'))
+      .map(s => `<div class="subscriber-row" data-email="${esc(s.email.toLowerCase())}">
+        <div class="subscriber-info">
+          <div class="subscriber-name">${esc(s.first_name)} ${esc(s.last_name)}</div>
+          <div class="subscriber-email">${esc(s.email)}</div>
+        </div>
+        <button class="subscriber-unsubscribe" type="button" title="Avregistrera från nyhetsbrev">Avregistrera</button>
+      </div>`).join('');
+    listEl.querySelectorAll('.subscriber-row').forEach(row => {
+      const btn = row.querySelector('.subscriber-unsubscribe');
+      btn.addEventListener('click', async () => {
+        const email = row.dataset.email;
+        const display = row.querySelector('.subscriber-name').textContent;
+        if (!confirm(`Avregistrera ${display} (${email}) från nyhetsbrevet?\n\nDetta sätter newsletter_consent=false på alla bokningar för denna e-post.`)) return;
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          await adminCall({ action: 'setNewsletterConsent', email, consent: false });
+          // Uppdatera lokalt cache så listan uppdateras direkt
+          allBookings.forEach(b => { if (b.email && b.email.toLowerCase() === email) b.newsletter_consent = false; });
+          renderNewsletter();
+          toast(`${display} avregistrerad`, 'success');
+        } catch(e) {
+          btn.disabled = false; btn.textContent = 'Avregistrera';
+          toast('Fel: ' + e.message, 'error');
+        }
+      });
+    });
   }
 
   $('#newsletter-copy')?.addEventListener('click', async () => {
