@@ -189,6 +189,14 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
 #sam-widget-root .gdpr-label a{color:var(--green);text-decoration:none}
 #sam-widget-root .gdpr-label a:hover{text-decoration:underline}
 
+/* Trust badge — Länsstyrelsens godkännande */
+#sam-widget-root .trust-badge{display:flex;align-items:flex-start;gap:14px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;animation:sam-fadeUp 0.5s 0.07s ease both}
+#sam-widget-root .trust-icon{width:28px;height:28px;color:var(--green);flex-shrink:0;margin-top:2px}
+#sam-widget-root .trust-body{flex:1;min-width:0}
+#sam-widget-root .trust-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--brown);line-height:1.3;margin-bottom:4px}
+#sam-widget-root .trust-text{font-size:12px;color:var(--muted);line-height:1.65}
+#sam-widget-root .trust-meta{margin-top:6px;font-size:11px;color:var(--green-mid);letter-spacing:0.04em;text-transform:uppercase;font-weight:500}
+
 /* Language switcher */
 #sam-widget-root .lang-switch{position:absolute;top:20px;right:20px;display:flex;gap:2px;z-index:10;background:rgba(253,250,244,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:100px;padding:3px}
 #sam-widget-root .lang-btn{background:none;border:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;padding:5px 11px;border-radius:100px;cursor:pointer;color:var(--muted);transition:all 0.18s;display:inline-flex;align-items:center;gap:5px}
@@ -232,6 +240,19 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         <p data-i18n="intro4">Vi börjar med att presentera de alpackor som kommer vara med på promenaden och ger er lite information och intressant fakta om alpackor. Vi går sedan en tur i den småländska naturen. Efteråt besöker vi hagen där stona och årets söta föl går.</p>
         <div class="intro-highlight" data-i18n="intro_highlight">🧥 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.</div>
         <p class="intro-cta" data-i18n="intro_cta">👇 Välj upplevelse och boka direkt nedan</p>
+      </div>
+
+      <!-- Trust badge — officiellt godkännande från Länsstyrelsen -->
+      <div class="trust-badge">
+        <svg class="trust-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L3 7v6c0 5 3.5 9 9 10 5.5-1 9-5 9-10V7l-9-5z"/>
+          <polyline points="9 12 11 14 15 10"/>
+        </svg>
+        <div class="trust-body">
+          <div class="trust-title" data-i18n="trust_title">Godkänd djuranläggning</div>
+          <div class="trust-text" data-i18n="trust_text">Verksamheten är godkänd av Länsstyrelsen Kronoberg för offentlig förevisning av djur. Ansvarig föreståndare: Helena Larsson. Ansvarig veterinär: Distriktsveterinärerna i Kristianstad.</div>
+          <div class="trust-meta" data-i18n="trust_meta">Diarienummer 2398-2024 · Länsstyrelsen Kronoberg</div>
+        </div>
       </div>
 
       <!-- Rules -->
@@ -406,6 +427,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       intro4: 'Vi börjar med att presentera de alpackor som kommer vara med på promenaden och ger er lite information och intressant fakta om alpackor. Vi går sedan en tur i den småländska naturen. Efteråt besöker vi hagen där stona och årets söta föl går.',
       intro_highlight: '🧥 Klä dig efter väder! Vid åska och extremt varmt eller dåligt väder ställs alpackapromenaden in.',
       intro_cta: '👇 Välj upplevelse och boka direkt nedan',
+      trust_title: 'Godkänd djuranläggning',
+      trust_text: 'Verksamheten är godkänd av Länsstyrelsen Kronoberg för offentlig förevisning av djur. Ansvarig föreståndare: Helena Larsson. Ansvarig veterinär: Distriktsveterinärerna i Kristianstad.',
+      trust_meta: 'Diarienummer 2398-2024 · Länsstyrelsen Kronoberg',
       rules_title: 'Läs reglerna innan du bokar',
       rule1: 'Det är inte tillåtet att ta med andra djur under promenaden.',
       rule2: 'Mobiltelefoner ska vara på ljudlöst.',
@@ -536,6 +560,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       intro4: 'We start by introducing the alpacas joining the walk and share some interesting facts about them. Then we head out into the Småland countryside. Afterwards we visit the paddock with the mares and this year\'s cute foals.',
       intro_highlight: '🧥 Dress for the weather! In case of thunderstorms, extreme heat or bad weather, the alpaca walk is cancelled.',
       intro_cta: '👇 Choose your experience and book directly below',
+      trust_title: 'Officially approved animal facility',
+      trust_text: 'Approved by Länsstyrelsen Kronoberg (Swedish County Authority) for public viewing of animals. Responsible operator: Helena Larsson. Veterinarian on call: Distriktsveterinärerna i Kristianstad.',
+      trust_meta: 'Case no. 2398-2024 · Länsstyrelsen Kronoberg',
       rules_title: 'Read the rules before booking',
       rule1: 'Other animals are not allowed during the walk.',
       rule2: 'Mobile phones must be on silent.',
@@ -666,6 +693,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       intro4: 'Wir beginnen damit, die Alpakas vorzustellen, die uns auf dem Spaziergang begleiten, und teilen einige interessante Informationen über sie. Anschließend gehen wir in die småländische Natur. Danach besuchen wir die Koppel mit den Stuten und den süßen diesjährigen Fohlen.',
       intro_highlight: '🧥 Ziehen Sie sich dem Wetter entsprechend an! Bei Gewitter, extremer Hitze oder schlechtem Wetter wird der Alpakaspaziergang abgesagt.',
       intro_cta: '👇 Wählen Sie Ihr Erlebnis und buchen Sie direkt unten',
+      trust_title: 'Offiziell genehmigte Tierhaltung',
+      trust_text: 'Vom Länsstyrelsen Kronoberg (schwedische Regionalbehörde) für die öffentliche Vorführung von Tieren genehmigt. Verantwortliche Betreiberin: Helena Larsson. Verantwortliche Tierarztpraxis: Distriktsveterinärerna i Kristianstad.',
+      trust_meta: 'Aktenzeichen 2398-2024 · Länsstyrelsen Kronoberg',
       rules_title: 'Lesen Sie die Regeln vor der Buchung',
       rule1: 'Andere Tiere dürfen während des Spaziergangs nicht mitgebracht werden.',
       rule2: 'Mobiltelefone müssen auf lautlos gestellt sein.',
