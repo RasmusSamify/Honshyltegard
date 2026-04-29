@@ -1073,12 +1073,14 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
       .sort((a,b) => (a.time_slots.slot_date + a.time_slots.slot_time).localeCompare(b.time_slots.slot_date + b.time_slots.slot_time))
       .slice(0, 10);
     if (!upcoming.length) { el.innerHTML = '<div class="empty">Inga kommande bokningar</div>'; return; }
+    const checkIcon = '<svg class="confirm-check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     el.innerHTML = '<div class="list">' + upcoming.map(b => {
       const slot = parseSlot(b);
+      const sent = !!b.confirmation_sent_at;
       return `<div class="list-item" onclick="window.__openBooking(${b.id})">
         <div class="list-avatar">${initials(b.first_name, b.last_name)}</div>
         <div class="list-info">
-          <div class="list-name">${esc(b.first_name)} ${esc(b.last_name)}</div>
+          <div class="list-name">${esc(b.first_name)} ${esc(b.last_name)}${sent ? ' <span title="Bekräftelsemejl skickat" class="confirm-check-wrap">' + checkIcon + '</span>' : ''}</div>
           <div class="list-meta">${esc(b.services?.name || '—')} · ${(b.adults||0)+(b.children||0)} pers.</div>
         </div>
         <div class="list-right">
