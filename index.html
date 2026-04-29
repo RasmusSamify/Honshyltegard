@@ -526,7 +526,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           { icon: '💰', text: 'Vuxen/Ungdom 12+: 295 kr · Barn 5–12 år: 195 kr' },
           { icon: '👥', text: 'Minst 2 personer per bokning' },
           { icon: '👶', text: '1 barn kräver 1 vuxet sällskap' },
-          { icon: '🦙', text: 'Välj antal alpackor – max 1 per person, valfritt' },
+          { icon: '🦙', text: '1 alpacka per vuxen ingår – frivilligt att leda en' },
           { icon: '⏱', text: 'Ca 60 minuter i naturen' }
         ],
         'Visning av alpacka': [
@@ -659,7 +659,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           { icon: '💰', text: 'Adult/Youth 12+: 295 kr · Children 5–12 yrs: 195 kr' },
           { icon: '👥', text: 'Minimum 2 people per booking' },
           { icon: '👶', text: '1 child requires 1 accompanying adult' },
-          { icon: '🦙', text: 'Choose number of alpacas — max 1 per person, optional' },
+          { icon: '🦙', text: '1 alpaca per adult included – leading is optional' },
           { icon: '⏱', text: 'About 60 minutes in nature' }
         ],
         'Visning av alpacka': [
@@ -792,7 +792,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           { icon: '💰', text: 'Erwachsene/Jugendliche 12+: 295 kr · Kinder 5–12 J.: 195 kr' },
           { icon: '👥', text: 'Mindestens 2 Personen pro Buchung' },
           { icon: '👶', text: '1 Kind benötigt 1 erwachsenen Begleiter' },
-          { icon: '🦙', text: 'Anzahl der Alpakas wählen — max. 1 pro Person, optional' },
+          { icon: '🦙', text: '1 Alpaka pro Erwachsenen inklusive – Führen ist optional' },
           { icon: '⏱', text: 'Ca. 60 Minuten in der Natur' }
         ],
         'Visning av alpacka': [
@@ -1147,21 +1147,10 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         function(){ changeG('childrenFree', -1); }, function(){ changeG('childrenFree', 1); }, state.childrenFree
       ));
     }
-    var alpacaSection = $('alpaca-section');
-    if (s.alpaca_booking) {
-      var maxA = state.adults + state.children;
-      var alpacaContainer = $('alpaca-rows');
-      alpacaContainer.innerHTML = '';
-      var alpacaRow = makeGuestRow(
-        t('form_alpacas'), t('alpaca_max', { n: maxA }), 'cnt-alpacas',
-        function(){ changeG('alpacas', -1); }, function(){ changeG('alpacas', 1); }, state.alpacas
-      );
-      alpacaRow.querySelector('.guest-lbl p').id = 'alpaca-max-lbl';
-      alpacaContainer.appendChild(alpacaRow);
-      alpacaSection.style.display = 'block';
-    } else {
-      alpacaSection.style.display = 'none';
-    }
+    // Alpacka-pickern är borttagen — alpaca-antalet sätts automatiskt
+    // till antalet vuxna vid bokning (1 alpacka per vuxen, barn går med
+    // vuxen). Sektionen är alltid dold i formuläret nu.
+    $('alpaca-section').style.display = 'none';
   }
   function changeG(type, delta) {
     var s = state.service;
@@ -1245,6 +1234,9 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       var totalPrice = state.service.price * state.adults + (state.service.price_child || 0) * state.children + (privateParty ? PRIVATE_PARTY_PRICE : 0);
       var newsletter = $('f-newsletter') ? $('f-newsletter').checked : false;
       var specialNeeds = ($('f-special-needs-cb') && $('f-special-needs-cb').checked) ? (val('f-special-needs') || null) : null;
+      // 1 alpacka per vuxen för tjänster med alpaca_booking — barn delar
+      // alpacka med vuxen. Auto-räknat så kunden slipper picker.
+      var alpacasCount = state.service.alpaca_booking ? state.adults : 0;
 
       // 1. Spara bokning i Supabase (status: pending_payment)
       var bookingRows = await sbPost('bookings', {
@@ -1254,7 +1246,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         phone: val('f-phone') || null,
         adults: state.adults,
         children: state.children + state.childrenFree,
-        alpacas: state.alpacas,
+        alpacas: alpacasCount,
         note: val('f-note') || null,
         status: 'pending_payment',
         payment_status: 'pending',
@@ -1323,7 +1315,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
           + (state.children ? ', ' + state.children + ' barn' : '')
           + (state.childrenFree ? ', ' + state.childrenFree + ' spädbarn' : '')
       ];
-      if (state.alpacas) detailsLines.push('Alpackor: ' + state.alpacas + ' st');
+      if (alpacasCount) detailsLines.push('Alpackor: ' + alpacasCount + ' st');
       if (privateParty) detailsLines.push('Slutet sällskap');
       if (specialNeeds) detailsLines.push('Särskilda behov: ' + specialNeeds);
       else if ($('f-special-needs-cb') && $('f-special-needs-cb').checked) detailsLines.push('Särskilda behov (ej beskrivet)');
