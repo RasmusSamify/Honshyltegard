@@ -262,6 +262,63 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
 .subscriber-unsubscribe:hover { background: var(--error); color: #fff; border-color: var(--error); }
 .subscriber-unsubscribe:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── MODAL (Ny manuell bokning) ─────────────────────────── */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(34,26,15,0.4); backdrop-filter: blur(3px); z-index: 90; display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+.modal-backdrop.open { display: flex; }
+.modal { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-width: 580px; width: 100%; display: flex; flex-direction: column; animation: modalIn 0.2s ease; max-height: calc(100vh - 80px); }
+@keyframes modalIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-lt); display: flex; align-items: center; gap: 12px; }
+.modal-title { flex: 1; font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--brown); line-height: 1.1; }
+.modal-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.modal-actions { padding: 14px 24px; border-top: 1px solid var(--border-lt); display: flex; gap: 8px; justify-content: flex-end; background: var(--surface-2); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+
+.mb-section { margin-bottom: 18px; }
+.mb-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+
+.mb-tabs { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border-lt); border-radius: 10px; padding: 3px; margin-bottom: 12px; }
+.mb-tab { font-size: 12px; font-weight: 500; padding: 7px 14px; border-radius: 8px; color: var(--text-muted); transition: all 0.15s; cursor: pointer; }
+.mb-tab:hover { color: var(--text); }
+.mb-tab.active { background: var(--surface); color: var(--green); box-shadow: var(--shadow-sm); }
+
+.mb-mode-panel { display: none; }
+.mb-mode-panel.active { display: block; }
+
+.mb-cal-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 10px; }
+.mb-cal-month { font-size: 13px; font-weight: 600; color: var(--brown); font-family: 'Cormorant Garamond', serif; font-size: 17px; }
+.mb-cal-nav { display: flex; gap: 4px; }
+.mb-cal-nav button { padding: 5px 8px; border-radius: 6px; color: var(--text-muted); transition: all 0.15s; }
+.mb-cal-nav button:hover { background: var(--surface-3); color: var(--text); }
+
+.hour-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
+.hour-pill { padding: 9px 0; text-align: center; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 13px; font-weight: 500; color: var(--text); transition: all 0.15s; cursor: pointer; user-select: none; font-variant-numeric: tabular-nums; }
+.hour-pill:hover:not(.disabled) { border-color: var(--green-lt); }
+.hour-pill.active { background: var(--green); color: #fff; border-color: var(--green); }
+.hour-pill.has-slot { border-color: var(--green-lt); background: var(--green-xs); color: var(--green); }
+.hour-pill.has-slot.active { background: var(--green); color: #fff; }
+.hour-pill.disabled { opacity: 0.4; cursor: not-allowed; }
+
+.mb-hour-hint { font-size: 11px; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mb-hour-hint .swatch { display: inline-flex; align-items: center; gap: 5px; }
+.mb-hour-hint .swatch::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid var(--green-lt); background: var(--green-xs); }
+.mb-hour-hint .swatch.dot::before { background: var(--surface-2); border-color: var(--border); }
+
+.mb-slot-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); outline: none; }
+
+.mb-checkbox { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border-lt); border-radius: 10px; cursor: pointer; }
+.mb-checkbox input { margin-top: 2px; accent-color: var(--green); width: 16px; height: 16px; }
+.mb-checkbox-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.mb-checkbox-text small { display: block; color: var(--text-muted); margin-top: 2px; font-size: 11px; }
+
+.mb-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mb-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+@media (max-width: 540px) { .mb-grid-3 { grid-template-columns: 1fr 1fr; } }
+
+.mb-time-summary { font-size: 12px; color: var(--green); background: var(--green-xs); border: 1px solid var(--green-lt); border-radius: 8px; padding: 8px 12px; margin-top: 10px; display: none; }
+.mb-time-summary.show { display: block; }
+
+/* Source badge i bokningstabellen */
+.source-badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 100px; background: var(--brown-lt); color: #fff; margin-left: 6px; text-transform: uppercase; vertical-align: 1px; }
+
 /* ── SLOTS ──────────────────────────────────────────────── */
 .slot-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 20px; }
 .slot-template-row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed var(--border-lt); }
@@ -512,6 +569,10 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
           <div class="view-subtitle" id="bookings-subtitle">—</div>
         </div>
         <div class="view-actions">
+          <button class="btn btn-primary" id="new-booking-btn">
+            <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Lägg till bokning
+          </button>
           <button class="btn btn-secondary" id="sync-payments-btn">
             <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/><polyline points="21 3 21 9 15 9"/></svg>
             Synka betalningar
@@ -528,6 +589,7 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         <button class="filter-pill" data-filter="pending_payment">Väntar betalning</button>
         <button class="filter-pill" data-filter="cancelled">Avbokade</button>
         <button class="filter-pill" data-filter="completed">Genomförda</button>
+        <button class="filter-pill" data-filter="__manual">Manuella</button>
       </div>
       <div class="table-wrap">
         <table class="data" id="bookings-table">
@@ -721,6 +783,108 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
   <div class="drawer-body" id="drawer-body"></div>
   <div class="drawer-actions" id="drawer-actions"></div>
 </aside>
+
+<!-- ─── MODAL: Lägg till bokning ────────────────────────── -->
+<div class="modal-backdrop" id="mb-backdrop">
+  <div class="modal" id="mb-modal">
+    <div class="modal-header">
+      <div class="modal-title">Ny bokning</div>
+      <button class="btn btn-ghost btn-icon" id="mb-close" type="button" aria-label="Stäng">
+        <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-section">
+        <div class="mb-section-title">Tjänst</div>
+        <select id="mb-service" class="mb-slot-select"></select>
+      </div>
+
+      <div class="mb-section">
+        <div class="mb-section-title">Tid</div>
+        <div class="mb-tabs" role="tablist">
+          <button type="button" class="mb-tab active" data-mode="custom">Egen tid</button>
+          <button type="button" class="mb-tab" data-mode="existing">Befintlig tidslucka</button>
+        </div>
+
+        <div class="mb-mode-panel active" id="mb-panel-custom">
+          <div class="mb-cal-header">
+            <button type="button" class="btn btn-ghost btn-icon" id="mb-cal-prev" aria-label="Föregående månad">
+              <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="mb-cal-month" id="mb-cal-month">—</div>
+            <button type="button" class="btn btn-ghost btn-icon" id="mb-cal-next" aria-label="Nästa månad">
+              <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <div id="mb-calendar" class="slot-calendar"></div>
+
+          <div style="margin-top:14px">
+            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Tid på dagen</label>
+            <div id="mb-hour-grid" class="hour-grid"></div>
+            <div class="mb-hour-hint">
+              <span class="swatch dot">Ledig timme</span>
+              <span class="swatch">Har redan tidslucka</span>
+            </div>
+            <div class="mb-time-summary" id="mb-time-summary"></div>
+          </div>
+        </div>
+
+        <div class="mb-mode-panel" id="mb-panel-existing">
+          <select id="mb-existing-slot" class="mb-slot-select">
+            <option value="">— Välj en framtida tid —</option>
+          </select>
+          <div class="mb-hour-hint" style="margin-top:8px">Endast tider med lediga platser (eller där hela tiden blockeras) visas.</div>
+        </div>
+      </div>
+
+      <div class="mb-section">
+        <div class="mb-section-title">Kund</div>
+        <div class="mb-grid-2">
+          <div class="form-field"><label>Förnamn *</label><input type="text" id="mb-first-name" required></div>
+          <div class="form-field"><label>Efternamn</label><input type="text" id="mb-last-name"></div>
+          <div class="form-field"><label>E-post</label><input type="email" id="mb-email" placeholder="valfri"></div>
+          <div class="form-field"><label>Telefon</label><input type="tel" id="mb-phone" placeholder="valfri"></div>
+        </div>
+      </div>
+
+      <div class="mb-section">
+        <div class="mb-section-title">Personer</div>
+        <div class="mb-grid-3">
+          <div class="form-field"><label>Vuxna</label><input type="number" id="mb-adults" min="0" value="2"></div>
+          <div class="form-field"><label>Barn</label><input type="number" id="mb-children" min="0" value="0"></div>
+          <div class="form-field" id="mb-alpacas-wrap"><label>Alpackor</label><input type="number" id="mb-alpacas" min="0" value="0"></div>
+        </div>
+      </div>
+
+      <div class="mb-section">
+        <div class="mb-section-title">
+          Pris
+          <button type="button" id="mb-recalc-price" style="font-size:11px;color:var(--green);background:none;cursor:pointer;font-weight:500;text-transform:none;letter-spacing:0;padding:0">Räkna om från tjänsten</button>
+        </div>
+        <div class="form-field"><input type="number" id="mb-price" min="0" step="1"></div>
+      </div>
+
+      <div class="mb-section">
+        <div class="mb-section-title">Notis</div>
+        <textarea id="mb-note" rows="2" placeholder="Internt — visas inte för kunden" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);outline:none;resize:vertical;font-family:inherit;font-size:14px"></textarea>
+      </div>
+
+      <div class="mb-section">
+        <label class="mb-checkbox">
+          <input type="checkbox" id="mb-block">
+          <div class="mb-checkbox-text">
+            Blockera tiden — ingen annan kan boka samma slot online
+            <small>Markerar bokningen som "slutet sällskap" och fyller tidsluckan. Lämna ifrån om du vill att fler kan boka samma tid.</small>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="mb-cancel" type="button">Avbryt</button>
+      <button class="btn btn-primary" id="mb-submit" type="button">Spara bokning</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -1349,7 +1513,8 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
   function renderBookings(){
     const body = $('#bookings-body');
     let rows = allBookings.slice();
-    if (bookingFilter !== 'all') rows = rows.filter(b => b.status === bookingFilter);
+    if (bookingFilter === '__manual') rows = rows.filter(b => b.source === 'manual');
+    else if (bookingFilter !== 'all') rows = rows.filter(b => b.status === bookingFilter);
     if (bookingSearch) {
       const q = bookingSearch.toLowerCase();
       rows = rows.filter(b =>
@@ -1367,9 +1532,10 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
       const slot = parseSlot(b);
       const sent = !!b.confirmation_sent_at;
       const idCell = `<div class="td-main">#${b.id}${sent ? ' <span title="Bekräftelsemejl skickat" class="confirm-check-wrap">' + checkIcon + '</span>' : ''}</div><div class="td-sub">${fmtDate(b.created_at)}</div>`;
+      const manualBadge = b.source === 'manual' ? '<span class="source-badge">Manuell</span>' : '';
       return `<tr onclick="window.__openBooking(${b.id})">
         <td>${idCell}</td>
-        <td><div class="td-main">${esc(b.first_name)} ${esc(b.last_name)}</div><div class="td-sub">${esc(b.email)}</div></td>
+        <td><div class="td-main">${esc(b.first_name)} ${esc(b.last_name)}${manualBadge}</div><div class="td-sub">${esc(b.email) || (b.phone ? esc(b.phone) : '—')}</div></td>
         <td><div class="td-main">${esc(b.services?.name || '—')}</div></td>
         <td>${slot ? `<div class="td-main">${fmtDate(slot.date)}</div><div class="td-sub">kl. ${slot.time}</div>` : '<span class="td-sub">—</span>'}</td>
         <td><div class="td-main">${(b.adults||0)+(b.children||0)}</div><div class="td-sub">${b.adults||0}v · ${b.children||0}b</div></td>
@@ -1392,7 +1558,7 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
     const b = allBookings.find(x => x.id === id);
     if (!b) return;
     const slot = parseSlot(b);
-    $('#drawer-title').textContent = `Bokning #${b.id}`;
+    $('#drawer-title').innerHTML = `Bokning #${b.id}${b.source === 'manual' ? ' <span class="source-badge">Manuell</span>' : ''}`;
     $('#drawer-body').innerHTML = `
       <div class="drawer-section">
         <h4>Kund</h4>
@@ -1758,8 +1924,110 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
     }
     $('#slot-calendar').innerHTML = html;
     $$('#slot-calendar .sc-day:not(.empty)').forEach(el => {
-      el.addEventListener('click', () => { slotCalSelected = el.dataset.date; renderSlotCalendar(); renderSlotDay(); });
+      el.addEventListener('click', () => {
+        slotCalSelected = el.dataset.date;
+        // Synka "Från datum" + "Till datum" till den valda dagen, så
+        // huvudformuläret är redo att skapa tider på exakt den dagen.
+        const fromInput = $('#new-slot-from');
+        const toInput = $('#new-slot-to');
+        if (fromInput) fromInput.value = el.dataset.date;
+        if (toInput) toInput.value = el.dataset.date;
+        if (typeof updateSlotPreview === 'function') updateSlotPreview();
+        renderSlotCalendar();
+        renderSlotDay();
+      });
     });
+  }
+
+  // Tim-rutnät för snabb-skapa på vald dag. Bygger en lista av timmar 08-20
+  // (samt eventuella befintliga tider utanför intervallet) som klickbara
+  // pills. Befintliga slot-tider är markerade. Helena bockar i de timmar
+  // hon vill öppna upp för bokning, och får ett "Skapa markerade tider"-CTA.
+  let slotDayHoursPicked = new Set();
+
+  function renderSlotDayHourGrid(daySlots){
+    const hours = new Set();
+    for (let h = 8; h <= 20; h++) hours.add(String(h).padStart(2,'0') + ':00');
+    daySlots.forEach(s => hours.add(s.slot_time.substring(0,5)));
+    const sortedHours = [...hours].sort();
+    const existingHours = new Set(daySlots.map(s => s.slot_time.substring(0,5)));
+
+    // Rensa picks som hör till andra dagar
+    slotDayHoursPicked = new Set([...slotDayHoursPicked].filter(h => sortedHours.includes(h)));
+
+    const pills = sortedHours.map(hh => {
+      const exists = existingHours.has(hh);
+      const picked = slotDayHoursPicked.has(hh);
+      const classes = ['hour-pill'];
+      if (exists) classes.push('has-slot');
+      if (picked) classes.push('active');
+      const title = exists ? 'Redan en tidslucka — kan inte väljas igen' : 'Klicka för att skapa denna timme';
+      return `<button type="button" class="${classes.join(' ')}" data-hh="${hh}" ${exists ? 'disabled' : ''} title="${title}">${hh}</button>`;
+    }).join('');
+
+    const pickedCount = slotDayHoursPicked.size;
+    return `<div style="border:1px dashed var(--border-lt);border-radius:10px;padding:14px 14px 12px;margin-bottom:12px;background:var(--surface-2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)">Snabb-skapa tider</div>
+        <div class="mb-hour-hint" style="margin:0">
+          <span class="swatch">Finns redan</span>
+        </div>
+      </div>
+      <div class="hour-grid" id="slot-day-hour-grid">${pills}</div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="slot-day-quick-create" ${pickedCount === 0 ? 'disabled' : ''} style="padding:7px 14px;font-size:12px">Skapa ${pickedCount || ''} markerade tim${pickedCount === 1 ? 'me' : 'mar'}</button>
+        <div style="font-size:11px;color:var(--text-muted)">Använder vald tjänst & max-platser från formuläret ovan</div>
+      </div>
+    </div>`;
+  }
+
+  function wireSlotDayHourGrid(){
+    const grid = $('#slot-day-hour-grid');
+    if (grid) {
+      grid.querySelectorAll('.hour-pill:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const hh = btn.dataset.hh;
+          if (slotDayHoursPicked.has(hh)) slotDayHoursPicked.delete(hh);
+          else slotDayHoursPicked.add(hh);
+          renderSlotDay();
+        });
+      });
+    }
+    const createBtn = $('#slot-day-quick-create');
+    if (createBtn) createBtn.addEventListener('click', slotDayQuickCreate);
+  }
+
+  async function slotDayQuickCreate(){
+    if (!slotCalSelected || slotDayHoursPicked.size === 0) return;
+    const serviceId = Number($('#new-slot-service').value);
+    const maxSpots = Number($('#new-slot-max').value);
+    if (!serviceId) { toast('Välj tjänst i formuläret ovan', 'error'); return; }
+    if (!maxSpots || maxSpots < 1) { toast('Sätt max-platser i formuläret ovan', 'error'); return; }
+
+    const btn = $('#slot-day-quick-create');
+    btn.disabled = true;
+    btn.textContent = 'Skapar…';
+    try {
+      const times = [...slotDayHoursPicked].sort();
+      await adminCall({
+        action: 'createBulkSlots',
+        service_id: serviceId,
+        from: slotCalSelected,
+        to: slotCalSelected,
+        times,
+        max_spots: maxSpots,
+        weekdays: [new Date(slotCalSelected + 'T12:00:00').getDay()],
+      });
+      toast(`${times.length} tider skapade på ${fmtDate(slotCalSelected, true)}`, 'success');
+      slotDayHoursPicked.clear();
+      await loadSlots();
+      renderSlotCalendar();
+      renderSlotDay();
+    } catch (e) {
+      toast('Fel: ' + e.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Skapa markerade timmar';
+    }
   }
 
   function renderSlotDay(){
@@ -1767,7 +2035,15 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
     if (!slotCalSelected) { el.innerHTML = '<div class="empty">Välj ett datum i kalendern</div>'; return; }
     $('#slot-day-label').textContent = fmtDate(slotCalSelected, true);
     const daySlots = allSlots.filter(s => s.slot_date === slotCalSelected);
-    if (!daySlots.length) { el.innerHTML = '<div class="empty">Inga tider denna dag</div>'; return; }
+
+    // Always show the quick-create hour grid; existing slots list below
+    const hourGridHtml = renderSlotDayHourGrid(daySlots);
+
+    if (!daySlots.length) {
+      el.innerHTML = hourGridHtml + '<div class="empty" style="padding:20px 16px">Inga tider denna dag ännu</div>';
+      wireSlotDayHourGrid();
+      return;
+    }
 
     // Drop selections that no longer exist (e.g. after delete)
     const dayIds = new Set(daySlots.map(s => s.id));
@@ -1778,7 +2054,7 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
     const dayWeekday = new Date(slotCalSelected + 'T12:00:00').getDay();
     const dayName = DAYS_FULL[dayWeekday].toLowerCase();
 
-    el.innerHTML = `<div class="slot-day-toolbar">
+    el.innerHTML = hourGridHtml + `<div class="slot-day-toolbar">
       <label class="slot-select-all">
         <input type="checkbox" id="slot-day-select-all" ${allSelectableMarked ? 'checked' : ''} ${selectableSlots.length === 0 ? 'disabled' : ''}>
         Markera alla utan bokningar
@@ -1804,6 +2080,8 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
         </button>
       </div>`;
     }).join('');
+
+    wireSlotDayHourGrid();
 
     el.querySelectorAll('.slot-row-check').forEach(cb => cb.addEventListener('change', () => {
       const id = parseInt(cb.dataset.slotId, 10);
@@ -1926,6 +2204,271 @@ table.data tr:hover td { background: var(--surface-2); cursor: pointer; }
       btn.disabled = false;
     }
   });
+
+  // ── MANUELL BOKNING (modal) ────────────────────────────
+  // Helena lägger in bokningar som kommit utanför widgeten (telefon, mejl,
+  // walk-in). Stödjer både befintliga tidsluckor och egen tid; vid egen tid
+  // skapas en slot on-the-fly via admin Edge Function.
+  const mbState = {
+    mode: 'custom', // 'custom' | 'existing'
+    calDate: new Date(),
+    selectedDate: null, // YYYY-MM-DD
+    selectedTime: null, // HH:MM
+    priceManuallyEdited: false,
+  };
+
+  function mbOpen(){
+    // Reset state
+    mbState.mode = 'custom';
+    mbState.calDate = new Date();
+    mbState.selectedDate = null;
+    mbState.selectedTime = null;
+    mbState.priceManuallyEdited = false;
+
+    // Populera tjänster
+    const svcSel = $('#mb-service');
+    svcSel.innerHTML = services.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+
+    // Reset alla fält
+    $('#mb-first-name').value = '';
+    $('#mb-last-name').value = '';
+    $('#mb-email').value = '';
+    $('#mb-phone').value = '';
+    $('#mb-adults').value = '2';
+    $('#mb-children').value = '0';
+    $('#mb-alpacas').value = '0';
+    $('#mb-price').value = '';
+    $('#mb-note').value = '';
+    $('#mb-block').checked = false;
+    $('#mb-existing-slot').value = '';
+    $('#mb-time-summary').classList.remove('show');
+
+    mbSwitchMode('custom');
+    mbUpdateAlpacasVisibility();
+    mbAutoPrice();
+    mbRenderCalendar();
+    mbRenderHourGrid();
+    mbPopulateExistingSlots();
+
+    $('#mb-backdrop').classList.add('open');
+    setTimeout(() => $('#mb-first-name').focus(), 60);
+  }
+
+  function mbClose(){
+    $('#mb-backdrop').classList.remove('open');
+  }
+
+  function mbSwitchMode(mode){
+    mbState.mode = mode;
+    $$('.mb-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    $('#mb-panel-custom').classList.toggle('active', mode === 'custom');
+    $('#mb-panel-existing').classList.toggle('active', mode === 'existing');
+  }
+
+  function mbCurrentService(){
+    const id = Number($('#mb-service').value);
+    return services.find(s => s.id === id) || null;
+  }
+
+  function mbUpdateAlpacasVisibility(){
+    const svc = mbCurrentService();
+    // Alpackor reserveras bara för Alpackapromenad (servicen som har "promenad" i namnet)
+    const isWalk = svc && /promenad/i.test(svc.name);
+    $('#mb-alpacas-wrap').style.display = isWalk ? '' : 'none';
+    if (!isWalk) $('#mb-alpacas').value = '0';
+  }
+
+  function mbAutoPrice(){
+    if (mbState.priceManuallyEdited) return;
+    const svc = mbCurrentService();
+    if (!svc) return;
+    const adults = Number($('#mb-adults').value) || 0;
+    const children = Number($('#mb-children').value) || 0;
+    const total = adults * Number(svc.price || 0) + children * Number(svc.price_child || 0);
+    $('#mb-price').value = total;
+  }
+
+  function mbRenderCalendar(){
+    const y = mbState.calDate.getFullYear(), m = mbState.calDate.getMonth();
+    $('#mb-cal-month').textContent = MONTHS_FULL[m].charAt(0).toUpperCase() + MONTHS_FULL[m].slice(1) + ' ' + y;
+    const firstDay = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const offset = (firstDay + 6) % 7;
+    const today = new Date(); today.setHours(0,0,0,0);
+    let html = DAYS.map(d => `<div class="sc-label">${d}</div>`).join('');
+    for (let i = 0; i < offset; i++) html += '<div class="sc-day empty"></div>';
+    const svc = mbCurrentService();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isPast = new Date(y, m, d) < today;
+      const hasSlots = svc ? allSlots.some(s => s.slot_date === ds && s.service_id === svc.id) : false;
+      const selected = mbState.selectedDate === ds;
+      const classes = ['sc-day'];
+      if (isPast) classes.push('past');
+      if (hasSlots) classes.push('has-slots');
+      if (selected) classes.push('selected');
+      html += `<div class="${classes.join(' ')}" data-date="${ds}">${d}</div>`;
+    }
+    $('#mb-calendar').innerHTML = html;
+    $$('#mb-calendar .sc-day:not(.empty)').forEach(el => {
+      el.addEventListener('click', () => {
+        if (el.classList.contains('past')) return;
+        mbState.selectedDate = el.dataset.date;
+        mbState.selectedTime = null;
+        mbRenderCalendar();
+        mbRenderHourGrid();
+        mbUpdateTimeSummary();
+      });
+    });
+  }
+
+  function mbRenderHourGrid(){
+    const el = $('#mb-hour-grid');
+    if (!mbState.selectedDate) {
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:18px 0">Välj ett datum i kalendern ovan</div>';
+      return;
+    }
+    const svc = mbCurrentService();
+    const daySlots = svc ? allSlots.filter(s => s.slot_date === mbState.selectedDate && s.service_id === svc.id) : [];
+    const slotsByHour = new Map();
+    daySlots.forEach(s => { slotsByHour.set(s.slot_time.substring(0,5), s); });
+
+    // Visa timmar 08-20 + eventuella befintliga slot-tider utanför det intervallet
+    const hours = new Set();
+    for (let h = 8; h <= 20; h++) hours.add(String(h).padStart(2,'0') + ':00');
+    slotsByHour.forEach((_, k) => hours.add(k));
+    const sortedHours = [...hours].sort();
+
+    el.innerHTML = sortedHours.map(hh => {
+      const hasSlot = slotsByHour.has(hh);
+      const active = mbState.selectedTime === hh;
+      const classes = ['hour-pill'];
+      if (hasSlot) classes.push('has-slot');
+      if (active) classes.push('active');
+      return `<button type="button" class="${classes.join(' ')}" data-hh="${hh}">${hh}</button>`;
+    }).join('');
+
+    el.querySelectorAll('.hour-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        mbState.selectedTime = btn.dataset.hh;
+        mbRenderHourGrid();
+        mbUpdateTimeSummary();
+      });
+    });
+  }
+
+  function mbUpdateTimeSummary(){
+    const el = $('#mb-time-summary');
+    if (!mbState.selectedDate || !mbState.selectedTime) { el.classList.remove('show'); return; }
+    const svc = mbCurrentService();
+    const slot = svc ? allSlots.find(s => s.slot_date === mbState.selectedDate && s.service_id === svc.id && s.slot_time.substring(0,5) === mbState.selectedTime) : null;
+    const dateLabel = fmtDate(mbState.selectedDate, true);
+    if (slot) {
+      const free = (slot.max_spots || 0) - (slot.booked_spots || 0);
+      el.textContent = `${dateLabel} kl. ${mbState.selectedTime} · befintlig tidslucka (${free} av ${slot.max_spots} platser lediga)`;
+    } else {
+      el.textContent = `${dateLabel} kl. ${mbState.selectedTime} · ny tidslucka skapas`;
+    }
+    el.classList.add('show');
+  }
+
+  function mbPopulateExistingSlots(){
+    const svc = mbCurrentService();
+    const sel = $('#mb-existing-slot');
+    const today = isoDay(new Date());
+    const future = allSlots
+      .filter(s => s.slot_date >= today)
+      .filter(s => !svc || s.service_id === svc.id)
+      .sort((a, b) => a.slot_date.localeCompare(b.slot_date) || a.slot_time.localeCompare(b.slot_time));
+    sel.innerHTML = '<option value="">— Välj en framtida tid —</option>' + future.map(s => {
+      const free = (s.max_spots || 0) - (s.booked_spots || 0);
+      const label = `${fmtDate(s.slot_date, true)} kl. ${s.slot_time.substring(0,5)} · ${s.services?.name || ''} (${free}/${s.max_spots} lediga)`;
+      return `<option value="${s.id}">${label}</option>`;
+    }).join('');
+  }
+
+  async function mbSubmit(){
+    const svc = mbCurrentService();
+    if (!svc) { toast('Välj en tjänst', 'error'); return; }
+    const firstName = $('#mb-first-name').value.trim();
+    if (!firstName) { toast('Förnamn krävs', 'error'); $('#mb-first-name').focus(); return; }
+    const adults = Number($('#mb-adults').value) || 0;
+    const children = Number($('#mb-children').value) || 0;
+    if (adults + children < 1) { toast('Minst en person krävs', 'error'); return; }
+
+    const payload = {
+      action: 'createManualBooking',
+      service_id: svc.id,
+      first_name: firstName,
+      last_name: $('#mb-last-name').value.trim(),
+      email: $('#mb-email').value.trim(),
+      phone: $('#mb-phone').value.trim(),
+      adults,
+      children,
+      alpacas: Number($('#mb-alpacas').value) || 0,
+      total_price: $('#mb-price').value === '' ? null : Number($('#mb-price').value),
+      note: $('#mb-note').value.trim() || null,
+      private_party: $('#mb-block').checked,
+    };
+
+    if (mbState.mode === 'custom') {
+      if (!mbState.selectedDate || !mbState.selectedTime) {
+        toast('Välj datum och tid', 'error'); return;
+      }
+      payload.slot_date = mbState.selectedDate;
+      payload.slot_time = mbState.selectedTime + ':00';
+    } else {
+      const slotId = Number($('#mb-existing-slot').value);
+      if (!slotId) { toast('Välj en befintlig tid', 'error'); return; }
+      payload.slot_id = slotId;
+    }
+
+    const submitBtn = $('#mb-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sparar…';
+    try {
+      const res = await adminCall(payload);
+      if (!res?.booking) throw new Error('Inget svar från servern');
+      toast('Bokning skapad', 'success');
+      mbClose();
+      await Promise.all([loadBookings(), loadSlots()]);
+      renderBookings();
+      renderOverview();
+      renderSlotCalendar();
+      renderSlotDay();
+    } catch (e) {
+      toast('Fel: ' + e.message, 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Spara bokning';
+    }
+  }
+
+  // Wiring
+  $('#new-booking-btn').addEventListener('click', mbOpen);
+  $('#mb-close').addEventListener('click', mbClose);
+  $('#mb-cancel').addEventListener('click', mbClose);
+  $('#mb-backdrop').addEventListener('click', e => { if (e.target === $('#mb-backdrop')) mbClose(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('#mb-backdrop').classList.contains('open')) mbClose();
+  });
+  $$('.mb-tab').forEach(t => t.addEventListener('click', () => mbSwitchMode(t.dataset.mode)));
+  $('#mb-cal-prev').addEventListener('click', () => { mbState.calDate.setMonth(mbState.calDate.getMonth() - 1); mbRenderCalendar(); });
+  $('#mb-cal-next').addEventListener('click', () => { mbState.calDate.setMonth(mbState.calDate.getMonth() + 1); mbRenderCalendar(); });
+  $('#mb-service').addEventListener('change', () => {
+    mbUpdateAlpacasVisibility();
+    mbAutoPrice();
+    mbRenderCalendar();
+    mbRenderHourGrid();
+    mbUpdateTimeSummary();
+    mbPopulateExistingSlots();
+  });
+  ['mb-adults', 'mb-children'].forEach(id => {
+    $('#' + id).addEventListener('input', mbAutoPrice);
+  });
+  $('#mb-price').addEventListener('input', () => { mbState.priceManuallyEdited = true; });
+  $('#mb-recalc-price').addEventListener('click', () => { mbState.priceManuallyEdited = false; mbAutoPrice(); });
+  $('#mb-submit').addEventListener('click', mbSubmit);
 
   // ── NAVIGATION ─────────────────────────────────────────
   $$('.nav-item[data-view]').forEach(btn => {

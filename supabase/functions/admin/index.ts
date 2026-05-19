@@ -264,6 +264,144 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, booking: rows[0] || null });
     }
 
+    if (action === 'createManualBooking') {
+      // Skapar en bokning Helena själv tagit emot (telefon, mejl, walk-in).
+      // Antingen mot en befintlig slot (slot_id) eller på en valfri tid
+      // (slot_date + slot_time). Egen tid återanvänder slot om en redan finns
+      // på exakt samma tjänst+datum+tid, annars skapas en ny.
+      //
+      // private_party styr om sloten ska blockas mot online-bokning:
+      //   true  → booked_spots sätts = max_spots (sloten visas som full)
+      //   false → booked_spots += antal personer (resten kan bokas online)
+      const {
+        service_id,
+        slot_id,
+        slot_date,
+        slot_time,
+        first_name,
+        last_name,
+        email,
+        phone,
+        adults,
+        children,
+        alpacas,
+        total_price,
+        note,
+        private_party,
+      } = body;
+
+      const svcId = Number(service_id);
+      const adultsN = Number(adults);
+      const childrenN = Number(children || 0);
+      const alpacasN = Number(alpacas || 0);
+      const persons = adultsN + childrenN;
+      const block = Boolean(private_party);
+
+      if (!svcId || !first_name || !(adultsN > 0 || childrenN > 0)) {
+        return json({ ok: false, error: 'service_id, first_name och minst en person krävs' }, 400);
+      }
+      if (!slot_id && !(slot_date && slot_time)) {
+        return json({ ok: false, error: 'Antingen slot_id eller slot_date + slot_time krävs' }, 400);
+      }
+
+      // ── 1. Hitta eller skapa slot ──
+      let resolvedSlotId: number | null = null;
+      if (slot_id) {
+        const sr = await SB(`time_slots?id=eq.${Number(slot_id)}&select=*`);
+        if (!sr.ok) return json({ ok: false, error: 'Kunde inte läsa slot' }, 500);
+        const rows = await sr.json();
+        if (!rows.length) return json({ ok: false, error: 'Slot hittades inte' }, 404);
+        if (Number(rows[0].service_id) !== svcId) {
+          return json({ ok: false, error: 'Vald slot tillhör en annan tjänst' }, 400);
+        }
+        resolvedSlotId = rows[0].id;
+      } else {
+        const time = String(slot_time).length === 5 ? slot_time + ':00' : String(slot_time);
+        const sr = await SB(
+          `time_slots?service_id=eq.${svcId}&slot_date=eq.${encodeURIComponent(slot_date)}&slot_time=eq.${encodeURIComponent(time)}&select=*`,
+        );
+        if (!sr.ok) return json({ ok: false, error: 'Kunde inte söka efter slot' }, 500);
+        const existing = await sr.json();
+        if (existing.length > 0) {
+          resolvedSlotId = existing[0].id;
+        } else {
+          const newSlot = {
+            service_id: svcId,
+            slot_date,
+            slot_time: time,
+            max_spots: block ? Math.max(persons, 1) : 8,
+            booked_spots: 0,
+            active: true,
+          };
+          const cr = await fetch(`${SB_URL}/rest/v1/time_slots`, {
+            method: 'POST',
+            headers: {
+              apikey: SB_SERVICE_KEY,
+              Authorization: `Bearer ${SB_SERVICE_KEY}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=representation',
+            },
+            body: JSON.stringify(newSlot),
+          });
+          if (!cr.ok) return json({ ok: false, error: 'Kunde inte skapa slot: ' + (await cr.text()) }, cr.status);
+          const created = await cr.json();
+          resolvedSlotId = created[0].id;
+        }
+      }
+
+      // ── 2. Skapa bokningen ──
+      const bookingPayload = {
+        service_id: svcId,
+        slot_id: resolvedSlotId,
+        first_name: String(first_name).trim(),
+        last_name: String(last_name || '').trim(),
+        email: email ? String(email).trim() : '',
+        phone: phone ? String(phone).trim() : null,
+        adults: adultsN,
+        children: childrenN,
+        alpacas: alpacasN,
+        total_price: total_price != null && total_price !== '' ? Number(total_price) : 0,
+        note: note ? String(note) : null,
+        private_party: block,
+        status: 'confirmed',
+        payment_status: 'paid',
+        newsletter_consent: false,
+        source: 'manual',
+      };
+      const br = await fetch(`${SB_URL}/rest/v1/bookings`, {
+        method: 'POST',
+        headers: {
+          apikey: SB_SERVICE_KEY,
+          Authorization: `Bearer ${SB_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify(bookingPayload),
+      });
+      if (!br.ok) return json({ ok: false, error: 'Kunde inte skapa bokning: ' + (await br.text()) }, br.status);
+      const bookingRows = await br.json();
+      const createdBooking = bookingRows[0];
+
+      // ── 3. Uppdatera booked_spots på sloten ──
+      const finalSlotRes = await SB(`time_slots?id=eq.${resolvedSlotId}&select=max_spots,booked_spots`);
+      const finalSlotRows = await finalSlotRes.json();
+      const finalSlot = finalSlotRows[0] || { max_spots: persons, booked_spots: 0 };
+      const newBooked = block
+        ? Number(finalSlot.max_spots)
+        : Number(finalSlot.booked_spots || 0) + persons;
+      await fetch(`${SB_URL}/rest/v1/time_slots?id=eq.${resolvedSlotId}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SB_SERVICE_KEY,
+          Authorization: `Bearer ${SB_SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ booked_spots: newBooked }),
+      });
+
+      return json({ ok: true, booking: createdBooking });
+    }
+
     if (action === 'generateConfirmationEmail') {
       if (!ANTHROPIC_API_KEY) return json({ ok: false, error: 'ANTHROPIC_API_KEY saknas i edge function-secrets' }, 500);
       const id = Number(body.id);
