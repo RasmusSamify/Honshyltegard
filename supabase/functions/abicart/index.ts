@@ -3,7 +3,7 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 const WEBSHOP    = '84183';
 // Abicart admin-auth-token läses ENBART från miljövariabel — aldrig hårdkodad
 // i koden (ligger i Supabase-secrets: `supabase secrets set ABICART_TOKEN=...`).
-const AUTH_TOKEN = Deno.env.get('ABICART_TOKEN') ?? '';
+const AUTH_TOKEN = (Deno.env.get('ABICART_TOKEN') ?? '').trim();
 const AB_BASE_URL = `https://shop.textalk.se/backend/jsonrpc/v1/?webshop=${WEBSHOP}`;
 const AB_ADMIN   = `${AB_BASE_URL}&auth=${AUTH_TOKEN}`;
 const SB_URL     = Deno.env.get('SUPABASE_URL') ?? '';
