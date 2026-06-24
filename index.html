@@ -1359,11 +1359,25 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       btn.textContent = t('cta_preparing_checkout');
       var kassaUrl = 'https://webshop.honshyltegard.nu/kassa/?load_cart=' + encodeURIComponent(sessionToken);
       console.log('Kassa URL:', kassaUrl);
-      // Abicart-tipset: vänta ~1.2s innan redirect så att backend hinner synka
-      // ordern över sina databaser/caches innan kassans SPA försöker läsa den.
-      // Utan denna paus uppstår race conditions (9003 "Object not found", 1006
-      // "Forbidden") som triggar SystemError-modalen.
-      //
+
+      // Vänta tills Abicart BEKRÄFTAR att ordern är läsbar (orderrader synkade
+      // över deras databaser/cacher) innan vi skickar kunden vidare. Detta
+      // ersätter den gamla blinda 1,2s-pausen — som ibland var för kort, så
+      // kassans SPA frågade efter en ännu osynkad order och fick 9003/1006
+      // ("Object not found"/"Forbidden") → SystemError-modal + tom varukorg.
+      // Vi pollar Order.get tills items-raderna finns (max ~3,2 s), redirectar
+      // sedan direkt.
+      async function abOrderReady() {
+        try {
+          var o = await abCall('Order.get', [orderUid, { uid: true, items: true }], sessionToken);
+          return !!(o && o.items && o.items.length > 0);
+        } catch(_) { return false; }
+      }
+      for (var _att = 0; _att < 8; _att++) {
+        if (await abOrderReady()) break;
+        await new Promise(function(r){ setTimeout(r, 400); });
+      }
+
       // VIKTIGT: redirecta iframe:n (window.location.href), INTE top-fönstret.
       // Abicart-sessionen är bunden till iframe-kontextens tredjeparts-cookies
       // för shop.textalk.se. Om vi navigerar bort top-fönstret förloras
@@ -1375,7 +1389,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
       // tillbaka till tidigare beteende (kassan laddas men kunden ser den
       // längre ner på sidan).
       requestScrollIntoView();
-      setTimeout(function(){ window.location.href = kassaUrl; }, 1200);
+      window.location.href = kassaUrl;
 
     } catch(e) {
       showError(t('err_booking_failed') + ': ' + e.message);

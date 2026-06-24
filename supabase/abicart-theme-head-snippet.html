@@ -1,55 +1,83 @@
 <!--
   Script som ska klistras in i Abicart Nordic-temats <head>.
   Funktioner:
-    1) Läser ?load_cart=TOKEN och injicerar sessionen i SPA:ns Redux store
-       (nuvarande, fungerande lösning — flyttar kunden direkt till kassan).
-    2) Efter order-completion redirectar tillbaka till widgeten så
+    1) Läser ?load_cart=TOKEN, sätter sessionen i SPA:ns Redux store och
+       laddar sedan om kassan RENT (utan param) — vilket speglar exakt det
+       en manuell refresh gör (som bevisligen får varukorgen att dyka upp).
+    2) Klass-oberoende dämpning av Abicarts "Fel"-modal under första laddningen.
+    3) Efter order-completion redirectar tillbaka till widgeten så
        confirmPayment kan köras automatiskt.
 
   Installation:
     Abicart admin → Mall → Nordic v1.1 → HTML/CSS → <head>-sektion.
+
+  Bakgrund (varför reload behövs):
+    Vid första landningen på /kassa/?load_cart=TOKEN har SPA:n redan renderat
+    en TOM varukorg innan vår setSession hinner verka. fetchSessionData ensam
+    triggar ingen omritning av order/varukorg-vyn → kunden ser tom korg.
+    En manuell refresh bootar SPA:n på nytt med sessionen redan aktiv (cookie)
+    → korgen renderas korrekt. Vi automatiserar den refreshen.
 -->
 <script>
 (function(){
   // Widget-URL att redirecta tillbaka till efter betalning
   var BOOKING_RETURN_URL = 'https://rasmussamify.github.io/Honshyltegard/';
 
-  // ── Del 1: load_cart ──
   var urlParams = new URLSearchParams(window.location.search);
   var sessionFromUrl = urlParams.get('load_cart');
-  if (sessionFromUrl) sessionStorage.setItem('_loadCart', sessionFromUrl);
 
-  window.addEventListener('load', function(){
-    var token = sessionStorage.getItem('_loadCart');
-    if (token) {
-      sessionStorage.removeItem('_loadCart');
-
-      // Abicart SPA kör flera interna dispatches direkt efter setSession
-      // (fetchSessionData, fetchCart, fetchOrder m.fl.). Efter en nyligen
-      // skapad session misslyckas en eller flera av dessa med 9003/1006 på
-      // grund av race conditions på backend, vilket triggar SystemError-modalen.
-      // Vi kan inte catcha alla dispatches men vi kan dölja modalen när den
-      // dyker upp de första sekunderna efter redirecten.
-      var suppressUntil = Date.now() + 5000;
-      var hideErrorModals = function(){
-        if (Date.now() > suppressUntil) return;
-        document.querySelectorAll('.tws-checkout--system-error-modal').forEach(function(m){
+  // ── Klass-oberoende fel-modal-dämpning ──
+  // Abicart har bytt klassnamn på sin SystemError-modal, så den gamla
+  // selektorn (.tws-checkout--system-error-modal) matchar inte längre.
+  // Vi matchar istället på modalens INNEHÅLL (feltext sv/en/de) inom
+  // element som ser ut som modaler/dialoger. Körs bara i ett kort fönster
+  // direkt efter landningen, så vi inte döljer äkta fel senare i flödet.
+  function installModalSuppressor(durationMs){
+    var until = Date.now() + durationMs;
+    var ERR_RE = /ett fel har inträffat|an error (has )?occurred|ein fehler|försök igen|try again|erneut versuchen/i;
+    var hide = function(){
+      if (Date.now() > until) return;
+      var sel = '.tws-checkout--system-error-modal, .tws-modal, [class*="system-error"],'
+              + ' [class*="error-modal"], [class*="modal"], [role="dialog"], [role="alertdialog"]';
+      document.querySelectorAll(sel).forEach(function(m){
+        if (ERR_RE.test(m.textContent || '')) {
           m.style.display = 'none';
           m.setAttribute('aria-hidden', 'true');
-        });
-        // Dolda backdrop:er kan blockera interaktion — ta bort dem också
-        document.querySelectorAll('.modal-backdrop').forEach(function(b){
-          if (b.style.display !== 'none') b.style.display = 'none';
-        });
-      };
-      var mo = new MutationObserver(hideErrorModals);
-      mo.observe(document.body, { childList: true, subtree: true });
-      setTimeout(function(){ mo.disconnect(); hideErrorModals(); }, 5000);
+        }
+      });
+      document.querySelectorAll('.modal-backdrop, [class*="backdrop"], [class*="overlay"]').forEach(function(b){
+        // Ta bara bort backdrops som faktiskt blockerar (synliga overlays)
+        var cs = window.getComputedStyle(b);
+        if (cs && cs.display !== 'none' && (cs.position === 'fixed' || cs.position === 'absolute')) {
+          b.style.display = 'none';
+        }
+      });
+    };
+    var mo = new MutationObserver(hide);
+    try { mo.observe(document.documentElement, { childList: true, subtree: true }); } catch(_) {}
+    var iv = setInterval(hide, 250);
+    setTimeout(function(){ try { mo.disconnect(); } catch(_) {} clearInterval(iv); hide(); }, durationMs);
+    hide();
+  }
 
-      // Svälj unhandled promise rejections från Abicarts init (9003, 1006)
-      // så de inte dyker upp som fel i konsollen.
+  // Vänta tills SPA:ns Redux store + actions finns (de bootas async, ofta
+  // EFTER window 'load'). Slänger ALDRIG token innan store är redo.
+  function whenReady(cb, attempts){
+    attempts = attempts || 0;
+    var store = window.twsReduxStore;
+    var actions = window.twsCore && window.twsCore.actions;
+    if (store && actions) { cb(store, actions); return; }
+    if (attempts >= 60) { cb(null, null); return; } // ~15s tak
+    setTimeout(function(){ whenReady(cb, attempts + 1); }, 250);
+  }
+
+  window.addEventListener('load', function(){
+    // ── Del 1: load_cart → setSession → ren reload (speglar manuell refresh) ──
+    if (sessionFromUrl) {
+      installModalSuppressor(9000);
+
+      // Svälj 9003/1006-rejections från Abicarts init under injektionen
       var rejectionHandler = function(e){
-        if (Date.now() > suppressUntil) return;
         var r = e.reason;
         if (r && typeof r === 'object' && (r.code === 9003 || r.code === 1006)) {
           console.warn('[HHG] suppressed Abicart init rejection:', r);
@@ -57,36 +85,46 @@
         }
       };
       window.addEventListener('unhandledrejection', rejectionHandler);
-      setTimeout(function(){ window.removeEventListener('unhandledrejection', rejectionHandler); }, 5000);
+      setTimeout(function(){ window.removeEventListener('unhandledrejection', rejectionHandler); }, 9000);
 
-      var store = window.twsReduxStore;
-      var actions = window.twsCore && window.twsCore.actions;
-      if (store && actions) {
-        // Abicart-rekommendation: hoppa över goToThemeRoute om vi redan är på
-        // /kassa eller /checkout. Att dispatch:a route-byte på en sida vi redan
-        // är på triggar onödiga interna fetch-anrop som racar mot en nyligen
-        // skapad order — vilket är det som ger 9003/1006-felen.
-        var afterFetch = function(){
-          try { window.history.replaceState({}, document.title, window.location.pathname); } catch(_) {}
-          var path = window.location.pathname || '';
-          var alreadyAtCheckout = path.indexOf('/kassa') !== -1 || path.indexOf('/checkout') !== -1;
-          if (!alreadyAtCheckout) {
-            try { store.dispatch(actions.goToThemeRoute('checkout')); } catch(_) {}
+      var reloadClean = function(){
+        // Ladda om utan ?load_cart. SPA:n bootar då med den nu AKTIVA
+        // sessionen och renderar varukorgen korrekt — precis som en manuell
+        // refresh. Guard mot loop: flaggan sätts före reload och städas på
+        // den rena laddningen (else-grenen nedan).
+        if (sessionStorage.getItem('_loadCartReloaded')) return;
+        sessionStorage.setItem('_loadCartReloaded', '1');
+        window.location.replace(window.location.pathname);
+      };
+
+      whenReady(function(store, actions){
+        if (!store || !actions) {
+          // Kunde aldrig nå store. Sista utväg: ladda om EN gång med param
+          // kvar (token finns då fortfarande i URL för nästa försök).
+          if (!sessionStorage.getItem('_loadCartReloaded')) {
+            sessionStorage.setItem('_loadCartReloaded', '1');
+            window.location.reload();
           }
-        };
-        store.dispatch(actions.setSession(token));
-        store.dispatch(actions.fetchSessionData())
-          .then(afterFetch)
-          .catch(function(err){
-            console.warn('[HHG] fetchSessionData rejected (ignored):', err);
-            afterFetch();
-          });
-      }
+          return;
+        }
+        try { store.dispatch(actions.setSession(sessionFromUrl)); } catch(_) {}
+        // Vänta in att sessionen round-trippat (cookie/persist skrivs) innan
+        // vi laddar om — annars kan reloaden tappa sessionen.
+        var p;
+        try { p = store.dispatch(actions.fetchSessionData()); } catch(_) {}
+        if (p && typeof p.then === 'function') {
+          p.then(reloadClean, reloadClean);
+        } else {
+          setTimeout(reloadClean, 800);
+        }
+      });
+    } else {
+      // Ren kassa-laddning (efter vår reload, eller vanlig navigering):
+      // städa loop-flaggan. SPA:n renderar varukorgen från aktiv session.
+      sessionStorage.removeItem('_loadCartReloaded');
     }
 
     // ── Del 2: efter order-completion, redirecta tillbaka till widgeten ──
-    // Prenumererar på Redux store; om routen blir 'orderComplete' / 'thankyou',
-    // hämtar order-UID och skickar kunden tillbaka till widgeten med query-param.
     var rstore = window.twsReduxStore;
     if (!rstore) return;
     var lastRoute = null;
@@ -96,7 +134,6 @@
         var route = s && s.router && s.router.location && s.router.location.pathname;
         if (!route || route === lastRoute) return;
         lastRoute = route;
-        // Abicart Nordic använder ofta /ordercomplete eller /thankyou
         if (/order.?complete|thank|tack/i.test(route)) {
           var orderUid = s.order && s.order.uid;
           var u = BOOKING_RETURN_URL + (BOOKING_RETURN_URL.indexOf('?') === -1 ? '?' : '&') + 'abicart_order=' + (orderUid || '');
