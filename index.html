@@ -1333,13 +1333,22 @@ html, body { margin: 0; padding: 0; min-height: 100vh; background: #F5F0E8; }
         console.warn('Order.set bokningsdetaljer:', e.message);
       }
 
-      // 6. PATCH bookings-raden i Supabase med abicart_order_id
+      // 6. Spara abicart_order_id på bokningen via edge-funktionen (service-role).
       //    Fire-and-forget — om det misslyckas l\u00e5ter vi anv\u00e4ndaren \u00e4nd\u00e5 g\u00e5 vidare till kassan
-      fetch(SB_URL + '/rest/v1/bookings?id=eq.' + bookingId, {
-        method: 'PATCH',
-        headers: Object.assign({}, SB_HEADERS, { 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ abicart_order_id: orderUid, payment_status: 'pending' })
-      }).catch(function(e){ console.warn('Patch booking:', e.message); });
+      //    Skrivningen går nu via abicart-funktionens attachOrder-action
+      //    (service-role, idempotent) istället för en direkt anon-PATCH som
+      //    nekades av RLS (401) -> order-id sparades aldrig. Vi awaitar så id:t
+      //    hinner sparas innan kunden ev. betalar och återvänder, men låter inte
+      //    ett fel blockera vägen till kassan.
+      try {
+        var attachRes = await fetch(SB_URL + '/functions/v1/abicart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'attachOrder', booking_id: bookingId, order_id: orderUid })
+        });
+        var attachData = await attachRes.json();
+        console.log('attachOrder:', JSON.stringify(attachData));
+      } catch(e) { console.warn('attachOrder misslyckades:', e.message); }
 
       // 7. Stash pending booking i localStorage så vi kan verifiera betalning
       //    när kunden kommer tillbaka till widgeten (även utan URL-param).
