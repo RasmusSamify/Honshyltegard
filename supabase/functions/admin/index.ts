@@ -8,6 +8,48 @@ const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const FARM_ADDRESS = 'Gård Hönshyltegård, 362 96 Ryd';
 const FARM_EMAIL = 'alpacka.honshyltegard@gmail.com';
 
+// Fast informationsblock om gårdsbutiken + sommarfikan. Läggs ALLTID på efter
+// den AI-genererade personliga texten (deterministiskt så ordalydelsen blir
+// exakt — AI:n ska inte återge den och riskera att skriva om den). Byt texten
+// här om öppettider/sortiment ändras. Nyckel = mejlets språk (sv/en/de).
+const SHOP_FOOTER: Record<string, string> = {
+  sv: `Butiken på gården
+Här finns ett handplockat utbud med bl.a. alpackaprodukter, garn, fin inredning, presenter, svensk linoljesåpa, naturtvålar, barnböcker, lokal must & honung, konfektyr, glass mm.
+I våra mysiga gårdshus hittar du även loppis och secondhandkläder.
+
+Öppet alla dagar i Juli & Augusti kl. 10-17.
+Ordinarie öppettider Månd-Fred 11-17, Lörd 10-16.
+
+Sommarfika
+Missa inte vår populära sommarfika med hembakat, lokal läsk & äppelmust. Slå dig ner och njut, i vår fina gårdsmiljö.
+
+Varje dag i Juli & Augusti kl. 10-17`,
+
+  en: `The farm shop
+Here you'll find a handpicked selection including alpaca products, yarn, fine interior décor, gifts, Swedish linseed-oil soap, natural soaps, children's books, local cordial & honey, confectionery, ice cream and more.
+In our cosy farm buildings you'll also find a flea market and secondhand clothing.
+
+Open every day in July & August, 10:00–17:00.
+Regular hours Mon–Fri 11:00–17:00, Sat 10:00–16:00.
+
+Summer café
+Don't miss our popular summer café with home-baked treats, local soft drinks & apple must. Sit down and enjoy our beautiful farm setting.
+
+Every day in July & August, 10:00–17:00`,
+
+  de: `Der Hofladen
+Hier finden Sie ein handverlesenes Sortiment mit u. a. Alpakaprodukten, Wolle, schöner Wohndeko, Geschenken, schwedischer Leinölseife, Naturseifen, Kinderbüchern, lokalem Sirup & Honig, Konfekt, Eis und vielem mehr.
+In unseren gemütlichen Hofgebäuden finden Sie auch einen Flohmarkt und Secondhand-Kleidung.
+
+Täglich geöffnet im Juli & August, 10–17 Uhr.
+Reguläre Öffnungszeiten Mo–Fr 11–17 Uhr, Sa 10–16 Uhr.
+
+Sommercafé
+Verpassen Sie nicht unser beliebtes Sommercafé mit Selbstgebackenem, lokaler Limonade & Apfelmost. Setzen Sie sich und genießen Sie unsere schöne Hofumgebung.
+
+Täglich im Juli & August, 10–17 Uhr`,
+};
+
 const SYSTEM_PROMPT = `Du är Helena Larsson, värd på Hönshyltegård – en liten alpackagård på den småländska landsbygden. Du skriver personliga bokningsbekräftelse-mejl till kunder som har bokat en upplevelse hos dig.
 
 GÅRDEN ERBJUDER TVÅ TJÄNSTER
@@ -460,7 +502,12 @@ Deno.serve(async (req: Request) => {
         return json({ ok: false, error: 'Claude API fel: ' + err }, 500);
       }
       const data = await cr.json();
-      const email = (data?.content?.[0]?.text ?? '').trim();
+      const personal = (data?.content?.[0]?.text ?? '').trim();
+      // Lägg alltid på det fasta butiks-/fika-blocket efter Helenas personliga
+      // text, åtskilt med en tunn avdelare. Faller tillbaka på svenska om språket
+      // saknar ett eget block.
+      const footer = SHOP_FOOTER[lang] ?? SHOP_FOOTER.sv;
+      const email = `${personal}\n\n———\n\n${footer}`;
       const usage = data?.usage || {};
       return json({ ok: true, email, usage });
     }
